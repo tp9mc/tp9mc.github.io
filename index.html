@@ -250,9 +250,21 @@ const PLATFORMS=[
   {name:'Прямой файл',  re:/\.(mp4|webm|mov|avi|mkv|m4v|ogv)(\?|$)/i, icon:'⬛', color:'#00e676'},
 ];
 
-const COBALT_ENDPOINTS=[
-  'https://co.wuk.sh/api/json',
-  'https://cobalt.tools/api/json',
+// Cobalt community instances (без обязательного API-ключа) — новый формат API v10
+const COBALT_INSTANCES=[
+  'https://cobalt.api.timelessnesses.me',
+  'https://co.eepy.cat',
+  'https://cobalt.drgns.space',
+  'https://cobalt.urdeprecated.tech',
+  'https://cob.freetard.eu.org',
+];
+// CORS-прокси как запасной вариант
+const PROXY='https://corsproxy.io/?';
+// Piped инстансы для YouTube
+const PIPED_INSTANCES=[
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.leptons.xyz',
+  'https://pipedapi.tokhmi.xyz',
 ];
 
 const urlInput=document.getElementById('urlInput');
@@ -333,112 +345,188 @@ async function downloadBlob(url){
   setStatus('ok','✓',`Файл скачан: <b>${fname}</b>`);
 }
 
-// ── Cobalt API ───────────────────────────────────────────────────────────────
-async function callCobalt(url){
+// ── Cobalt API (community instances, новый формат v10) ───────────────────────
+async function callCobaltInstance(endpoint, videoUrl){
+  const q=qualitySel.value;
+  const ao=audioOnly.checked;
   const body=JSON.stringify({
-    url,
-    vQuality:qualitySel.value,
-    isAudioOnly:audioOnly.checked,
-    aFormat:audioOnly.checked?'mp3':'best',
-    filenamePattern:'pretty',
+    url: videoUrl,
+    videoQuality: q==='max'?'max':q,
+    audioFormat: ao?'mp3':'best',
+    downloadMode: ao?'audio':'auto',
+    filenameStyle: 'pretty',
   });
   const headers={'Content-Type':'application/json','Accept':'application/json'};
+  const resp=await fetch(endpoint+'/api/json',{method:'POST',headers,body,signal:AbortSignal.timeout(10000)});
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  const data=await resp.json();
+  if(data.status==='error') throw new Error(data.error?.code||data.text||'error');
+  return data;
+}
 
-  for(const endpoint of COBALT_ENDPOINTS){
+async function tryCobalt(videoUrl){
+  // 1. Пробуем community-инстансы напрямую
+  for(const inst of COBALT_INSTANCES){
     try{
-      const resp=await fetch(endpoint,{method:'POST',headers,body,signal:AbortSignal.timeout(15000)});
-      if(resp.status===429){
-        setStatus('warn','⏱','Слишком много запросов — подожди немного и попробуй снова.');
-        return null;
-      }
-      if(!resp.ok)continue;
-      const data=await resp.json();
-      return data;
-    }catch(_){continue}
+      setStatus('info','⌛',`Пробую ${inst.replace('https://','').split('.')[0]}...`);
+      const d=await callCobaltInstance(inst, videoUrl);
+      if(d.status&&d.status!=='error') return d;
+    }catch(_){}
+  }
+  // 2. Пробуем те же инстансы через CORS-прокси
+  for(const inst of COBALT_INSTANCES.slice(0,2)){
+    try{
+      const proxied=PROXY+encodeURIComponent(inst+'/api/json');
+      const body=JSON.stringify({url:videoUrl,videoQuality:qualitySel.value,downloadMode:audioOnly.checked?'audio':'auto',audioFormat:audioOnly.checked?'mp3':'best',filenameStyle:'pretty'});
+      const resp=await fetch(proxied,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body,signal:AbortSignal.timeout(12000)});
+      if(!resp.ok) continue;
+      const d=await resp.json();
+      if(d.status&&d.status!=='error') return d;
+    }catch(_){}
   }
   return null;
 }
 
-function handleCobaltResponse(data,origUrl){
-  if(!data){
-    setStatus('err','✕',`Сервис недоступен. Попробуй позже или скачай через терминал:<br>
-      <code style="font-family:monospace;font-size:11px">yt-dlp "${origUrl}"</code>`);
-    return;
+// ── Piped API (YouTube fallback) ──────────────────────────────────────────────
+function getYouTubeId(url){
+  const m=url.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m?m[1]:null;
+}
+
+async function tryPiped(videoUrl){
+  const id=getYouTubeId(videoUrl);
+  if(!id) return null;
+  for(const inst of PIPED_INSTANCES){
+    try{
+      setStatus('info','⌛',`YouTube через Piped (${inst.replace('https://pipedapi.','')})...`);
+      // Пробуем напрямую, затем через прокси
+      let data=null;
+      try{
+        const r=await fetch(`${inst}/streams/${id}`,{signal:AbortSignal.timeout(8000)});
+        if(r.ok) data=await r.json();
+      }catch(_){}
+      if(!data){
+        const r=await fetch(PROXY+encodeURIComponent(`${inst}/streams/${id}`),{signal:AbortSignal.timeout(10000)});
+        if(r.ok) data=await r.json();
+      }
+      if(!data||data.error) continue;
+      // Выбираем поток
+      if(audioOnly.checked){
+        const s=(data.audioStreams||[]).sort((a,b)=>b.bitrate-a.bitrate)[0];
+        if(s) return{pipedUrl:s.url,filename:`audio_${id}.m4a`};
+      }else{
+        // Сначала muxed (видео+аудио вместе), потом лучший видеопоток
+        const muxed=(data.videoStreams||[]).filter(s=>!s.videoOnly).sort((a,b)=>(parseInt(b.quality)||0)-(parseInt(a.quality)||0));
+        const best=muxed[0]||(data.videoStreams||[]).sort((a,b)=>(parseInt(b.quality)||0)-(parseInt(a.quality)||0))[0];
+        if(best) return{pipedUrl:best.url,filename:`youtube_${id}_${best.quality||'video'}.mp4`};
+      }
+    }catch(_){}
   }
-  if(data.status==='error'||data.status==='rate-limit'){
-    const msg=data.text||'Неизвестная ошибка';
-    setStatus('err','✕',`Ошибка: ${msg}`);
-    return;
-  }
-  if(data.status==='redirect'||data.status==='stream'||data.status==='tunnel'){
-    triggerLink(data.url,data.filename||'video');
-    setStatus('ok','✓',`Загрузка началась! Файл: <b>${data.filename||'video'}</b><br><span style="opacity:.6;font-size:11px">Проверь папку Загрузки (⌘+Option+L)</span>`);
-    return;
-  }
-  if(data.status==='picker'){
-    showPicker(data.picker||[],data.audio);
-    return;
-  }
-  setStatus('warn','?',`Неожиданный ответ: ${data.status}`);
+  return null;
+}
+
+// ── Download trigger ──────────────────────────────────────────────────────────
+function openDownload(url, filename){
+  // Для cobalt-ссылок: Content-Disposition: attachment → браузер сам скачает
+  const a=document.createElement('a');
+  a.href=url;a.download=filename||'';a.target='_blank';a.rel='noopener';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>document.body.removeChild(a),300);
+}
+
+function showSuccess(filename){
+  setStatus('ok','✓',`Загрузка началась — <b>${filename||'video'}</b><br>
+    <span style="font-size:11px;opacity:.5">Папка Загрузки: ⌘+Option+L</span>`);
 }
 
 function showPicker(items,audioUrl){
   pickerEl.style.display='flex';
-  let html='<div style="font-size:12px;color:#555570;width:100%;margin-bottom:6px">Выбери вариант:</div>';
+  let html='<div style="font-size:12px;color:#555570;width:100%;margin-bottom:6px">Выбери вариант для скачивания:</div>';
   items.forEach((item,i)=>{
-    html+=`<button class="pick-btn" onclick="pickItem('${item.url}','item_${i+1}')">
+    html+=`<button class="pick-btn" onclick="window.pickItem('${encodeURIComponent(item.url)}','item_${i+1}')">
       ${item.type==='photo'?'🖼':'🎬'} Вариант ${i+1}
     </button>`;
   });
-  if(audioUrl){
-    html+=`<button class="pick-btn" onclick="pickItem('${audioUrl}','audio')">🔊 Только аудио</button>`;
-  }
+  if(audioUrl) html+=`<button class="pick-btn" onclick="window.pickItem('${encodeURIComponent(audioUrl)}','audio')">🔊 Только аудио</button>`;
   pickerEl.innerHTML=html;
-  setStatus('info','◈','Доступно несколько вариантов — выбери нужный:');
+  setStatus('info','◈','Доступно несколько вариантов:');
 }
 
-window.pickItem=(url,name)=>{
-  triggerLink(url,name);
-  setStatus('ok','✓',`Загрузка началась: <b>${name}</b>`);
+window.pickItem=(encoded,name)=>{
+  openDownload(decodeURIComponent(encoded),name);
+  setStatus('ok','✓',`Скачиваю: <b>${name}</b>`);
 };
 
-// ── Main download ─────────────────────────────────────────────────────────────
+function showFallback(videoUrl){
+  setStatus('err','✕',`Не удалось получить прямую ссылку.<br>
+    <span style="font-size:11px;line-height:1.8">
+    Скачай через терминал:<br>
+    <code style="background:#0a0a18;padding:2px 6px;border-radius:3px">yt-dlp "${videoUrl}"</code><br>
+    (установить: <code style="background:#0a0a18;padding:2px 6px;border-radius:3px">brew install yt-dlp</code>)
+    </span>`);
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 dlBtn.onclick=async()=>{
   const url=urlInput.value.trim();
   if(!url){setStatus('err','!','Вставь ссылку на видео');return}
-
-  try{new URL(url)}catch(_){setStatus('err','!','Неверная ссылка');return}
+  try{new URL(url)}catch(_){setStatus('err','!','Неверная ссылка — должна начинаться с https://');return}
 
   pickerEl.style.display='none';pickerEl.innerHTML='';
   setLoading(true);
 
   try{
-    const isDirect=/\.(mp4|webm|mov|avi|mkv|m4v|ogv)(\?|$)/i.test(url);
-
-    if(isDirect){
-      try{
-        await downloadBlob(url);
-      }catch(_){
-        // Fallback: just open the URL if CORS blocked
-        triggerLink(url);
-        setStatus('ok','✓','Файл открыт в браузере — нажми ⌘+S чтобы сохранить');
-      }
-    }else{
-      setStatus('info','⬇','Получаю ссылку на файл...');
-      const data=await callCobalt(url);
-      handleCobaltResponse(data,url);
+    // Прямой видеофайл
+    if(/\.(mp4|webm|mov|avi|mkv|m4v|ogv)(\?|$)/i.test(url)){
+      try{await downloadBlob(url)}
+      catch(_){openDownload(url);setStatus('ok','✓','Открываю файл — нажми ⌘+S чтобы сохранить')}
+      return;
     }
+
+    setStatus('info','⌛','Ищу рабочий сервис...');
+
+    // Cobalt community instances
+    const cobalt=await tryCobalt(url);
+    if(cobalt){
+      if(cobalt.status==='picker'){showPicker(cobalt.picker||[],cobalt.audio);return}
+      if(cobalt.url){openDownload(cobalt.url,cobalt.filename);showSuccess(cobalt.filename);return}
+    }
+
+    // YouTube → Piped fallback
+    if(/youtube\.com|youtu\.be/.test(url)){
+      const piped=await tryPiped(url);
+      if(piped){
+        // Piped-потоки: пробуем blob, иначе открываем вкладку
+        setStatus('info','⬇',`Скачиваю через Piped: <b>${piped.filename}</b>...`);
+        try{
+          const r=await fetch(piped.pipedUrl,{signal:AbortSignal.timeout(30000)});
+          if(r.ok){
+            const blob=await r.blob();
+            const bu=URL.createObjectURL(blob);
+            openDownload(bu,piped.filename);
+            setTimeout(()=>URL.revokeObjectURL(bu),15000);
+            showSuccess(piped.filename);
+            return;
+          }
+        }catch(_){}
+        // Blob не вышло — открываем напрямую
+        window.open(piped.pipedUrl,'_blank');
+        setStatus('ok','▶',`Видео открыто в новой вкладке.<br>
+          <span style="font-size:11px;opacity:.6">Правая кнопка → "Сохранить видео как..." или ⌘+S</span>`);
+        return;
+      }
+    }
+
+    showFallback(url);
   }catch(e){
-    setStatus('err','✕',`Ошибка: ${e.message}`);
+    setStatus('err','✕','Ошибка: '+e.message);
   }finally{
     setLoading(false);
   }
 };
 
-// Enter key
 urlInput.addEventListener('keydown',e=>{if(e.key==='Enter')dlBtn.click()});
 
-// Auto-paste if clipboard has URL on load
 (async()=>{
   try{
     const t=await navigator.clipboard.readText();
