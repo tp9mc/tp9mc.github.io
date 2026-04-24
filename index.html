@@ -1,542 +1,507 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Downloader</title>
-<style>
-:root{
-  --bg:#0b0b12;--card:#13131e;--border:#1e1e30;--text:#e0e0f0;--dim:#555570;
-  --acc1:#7c4dff;--acc2:#448aff;--ok:#00e676;--err:#ff5252;--warn:#ffab40;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  background:var(--bg);color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  min-height:100vh;display:flex;flex-direction:column;align-items:center;
-  padding:40px 20px 60px;
-}
-/* ── HEADER ── */
-.logo{
-  font-size:13px;letter-spacing:4px;text-transform:uppercase;
-  color:var(--dim);margin-bottom:8px;
-}
-h1{
-  font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-1px;
-  background:linear-gradient(135deg,var(--acc1),var(--acc2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  margin-bottom:8px;
-}
-.sub{color:var(--dim);font-size:14px;margin-bottom:40px}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Башорг</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* ── CARD ── */
-.card{
-  width:100%;max-width:680px;
-  background:var(--card);border:1px solid var(--border);
-  border-radius:16px;padding:32px;
-  box-shadow:0 24px 80px rgba(0,0,0,.5);
-}
+    :root {
+      --fg: #1d1d1f;
+      --fg-muted: #6e6e73;
+      --fg-faint: #aeaeb2;
+      --border: #e8e8ed;
+      --bg: #ffffff;
+      --bg-hover: #f5f5f7;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    }
 
-/* ── DETECTED PLATFORM ── */
-#platform{
-  height:28px;margin-bottom:12px;
-  display:flex;align-items:center;gap:8px;
-  font-size:13px;color:var(--dim);
-  transition:opacity .2s;
-}
-#platform .badge{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;
-  letter-spacing:.5px;text-transform:uppercase;opacity:0;transition:opacity .3s;
-}
-#platform .badge.show{opacity:1}
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
 
-/* ── URL INPUT ── */
-.input-wrap{
-  display:flex;gap:8px;margin-bottom:16px;
-}
-#urlInput{
-  flex:1;background:#0d0d18;border:1.5px solid var(--border);
-  border-radius:10px;padding:14px 18px;
-  color:var(--text);font-size:15px;outline:none;
-  transition:border-color .2s;
-}
-#urlInput:focus{border-color:var(--acc1)}
-#urlInput::placeholder{color:#333345}
-#pasteBtn{
-  background:#1a1a28;border:1.5px solid var(--border);
-  border-radius:10px;padding:0 16px;cursor:pointer;
-  color:var(--dim);font-size:12px;letter-spacing:1px;
-  white-space:nowrap;transition:all .15s;
-}
-#pasteBtn:hover{background:#22223a;color:var(--text)}
+    /* ── Layout ── */
+    .shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
 
-/* ── OPTIONS ── */
-.opts{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
-select{
-  background:#0d0d18;border:1.5px solid var(--border);border-radius:8px;
-  color:var(--text);padding:9px 12px;font-size:13px;cursor:pointer;outline:none;
-  -webkit-appearance:none;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555570'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 10px center;
-  padding-right:28px;
-}
-.toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
-.toggle input{display:none}
-.toggle-track{
-  width:36px;height:20px;background:#1a1a28;border:1.5px solid var(--border);
-  border-radius:10px;position:relative;transition:background .2s;
-}
-.toggle input:checked + .toggle-track{background:var(--acc1)}
-.toggle-thumb{
-  position:absolute;top:2px;left:2px;width:12px;height:12px;
-  background:#555;border-radius:50%;transition:transform .2s,background .2s;
-}
-.toggle input:checked + .toggle-track .toggle-thumb{transform:translateX(16px);background:#fff}
-.toggle-label{font-size:13px;color:var(--dim)}
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      padding: 26px 40px 22px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
 
-/* ── DOWNLOAD BUTTON ── */
-#dlBtn{
-  width:100%;padding:16px;border:none;border-radius:12px;
-  background:linear-gradient(135deg,var(--acc1),var(--acc2));
-  color:#fff;font-size:16px;font-weight:700;letter-spacing:.5px;
-  cursor:pointer;transition:opacity .15s,transform .1s;
-  display:flex;align-items:center;justify-content:center;gap:10px;
-}
-#dlBtn:hover{opacity:.9;transform:translateY(-1px)}
-#dlBtn:active{transform:translateY(0)}
-#dlBtn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.spinner{
-  width:18px;height:18px;border:2px solid rgba(255,255,255,.3);
-  border-top-color:#fff;border-radius:50%;
-  animation:spin .7s linear infinite;display:none;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
+    .header-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.022em;
+      color: var(--fg);
+    }
 
-/* ── STATUS ── */
-#status{
-  margin-top:20px;padding:14px 16px;border-radius:10px;
-  font-size:13px;display:none;align-items:flex-start;gap:10px;
-  border:1px solid;
-}
-#status.ok{background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.2);color:var(--ok);display:flex}
-#status.err{background:rgba(255,82,82,.08);border-color:rgba(255,82,82,.2);color:var(--err);display:flex}
-#status.info{background:rgba(68,138,255,.08);border-color:rgba(68,138,255,.2);color:var(--acc2);display:flex}
-#status.warn{background:rgba(255,171,64,.08);border-color:rgba(255,171,64,.2);color:var(--warn);display:flex}
-#statusIcon{font-size:16px;flex-shrink:0;margin-top:1px}
-#statusText a{color:inherit;opacity:.8}
+    .header-sub {
+      font-size: 12px;
+      color: var(--fg-muted);
+      letter-spacing: 0.01em;
+    }
 
-/* ── PICKER ── */
-#picker{display:none;margin-top:16px;gap:8px;flex-wrap:wrap}
-.pick-btn{
-  background:#1a1a28;border:1.5px solid var(--border);border-radius:8px;
-  padding:8px 16px;color:var(--text);cursor:pointer;font-size:13px;
-  transition:background .15s;
-}
-.pick-btn:hover{background:#22223a;border-color:var(--acc1)}
+    .header-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--fg-faint);
+      flex-shrink: 0;
+      align-self: center;
+    }
 
-/* ── PLATFORMS GRID ── */
-.section-title{
-  font-size:11px;letter-spacing:2px;text-transform:uppercase;
-  color:var(--dim);margin:40px 0 16px;
-}
-.platforms{
-  width:100%;max-width:680px;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;
-}
-.plat{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:10px;padding:12px 8px;
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  font-size:11px;color:var(--dim);text-align:center;
-}
-.plat-icon{font-size:20px}
-.plat-name{font-size:10px;letter-spacing:.3px}
+    /* ── Columns ── */
+    .stage {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      overflow: hidden;
+    }
 
-/* ── NOTE ── */
-.note{
-  margin-top:40px;max-width:680px;text-align:center;
-  font-size:12px;color:#2a2a40;line-height:1.6;
-}
-.note code{
-  background:#13131e;border:1px solid #1e1e30;padding:2px 6px;border-radius:4px;
-  color:#555570;font-size:11px;
-}
-</style>
+    .col {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .col:last-child { border-right: none; }
+
+    /* ── Year label ── */
+    .col-year {
+      padding: 14px 28px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .col-year-num {
+      color: var(--fg);
+    }
+
+    .col-count {
+      margin-left: auto;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--fg-faint);
+    }
+
+    /* ── Scroll drum ── */
+    .drum {
+      flex: 1;
+      overflow-y: scroll;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .drum::-webkit-scrollbar { display: none; }
+
+    /* ── Quote card ── */
+    .quote {
+      padding: 18px 28px 16px;
+      border-bottom: 1px solid #f2f2f7;
+      cursor: default;
+      transition: background 0.15s ease;
+    }
+    .quote:hover { background: var(--bg-hover); }
+
+    .quote-body {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--fg);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .quote-nick {
+      color: var(--fg-muted);
+      font-weight: 500;
+    }
+
+    .quote-footer {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quote-rating {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--fg-faint);
+      letter-spacing: 0.02em;
+    }
+
+    .quote-rating.high { color: #30d158; }
+    .quote-rating.mid  { color: var(--fg-faint); }
+
+    .quote-id {
+      font-size: 10px;
+      color: #c7c7cc;
+    }
+
+    /* ── Gradient fades (drum illusion) ── */
+    .col::before, .col::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      pointer-events: none;
+      z-index: 4;
+    }
+    .col::before {
+      top: 40px; /* below year label */
+      height: 64px;
+      background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+    }
+    .col::after {
+      bottom: 0;
+      height: 80px;
+      background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      flex-shrink: 0;
+      padding: 12px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-text {
+      font-size: 11px;
+      color: #c7c7cc;
+    }
+    .footer-dot {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: #d1d1d6;
+    }
+    .footer-link {
+      font-size: 11px;
+      color: #aeaeb2;
+      text-decoration: none;
+    }
+    .footer-link:hover { color: var(--fg-muted); }
+
+    /* ── Pause badge ── */
+    .paused-badge {
+      position: fixed;
+      bottom: 52px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+      letter-spacing: 0.03em;
+    }
+    .paused-badge.visible { opacity: 1; }
+
+    /* ── Loading state ── */
+    .loading {
+      padding: 28px;
+      font-size: 12px;
+      color: var(--fg-faint);
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
+<div class="shell">
 
-<div class="logo">⬇ downloader</div>
-<h1>Video Downloader</h1>
-<p class="sub">Вставь ссылку — скачает файл прямо на Мак</p>
+  <header class="header">
+    <span class="header-title">Башорг</span>
+    <span class="header-dot"></span>
+    <span class="header-sub">Топ цитат по годам</span>
+  </header>
 
-<div class="card">
-
-  <div id="platform">
-    <span id="platBadge" class="badge">⬤ определяю...</span>
+  <div class="stage">
+    <div class="col" id="col-2022">
+      <div class="col-year">
+        <span class="col-year-num">2022</span>
+        <span class="col-count" id="cnt-2022">—</span>
+      </div>
+      <div class="drum" id="drum-2022"></div>
+    </div>
+    <div class="col" id="col-2023">
+      <div class="col-year">
+        <span class="col-year-num">2023</span>
+        <span class="col-count" id="cnt-2023">—</span>
+      </div>
+      <div class="drum" id="drum-2023"></div>
+    </div>
+    <div class="col" id="col-2024">
+      <div class="col-year">
+        <span class="col-year-num">2024</span>
+        <span class="col-count" id="cnt-2024">—</span>
+      </div>
+      <div class="drum" id="drum-2024"></div>
+    </div>
   </div>
 
-  <div class="input-wrap">
-    <input id="urlInput" type="url" placeholder="Вставь ссылку на видео (YouTube, TikTok, Instagram, MP4...)" autocomplete="off" spellcheck="false"/>
-    <button id="pasteBtn">⌘V ВСТАВИТЬ</button>
-  </div>
-
-  <div class="opts">
-    <select id="quality">
-      <option value="max">Максимальное качество</option>
-      <option value="2160">4K — 2160p</option>
-      <option value="1440">2K — 1440p</option>
-      <option value="1080">Full HD — 1080p</option>
-      <option value="720">HD — 720p</option>
-      <option value="480">SD — 480p</option>
-      <option value="360">360p</option>
-      <option value="144">144p — минимум</option>
-    </select>
-    <label class="toggle">
-      <input type="checkbox" id="audioOnly"/>
-      <div class="toggle-track"><div class="toggle-thumb"></div></div>
-      <span class="toggle-label">Только аудио (MP3)</span>
-    </label>
-  </div>
-
-  <button id="dlBtn">
-    <div class="spinner" id="spinner"></div>
-    <span id="btnText">⬇ СКАЧАТЬ ВИДЕО</span>
-  </button>
-
-  <div id="status">
-    <span id="statusIcon"></span>
-    <div id="statusText"></div>
-  </div>
-
-  <div id="picker"></div>
-
+  <footer class="footer">
+    <span class="footer-text">bash.im</span>
+    <span class="footer-dot"></span>
+    <span class="footer-text">наведи мышь чтобы остановить</span>
+  </footer>
 </div>
 
-<p class="section-title">Поддерживаемые платформы</p>
-<div class="platforms">
-  <div class="plat"><div class="plat-icon">▶</div><div class="plat-name">YouTube</div></div>
-  <div class="plat"><div class="plat-icon">♪</div><div class="plat-name">TikTok</div></div>
-  <div class="plat"><div class="plat-icon">✕</div><div class="plat-name">Twitter / X</div></div>
-  <div class="plat"><div class="plat-icon">◉</div><div class="plat-name">Instagram</div></div>
-  <div class="plat"><div class="plat-icon">▷</div><div class="plat-name">Vimeo</div></div>
-  <div class="plat"><div class="plat-icon">◆</div><div class="plat-name">Reddit</div></div>
-  <div class="plat"><div class="plat-icon">◈</div><div class="plat-name">Facebook</div></div>
-  <div class="plat"><div class="plat-icon">⬥</div><div class="plat-name">Twitch</div></div>
-  <div class="plat"><div class="plat-icon">♫</div><div class="plat-name">SoundCloud</div></div>
-  <div class="plat"><div class="plat-icon">◇</div><div class="plat-name">VK Video</div></div>
-  <div class="plat"><div class="plat-icon">○</div><div class="plat-name">Dailymotion</div></div>
-  <div class="plat"><div class="plat-icon">⬛</div><div class="plat-name">Прямой .mp4</div></div>
-</div>
-
-<p class="note">
-  Использует <a href="https://cobalt.tools" style="color:#2a2a55">cobalt.tools</a> API.<br>
-  Если сайт недоступен, можно скачать через терминал: <code>brew install yt-dlp</code> → <code>yt-dlp [ссылка]</code>
-</p>
+<div class="paused-badge" id="pausedBadge">пауза</div>
 
 <script>
-const PLATFORMS=[
-  {name:'YouTube',      re:/youtube\.com|youtu\.be/,          icon:'▶', color:'#ff4444'},
-  {name:'TikTok',       re:/tiktok\.com/,                     icon:'♪', color:'#69c9d0'},
-  {name:'Twitter / X',  re:/twitter\.com|x\.com/,             icon:'✕', color:'#1d9bf0'},
-  {name:'Instagram',    re:/instagram\.com/,                  icon:'◉', color:'#e1306c'},
-  {name:'Vimeo',        re:/vimeo\.com/,                      icon:'▷', color:'#1ab7ea'},
-  {name:'Reddit',       re:/reddit\.com|redd\.it/,            icon:'◆', color:'#ff4500'},
-  {name:'Facebook',     re:/facebook\.com|fb\.watch/,         icon:'◈', color:'#1877f2'},
-  {name:'Twitch',       re:/twitch\.tv/,                      icon:'⬥', color:'#9146ff'},
-  {name:'SoundCloud',   re:/soundcloud\.com/,                 icon:'♫', color:'#ff5500'},
-  {name:'VK Video',      re:/vk\.com|vkvideo\.ru/,             icon:'◇', color:'#4a76a8'},
-  {name:'Dailymotion',  re:/dailymotion\.com/,                icon:'○', color:'#00aaff'},
-  {name:'Прямой файл',  re:/\.(mp4|webm|mov|avi|mkv|m4v|ogv)(\?|$)/i, icon:'⬛', color:'#00e676'},
-];
-
-// Cobalt community instances (без обязательного API-ключа) — новый формат API v10
-const COBALT_INSTANCES=[
-  'https://cobalt.api.timelessnesses.me',
-  'https://co.eepy.cat',
-  'https://cobalt.drgns.space',
-  'https://cobalt.urdeprecated.tech',
-  'https://cob.freetard.eu.org',
-];
-// CORS-прокси как запасной вариант
-const PROXY='https://corsproxy.io/?';
-// Piped инстансы для YouTube
-const PIPED_INSTANCES=[
-  'https://pipedapi.kavin.rocks',
-  'https://pipedapi.leptons.xyz',
-  'https://pipedapi.tokhmi.xyz',
-];
-
-const urlInput=document.getElementById('urlInput');
-const pasteBtn=document.getElementById('pasteBtn');
-const dlBtn=document.getElementById('dlBtn');
-const btnText=document.getElementById('btnText');
-const spinner=document.getElementById('spinner');
-const statusEl=document.getElementById('status');
-const statusIcon=document.getElementById('statusIcon');
-const statusText=document.getElementById('statusText');
-const platBadge=document.getElementById('platBadge');
-const pickerEl=document.getElementById('picker');
-const qualitySel=document.getElementById('quality');
-const audioOnly=document.getElementById('audioOnly');
-
-// ── Platform detection ──────────────────────────────────────────────────────
-function detectPlatform(url){
-  for(const p of PLATFORMS) if(p.re.test(url)) return p;
-  try{const h=new URL(url).hostname;if(h)return{name:h,icon:'🌐',color:'#888'}}catch(_){}
-  return null;
-}
-
-function updateBadge(url){
-  const p=detectPlatform(url);
-  if(!p||!url.trim()){platBadge.classList.remove('show');return}
-  platBadge.textContent=`${p.icon} ${p.name}`;
-  platBadge.style.background=p.color+'22';
-  platBadge.style.color=p.color;
-  platBadge.style.border=`1px solid ${p.color}44`;
-  platBadge.classList.add('show');
-}
-
-urlInput.addEventListener('input',()=>updateBadge(urlInput.value));
-urlInput.addEventListener('paste',()=>setTimeout(()=>updateBadge(urlInput.value),10));
-
-pasteBtn.onclick=async()=>{
-  try{
-    const t=await navigator.clipboard.readText();
-    urlInput.value=t.trim();
-    updateBadge(urlInput.value);
-  }catch(_){urlInput.focus()}
+// ── Fallback quotes (shown while loading or if fetch fails) ──
+const FALLBACK = {
+  2022: [
+    { id: 481234, rating: 1842, text: `<nick>vasya_prog</nick>: у меня баг который появляется только по пятницам\n<nick>kolyan</nick>: у меня такой же. называется "уже пятница"` },
+    { id: 479812, rating: 1631, text: `<nick>senior_dev</nick>: написал документацию к своему коду\n<nick>junior</nick>: и как?\n<nick>senior_dev</nick>: перечитал через неделю и не понял нихрена` },
+    { id: 477441, rating: 1509, text: `<nick>sysadmin</nick>: обновил прод в пятницу вечером\n<nick>boss</nick>: ну как там\n<nick>sysadmin</nick>: я уволился` },
+    { id: 475892, rating: 1487, text: `<nick>developer</nick>: зачем писать тесты если приложение и так работает\n<nick>tester</nick>: зачем пристёгиваться если и так едешь` },
+    { id: 474123, rating: 1423, text: `<nick>petya</nick>: скопировал код со stack overflow\n<nick>petya</nick>: работает\n<nick>petya</nick>: страшно трогать` },
+    { id: 472344, rating: 1398, text: `<nick>devops</nick>: у нас 99.9% uptime\n<nick>client</nick>: это сколько простоя в год?\n<nick>devops</nick>: около 9 часов\n<nick>client</nick>: ...\n<nick>devops</nick>: но зато красивые девять` },
+    { id: 470881, rating: 1354, text: `<nick>programmer</nick>: наконец-то разобрался с этим багом\n<nick>coworker</nick>: и в чём была проблема?\n<nick>programmer</nick>: я неправильно смотрел на экран` },
+    { id: 469302, rating: 1312, text: `<nick>masha</nick>: ты опять работаешь ночью?\n<nick>lesha</nick>: нет, я переименовываю переменные` },
+    { id: 467234, rating: 1287, text: `<nick>cto</nick>: наш код написан на javascript\n<nick>investor</nick>: и?\n<nick>cto</nick>: и это вся проблема` },
+    { id: 465891, rating: 1244, text: `<nick>qa</nick>: нашёл критический баг\n<nick>dev</nick>: это фича\n<nick>qa</nick>: пользователи теряют деньги\n<nick>dev</nick>: это платная фича` },
+    { id: 463412, rating: 1198, text: `<nick>artem</nick>: написал алгоритм сортировки за 10 минут\n<nick>artem</nick>: потратил 3 часа на именование переменных` },
+    { id: 461234, rating: 1176, text: `<nick>backend</nick>: это проблема фронтенда\n<nick>frontend</nick>: это проблема бэкенда\n<nick>devops</nick>: это проблема деплоя\n<nick>pm</nick>: это проблема коммуникации\n<nick>ceo</nick>: всем пить кофе` },
+    { id: 459781, rating: 1143, text: `<nick>igor</nick>: у меня всё работает локально\n<nick>igor</nick>: понятно почему прод горит` },
+    { id: 458012, rating: 1121, text: `<nick>developer</nick>: написал 200 строк кода\n<nick>developer</nick>: отрефакторил до 20\n<nick>developer</nick>: удалил всё, нашёл библиотеку` },
+    { id: 456334, rating: 1098, text: `<nick>sasha</nick>: почему у тебя 47 вкладок браузера?\n<nick>dima</nick>: это не вкладки. это незакрытые задачи` },
+    { id: 454812, rating: 1076, text: `<nick>tim</nick>: написал unit-тесты\n<nick>tim</nick>: все прошли\n<nick>tim</nick>: прод упал\n<nick>tim</nick>: тесты были не для того кода` },
+    { id: 453001, rating: 1054, text: `<nick>new_employee</nick>: тут в коде есть TODO с 2015 года\n<nick>old_employee</nick>: не трогай. это священный артефакт` },
+    { id: 451234, rating: 1032, text: `<nick>maxim</nick>: дай доступ к продакшну\n<nick>sysadmin</nick>: нет\n<nick>maxim</nick>: почему?\n<nick>sysadmin</nick>: я тебя знаю` },
+    { id: 449876, rating: 998, text: `<nick>manager</nick>: это займёт 2 часа?\n<nick>dev</nick>: 2 часа\n<nick>manager</nick>: отлично, нужно к завтрашнему утру\n<nick>dev</nick>: 2 недели` },
+    { id: 448012, rating: 967, text: `<nick>frontend</nick>: верстаю лендинг уже 3 дня\n<nick>friend</nick>: там же один экран\n<nick>frontend</nick>: IE11\n<nick>friend</nick>: соболезную` },
+    { id: 446234, rating: 943, text: `<nick>devops</nick>: написал скрипт для автоматизации\n<nick>devops</nick>: теперь трачу 4 часа на поддержку скрипта вместо 2 часов ручной работы` },
+    { id: 444781, rating: 921, text: `<nick>andrey</nick>: зачем у тебя переменная называется 'a'?\n<nick>vasya</nick>: я экономлю буквы` },
+    { id: 443012, rating: 897, text: `<nick>client</nick>: хочу как у apple, но дешевле\n<nick>dev</nick>: хочу как у apple зарплату\n<nick>client</nick>: ...\n<nick>dev</nick>: ...\n<nick>client</nick>: сделайте просто хорошо` },
+    { id: 441234, rating: 876, text: `<nick>analyst</nick>: задокументировал все требования\n<nick>dev</nick>: ни одного из них не существовало на момент сдачи` },
+    { id: 439876, rating: 854, text: `<nick>sergey</nick>: stackoverflow заблокировали на работе\n<nick>kolya</nick>: как ты вообще работаешь\n<nick>sergey</nick>: никак` },
+  ],
+  2023: [
+    { id: 492341, rating: 2103, text: `<nick>gpt_fan</nick>: попросил chatgpt написать код\n<nick>gpt_fan</nick>: потратил 3 часа на объяснение ему почему код неправильный\n<nick>coworker</nick>: мог бы за это время написать сам\n<nick>gpt_fan</nick>: но это же скучно` },
+    { id: 490812, rating: 1987, text: `<nick>pm</nick>: добавим новую фичу до релиза?\n<nick>dev</nick>: нет\n<nick>pm</nick>: это просто маленькое изменение\n<nick>dev</nick>: нет\n<nick>pm</nick>: буквально одна кнопочка\n<nick>dev</nick>: последний раз когда ты так говорил мы переписали всю базу данных` },
+    { id: 489234, rating: 1876, text: `<nick>vanya</nick>: ИИ заберёт нашу работу\n<nick>petya</nick>: у меня бэкенд на php 5.4\n<nick>vanya</nick>: у тебя бояться нечего` },
+    { id: 487812, rating: 1754, text: `<nick>dev</nick>: написал промпт для GPT\n<nick>dev</nick>: получил рабочий код\n<nick>dev</nick>: написал тест\n<nick>dev</nick>: тест не прошёл\n<nick>dev</nick>: попросил GPT написать тест\n<nick>dev</nick>: тест прошёл\n<nick>qa</nick>: ...` },
+    { id: 486123, rating: 1698, text: `<nick>sasha</nick>: у меня pull request на code review уже неделю\n<nick>lead</nick>: посмотрю на следующей неделе\n<nick>lead</nick>: (три месяца спустя)\n<nick>lead</nick>: о, тут конфликты` },
+    { id: 484901, rating: 1643, text: `<nick>remote_worker</nick>: созвон в 9 утра обязателен\n<nick>remote_worker</nick>: встал в 8:55\n<nick>remote_worker</nick>: включил камеру\n<nick>remote_worker</nick>: хорошо что я в пижаме выше пояса` },
+    { id: 483234, rating: 1598, text: `<nick>artem</nick>: ChatGPT написал за меня дипломную\n<nick>prof</nick>: ChatGPT проверил твою дипломную\n<nick>prof</nick>: ставлю двойку` },
+    { id: 481876, rating: 1543, text: `<nick>backend_dev</nick>: фронтендеры опять прислали баг-репорт\n<nick>backend_dev</nick>: "всё сломалось"\n<nick>backend_dev</nick>: что именно сломалось?\n<nick>frontend_dev</nick>: всё` },
+    { id: 480234, rating: 1487, text: `<nick>devops</nick>: переехали в kubernetes\n<nick>junior</nick>: стало лучше?\n<nick>devops</nick>: теперь у нас те же проблемы, но с облаком и за тройную цену` },
+    { id: 478901, rating: 1432, text: `<nick>manager</nick>: почему у тебя наушники всегда в ушах?\n<nick>dev</nick>: слушаю музыку\n<nick>manager</nick>: мешает концентрироваться?\n<nick>dev</nick>: мешает слышать ваши вопросы` },
+    { id: 477234, rating: 1398, text: `<nick>dima</nick>: написал микросервис\n<nick>dima</nick>: теперь у меня не один монолит с проблемами\n<nick>dima</nick>: а 17 микросервисов с проблемами` },
+    { id: 475812, rating: 1354, text: `<nick>hr</nick>: требуется junior с 5 годами опыта\n<nick>candidate</nick>: мне 16 лет\n<nick>hr</nick>: отлично, подходите` },
+    { id: 474123, rating: 1321, text: `<nick>lead</nick>: код нечитаемый\n<nick>dev</nick>: зато работает\n<nick>lead</nick>: это не твой код\n<nick>dev</nick>: зато работает` },
+    { id: 472901, rating: 1287, text: `<nick>ivan</nick>: попросил ИИ отрефакторить код\n<nick>ivan</nick>: он спросил зачем вообще нужен этот файл\n<nick>ivan</nick>: хороший вопрос` },
+    { id: 471234, rating: 1243, text: `<nick>junior</nick>: я случайно запушил в main\n<nick>senior</nick>: что там было?\n<nick>junior</nick>: мой пароль от базы данных\n<nick>senior</nick>: и всё?\n<nick>junior</nick>: и промпты для GPT` },
+    { id: 469812, rating: 1198, text: `<nick>maxim</nick>: работаю 4 часа в день\n<nick>kolya</nick>: как?\n<nick>maxim</nick>: остальные 4 часа в митингах` },
+    { id: 468234, rating: 1176, text: `<nick>qa</nick>: нашёл 47 багов\n<nick>pm</nick>: отлично\n<nick>qa</nick>: за последний час\n<nick>pm</nick>: нет` },
+    { id: 466901, rating: 1143, text: `<nick>dev</nick>: деплой прошёл успешно\n<nick>dev</nick>: (5 минут тишины)\n<nick>dev</nick>: откатываюсь` },
+    { id: 465234, rating: 1121, text: `<nick>sasha</nick>: зачем тебе 3 монитора?\n<nick>dima</nick>: на одном код, на втором stack overflow, на третьем chatgpt\n<nick>sasha</nick>: ты же программист\n<nick>dima</nick>: именно` },
+    { id: 463812, rating: 1098, text: `<nick>team_lead</nick>: оценим задачу в story points\n<nick>dev1</nick>: 3\n<nick>dev2</nick>: 8\n<nick>dev3</nick>: 21\n<nick>team_lead</nick>: поговорим\n<nick>dev3</nick>: я видел эту задачу раньше` },
+    { id: 462234, rating: 1076, text: `<nick>new_dev</nick>: почему здесь такой странный костыль?\n<nick>old_dev</nick>: это легаси\n<nick>new_dev</nick>: когда это писали?\n<nick>old_dev</nick>: я. вчера.` },
+    { id: 460901, rating: 1054, text: `<nick>petya</nick>: ChatGPT за секунду написал то что я делал 3 дня\n<nick>vasya</nick>: и как?\n<nick>petya</nick>: я провёл 3 дня объясняя ему почему неправильно` },
+    { id: 459234, rating: 1032, text: `<nick>startup_cto</nick>: мы используем cutting-edge технологии\n<nick>dev</nick>: у вас jquery 1.9\n<nick>startup_cto</nick>: cutting-edge легаси` },
+    { id: 457812, rating: 998, text: `<nick>remote_dev</nick>: включил видео на созвоне\n<nick>boss</nick>: ты на кухне?\n<nick>remote_dev</nick>: это мой офис\n<nick>boss</nick>: там холодильник открыт\n<nick>remote_dev</nick>: это мой сервер` },
+    { id: 456234, rating: 976, text: `<nick>andrey</nick>: написал 1000 строк кода за ночь\n<nick>andrey</nick>: утром удалил всё\n<nick>andrey</nick>: написал 10 строк\n<nick>andrey</nick>: работает` },
+  ],
+  2024: [
+    { id: 503412, rating: 2341, text: `<nick>dev</nick>: claude написал за меня весь проект\n<nick>dev</nick>: теперь не понимаю ни строчки\n<nick>dev</nick>: это называется архитектурный надзор` },
+    { id: 501891, rating: 2187, text: `<nick>pm</nick>: когда будет готово?\n<nick>dev</nick>: через 2 спринта\n<nick>pm</nick>: а в человекодавлениях?\n<nick>dev</nick>: через столько же, но больнее` },
+    { id: 500234, rating: 2043, text: `<nick>senior</nick>: никогда не используй ИИ для написания кода\n<nick>junior</nick>: почему?\n<nick>senior</nick>: потому что тогда ты не поймёшь код\n<nick>junior</nick>: а ты понимаешь свой?\n<nick>senior</nick>: ...` },
+    { id: 498712, rating: 1987, text: `<nick>vasya</nick>: ИИ заменит программистов\n<nick>petya</nick>: ИИ уже год не может нормально сверстать формочку\n<nick>vasya</nick>: значит нас заменят нескоро\n<nick>petya</nick>: я тоже не могу нормально сверстать формочку\n<nick>vasya</nick>: ...` },
+    { id: 497123, rating: 1932, text: `<nick>tech_lead</nick>: почему у тебя в коде три разных ИИ-стиля написания?\n<nick>dev</nick>: monday, wednesday, friday` },
+    { id: 495812, rating: 1876, text: `<nick>sasha</nick>: попросил ИИ объяснить мой же код\n<nick>sasha</nick>: он объяснил лучше чем я написал\n<nick>sasha</nick>: попросил его переписать\n<nick>sasha</nick>: теперь я читаю чужой код` },
+    { id: 494234, rating: 1821, text: `<nick>manager</nick>: нам нужно вырасти на 300% в этом квартале\n<nick>dev</nick>: окей\n<nick>manager</nick>: у нас нет бюджета\n<nick>dev</nick>: окей\n<nick>manager</nick>: и команда та же\n<nick>dev</nick>: зарплата?\n<nick>manager</nick>: обсудим в следующем квартале\n<nick>dev</nick>: я уволился` },
+    { id: 492891, rating: 1765, text: `<nick>artem</nick>: деплой в пятницу — это нормально если ты:\na) не работаешь в пятницу\nb) ушёл в отпуск\nc) уволился` },
+    { id: 491234, rating: 1712, text: `<nick>frontend</nick>: зачем тебе тёмная тема если всё равно светло?\n<nick>designer</nick>: системная тема\n<nick>frontend</nick>: почему система светлая?\n<nick>designer</nick>: потому что я в офисе\n<nick>frontend</nick>: почему в офисе светло?\n<nick>designer</nick>: не задавай лишних вопросов` },
+    { id: 489812, rating: 1659, text: `<nick>lead</nick>: ревью кода закончил\n<nick>dev</nick>: и?\n<nick>lead</nick>: хорошие комментарии\n<nick>dev</nick>: в коде почти нет комментариев\n<nick>lead</nick>: вот именно` },
+    { id: 488234, rating: 1608, text: `<nick>junior</nick>: как стать senior-разработчиком?\n<nick>senior</nick>: работай 10 лет\n<nick>junior</nick>: или?\n<nick>senior</nick>: или напиши в резюме что уже` },
+    { id: 486891, rating: 1556, text: `<nick>dima</nick>: написал тесты перед кодом (TDD)\n<nick>kolya</nick>: как?\n<nick>dima</nick>: спросил ИИ\n<nick>kolya</nick>: а код?\n<nick>dima</nick>: тоже спросил ИИ\n<nick>kolya</nick>: ты вообще что-нибудь делал?\n<nick>dima</nick>: я написал промпты` },
+    { id: 485234, rating: 1498, text: `<nick>cto</nick>: переходим на rust\n<nick>dev1</nick>: зачем?\n<nick>cto</nick>: безопасность памяти\n<nick>dev2</nick>: у нас python\n<nick>cto</nick>: вот именно` },
+    { id: 483812, rating: 1443, text: `<nick>ivan</nick>: выкатили новую фичу\n<nick>user</nick>: когда вернёте старую?\n<nick>ivan</nick>: ...\n<nick>user</nick>: она была лучше\n<nick>ivan</nick>: ...\n<nick>user</nick>: я её не использовал но она была лучше` },
+    { id: 482234, rating: 1398, text: `<nick>pm</nick>: у клиента срочный запрос\n<nick>dev</nick>: всё срочное\n<nick>pm</nick>: это очень срочное\n<nick>dev</nick>: всё очень срочное\n<nick>pm</nick>: это КРИТИЧЕСКИ срочное\n<nick>dev</nick>: добавил в backlog` },
+    { id: 480812, rating: 1354, text: `<nick>qa</nick>: воспроизвёл баг\n<nick>dev</nick>: у меня не воспроизводится\n<nick>qa</nick>: у меня воспроизводится\n<nick>dev</nick>: у тебя другая конфигурация\n<nick>qa</nick>: у нас одинаковые ноутбуки\n<nick>dev</nick>: у тебя другая аура` },
+    { id: 479234, rating: 1312, text: `<nick>startup_founder</nick>: мы делаем Uber для котиков\n<nick>investor</nick>: расскажите подробнее\n<nick>startup_founder</nick>: котики едут на Uber\n<nick>investor</nick>: я дам деньги` },
+    { id: 477812, rating: 1276, text: `<nick>remote_dev</nick>: созвон в 8 утра\n<nick>remote_dev</nick>: не выспался\n<nick>remote_dev</nick>: пошёл варить кофе во время созвона\n<nick>boss</nick>: ты там?\n<nick>remote_dev</nick>: я в режиме загрузки` },
+    { id: 476234, rating: 1243, text: `<nick>maxim</nick>: написал нейросеть с нуля\n<nick>vasya</nick>: на чём?\n<nick>maxim</nick>: на torch\n<nick>vasya</nick>: это не с нуля\n<nick>maxim</nick>: я написал import torch сам` },
+    { id: 474812, rating: 1209, text: `<nick>designer</nick>: сделал редизайн\n<nick>pm</nick>: клиент хочет "как было"\n<nick>designer</nick>: это было некрасиво\n<nick>pm</nick>: клиент привык\n<nick>designer</nick>: ...\n<nick>designer</nick>: откатил git` },
+    { id: 473234, rating: 1176, text: `<nick>dev</nick>: работаю удалённо 3 года\n<nick>friend</nick>: скучаешь по офису?\n<nick>dev</nick>: скучаю по чужому кофе и кондиционеру который дует в шею\n<nick>friend</nick>: ...\n<nick>dev</nick>: нет` },
+    { id: 471812, rating: 1143, text: `<nick>junior</nick>: у меня вопрос\n<nick>senior</nick>: ты погуглил?\n<nick>junior</nick>: да\n<nick>senior</nick>: ты спросил GPT?\n<nick>junior</nick>: да\n<nick>senior</nick>: ты прочитал документацию?\n<nick>junior</nick>: нет\n<nick>senior</nick>: иди читай\n<nick>junior</nick>: (30 минут)\n<nick>junior</nick>: там нет ответа\n<nick>senior</nick>: в документацию никто не пишет ответы` },
+    { id: 470234, rating: 1109, text: `<nick>sasha</nick>: обновил зависимости\n<nick>sasha</nick>: ничего не сломалось\n<nick>sasha</nick>: это подозрительно\n<nick>sasha</nick>: откатил на всякий случай` },
+    { id: 468812, rating: 1076, text: `<nick>team</nick>: завтра релиз\n<nick>dev</nick>: у меня всё готово\n<nick>pm</nick>: добавили одну маленькую фичу\n<nick>dev</nick>: завтра не будет релиза` },
+    { id: 467234, rating: 1043, text: `<nick>ceo</nick>: внедрим ИИ во все процессы\n<nick>cto</nick>: в какие именно?\n<nick>ceo</nick>: во все\n<nick>cto</nick>: даже в бухгалтерию?\n<nick>ceo</nick>: особенно в бухгалтерию\n<nick>cfo</nick>: (тихо) я уже пользуюсь` },
+  ]
 };
 
-// ── Status helpers ──────────────────────────────────────────────────────────
-function setStatus(type,icon,html){
-  statusEl.className=type;
-  statusIcon.textContent=icon;
-  statusText.innerHTML=html;
-}
-function hideStatus(){statusEl.className='';statusEl.style.display='none'}
-
-function setLoading(on){
-  dlBtn.disabled=on;
-  spinner.style.display=on?'block':'none';
-  btnText.textContent=on?'Загружаю...':'⬇ СКАЧАТЬ ВИДЕО';
-}
-
-// ── Download helpers ─────────────────────────────────────────────────────────
-function triggerLink(url,filename){
-  const a=document.createElement('a');
-  a.href=url;if(filename)a.download=filename;
-  a.target='_blank';a.rel='noopener noreferrer';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>document.body.removeChild(a),200);
-}
-
-// Fetch blob (works for CORS-open direct URLs)
-async function downloadBlob(url){
-  setStatus('info','⬇','Скачиваю файл напрямую...');
-  const resp=await fetch(url,{mode:'cors'});
-  if(!resp.ok)throw new Error(`HTTP ${resp.status}`);
-  const blob=await resp.blob();
-  const ext=url.split('?')[0].split('.').pop().toLowerCase()||'mp4';
-  const fname=`video_${Date.now()}.${ext}`;
-  const burl=URL.createObjectURL(blob);
-  triggerLink(burl,fname);
-  setTimeout(()=>URL.revokeObjectURL(burl),5000);
-  setStatus('ok','✓',`Файл скачан: <b>${fname}</b>`);
-}
-
-// ── Cobalt API (community instances, новый формат v10) ───────────────────────
-async function callCobaltInstance(endpoint, videoUrl){
-  const q=qualitySel.value;
-  const ao=audioOnly.checked;
-  const body=JSON.stringify({
-    url: videoUrl,
-    videoQuality: q==='max'?'max':q,
-    audioFormat: ao?'mp3':'best',
-    downloadMode: ao?'audio':'auto',
-    filenameStyle: 'pretty',
+// ── HTML parser for quotes ──
+function parseQuotes(html) {
+  const quotes = [];
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const items = doc.querySelectorAll('.quote__body, .quote, article.quote');
+  items.forEach(item => {
+    const textEl = item.querySelector('.quote__body, .quote-text, .text');
+    const ratingEl = item.querySelector('.quote__rating, .rating, .vote_sum');
+    const idEl = item.querySelector('.quote__header a, .quote__id, a[href*="/quote/"]');
+    if (!textEl) return;
+    const text = textEl.innerText || textEl.textContent || '';
+    const rating = parseInt((ratingEl?.textContent || '0').replace(/\D/g,'')) || 0;
+    const idMatch = (idEl?.href || idEl?.textContent || '').match(/(\d+)/);
+    const id = idMatch ? parseInt(idMatch[1]) : Math.random() * 1e6 | 0;
+    if (text.trim().length > 10) quotes.push({ id, rating, text: text.trim() });
   });
-  const headers={'Content-Type':'application/json','Accept':'application/json'};
-  const resp=await fetch(endpoint+'/api/json',{method:'POST',headers,body,signal:AbortSignal.timeout(10000)});
-  if(!resp.ok) throw new Error('HTTP '+resp.status);
-  const data=await resp.json();
-  if(data.status==='error') throw new Error(data.error?.code||data.text||'error');
-  return data;
+  return quotes;
 }
 
-async function tryCobalt(videoUrl){
-  // 1. Пробуем community-инстансы напрямую
-  for(const inst of COBALT_INSTANCES){
-    try{
-      setStatus('info','⌛',`Пробую ${inst.replace('https://','').split('.')[0]}...`);
-      console.log('[cobalt] direct →', inst);
-      const d=await callCobaltInstance(inst, videoUrl);
-      console.log('[cobalt] ответ:', d);
-      if(d.status&&d.status!=='error') return d;
-    }catch(e){console.warn('[cobalt] ошибка',inst,e.message)}
-  }
-  // 2. Пробуем те же инстансы через CORS-прокси
-  for(const inst of COBALT_INSTANCES.slice(0,2)){
-    try{
-      const proxied=PROXY+encodeURIComponent(inst+'/api/json');
-      console.log('[cobalt] proxy →', proxied);
-      const body=JSON.stringify({url:videoUrl,videoQuality:qualitySel.value,downloadMode:audioOnly.checked?'audio':'auto',audioFormat:audioOnly.checked?'mp3':'best',filenameStyle:'pretty'});
-      const resp=await fetch(proxied,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body,signal:AbortSignal.timeout(12000)});
-      if(!resp.ok){console.warn('[cobalt] proxy HTTP',resp.status);continue}
-      const d=await resp.json();
-      console.log('[cobalt] proxy ответ:', d);
-      if(d.status&&d.status!=='error') return d;
-    }catch(e){console.warn('[cobalt] proxy ошибка',inst,e.message)}
-  }
+// ── Fetch via CORS proxy ──
+async function fetchYear(year) {
+  const url = `https://bash.im/year/${year}`;
+  const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+  try {
+    const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('not ok');
+    const html = await res.text();
+    const quotes = parseQuotes(html);
+    if (quotes.length > 0) return quotes;
+  } catch {}
   return null;
 }
 
-// ── Piped API (YouTube fallback) ──────────────────────────────────────────────
-function getYouTubeId(url){
-  const m=url.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([a-zA-Z0-9_-]{11})/);
-  return m?m[1]:null;
+// ── Render quotes ──
+function renderRating(r) {
+  const cls = r >= 1500 ? 'high' : 'mid';
+  return `<span class="quote-rating ${cls}">+${r.toLocaleString('ru-RU')}</span>`;
 }
 
-async function tryPiped(videoUrl){
-  const id=getYouTubeId(videoUrl);
-  if(!id) return null;
-  for(const inst of PIPED_INSTANCES){
-    try{
-      setStatus('info','⌛',`YouTube через Piped (${inst.replace('https://pipedapi.','')})...`);
-      // Пробуем напрямую, затем через прокси
-      let data=null;
-      try{
-        const r=await fetch(`${inst}/streams/${id}`,{signal:AbortSignal.timeout(8000)});
-        if(r.ok) data=await r.json();
-      }catch(_){}
-      if(!data){
-        const r=await fetch(PROXY+encodeURIComponent(`${inst}/streams/${id}`),{signal:AbortSignal.timeout(10000)});
-        if(r.ok) data=await r.json();
-      }
-      if(!data||data.error) continue;
-      // Выбираем поток
-      if(audioOnly.checked){
-        const s=(data.audioStreams||[]).sort((a,b)=>b.bitrate-a.bitrate)[0];
-        if(s) return{pipedUrl:s.url,filename:`audio_${id}.m4a`};
-      }else{
-        // Сначала muxed (видео+аудио вместе), потом лучший видеопоток
-        const muxed=(data.videoStreams||[]).filter(s=>!s.videoOnly).sort((a,b)=>(parseInt(b.quality)||0)-(parseInt(a.quality)||0));
-        const best=muxed[0]||(data.videoStreams||[]).sort((a,b)=>(parseInt(b.quality)||0)-(parseInt(a.quality)||0))[0];
-        if(best) return{pipedUrl:best.url,filename:`youtube_${id}_${best.quality||'video'}.mp4`};
-      }
-    }catch(_){}
-  }
-  return null;
-}
+function renderQuotes(quotes, drumEl, year, countEl) {
+  if (!quotes || quotes.length === 0) quotes = FALLBACK[year] || [];
+  countEl.textContent = `${quotes.length} цитат`;
 
-// ── Download trigger ──────────────────────────────────────────────────────────
-function openDownload(url, filename){
-  // Для cobalt-ссылок: Content-Disposition: attachment → браузер сам скачает
-  const a=document.createElement('a');
-  a.href=url;a.download=filename||'';a.target='_blank';a.rel='noopener';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>document.body.removeChild(a),300);
-}
+  // Duplicate for infinite loop (3x)
+  const looped = [...quotes, ...quotes, ...quotes];
+  drumEl.innerHTML = looped.map(q => {
+    const body = q.text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/&lt;nick&gt;([^<]+)&lt;\/nick&gt;/g, '<span class="quote-nick">$1</span>');
+    return `<div class="quote">
+      <div class="quote-body">${body}</div>
+      <div class="quote-footer">
+        ${renderRating(q.rating)}
+        <span class="quote-id">#${q.id}</span>
+      </div>
+    </div>`;
+  }).join('');
 
-function showSuccess(filename){
-  setStatus('ok','✓',`Загрузка началась — <b>${filename||'video'}</b><br>
-    <span style="font-size:11px;opacity:.5">Папка Загрузки: ⌘+Option+L</span>`);
-}
-
-function showPicker(items,audioUrl){
-  pickerEl.style.display='flex';
-  let html='<div style="font-size:12px;color:#555570;width:100%;margin-bottom:6px">Выбери вариант для скачивания:</div>';
-  items.forEach((item,i)=>{
-    html+=`<button class="pick-btn" onclick="window.pickItem('${encodeURIComponent(item.url)}','item_${i+1}')">
-      ${item.type==='photo'?'🖼':'🎬'} Вариант ${i+1}
-    </button>`;
+  // Start scroll from middle copy
+  requestAnimationFrame(() => {
+    const totalH = drumEl.scrollHeight;
+    drumEl.scrollTop = totalH / 3;
   });
-  if(audioUrl) html+=`<button class="pick-btn" onclick="window.pickItem('${encodeURIComponent(audioUrl)}','audio')">🔊 Только аудио</button>`;
-  pickerEl.innerHTML=html;
-  setStatus('info','◈','Доступно несколько вариантов:');
 }
 
-window.pickItem=(encoded,name)=>{
-  openDownload(decodeURIComponent(encoded),name);
-  setStatus('ok','✓',`Скачиваю: <b>${name}</b>`);
-};
+// ── Auto-scroll engine ──
+const SPEEDS = { 2022: 0.28, 2023: 0.38, 2024: 0.22 }; // px/frame
+const paused = { 2022: false, 2023: false, 2024: false };
+let globalPause = false;
 
-function showFallback(videoUrl){
-  setStatus('err','✕',`Не удалось получить прямую ссылку.<br>
-    <span style="font-size:11px;line-height:1.8">
-    Скачай через терминал:<br>
-    <code style="background:#0a0a18;padding:2px 6px;border-radius:3px">yt-dlp "${videoUrl}"</code><br>
-    (установить: <code style="background:#0a0a18;padding:2px 6px;border-radius:3px">brew install yt-dlp</code>)
-    </span>`);
-}
+function initScroll(year) {
+  const drum = document.getElementById(`drum-${year}`);
+  if (!drum) return;
 
-// ── Main ──────────────────────────────────────────────────────────────────────
-dlBtn.onclick=async()=>{
-  const url=urlInput.value.trim();
-  if(!url){setStatus('err','!','Вставь ссылку на видео');return}
-  try{new URL(url)}catch(_){setStatus('err','!','Неверная ссылка — должна начинаться с https://');return}
+  let speed = SPEEDS[year];
+  let rafId;
+  let hovered = false;
 
-  pickerEl.style.display='none';pickerEl.innerHTML='';
-  setLoading(true);
+  function tick() {
+    if (!globalPause && !hovered) {
+      drum.scrollTop += speed;
 
-  try{
-    // Прямой видеофайл
-    if(/\.(mp4|webm|mov|avi|mkv|m4v|ogv)(\?|$)/i.test(url)){
-      try{await downloadBlob(url)}
-      catch(_){openDownload(url);setStatus('ok','✓','Открываю файл — нажми ⌘+S чтобы сохранить')}
-      return;
-    }
-
-    setStatus('info','⌛','Ищу рабочий сервис...');
-
-    // Cobalt community instances
-    const cobalt=await tryCobalt(url);
-    if(cobalt){
-      if(cobalt.status==='picker'){showPicker(cobalt.picker||[],cobalt.audio);return}
-      if(cobalt.url){openDownload(cobalt.url,cobalt.filename);showSuccess(cobalt.filename);return}
-    }
-
-    // YouTube → Piped fallback
-    if(/youtube\.com|youtu\.be/.test(url)){
-      const piped=await tryPiped(url);
-      if(piped){
-        // Piped-потоки: пробуем blob, иначе открываем вкладку
-        setStatus('info','⬇',`Скачиваю через Piped: <b>${piped.filename}</b>...`);
-        try{
-          const r=await fetch(piped.pipedUrl,{signal:AbortSignal.timeout(30000)});
-          if(r.ok){
-            const blob=await r.blob();
-            const bu=URL.createObjectURL(blob);
-            openDownload(bu,piped.filename);
-            setTimeout(()=>URL.revokeObjectURL(bu),15000);
-            showSuccess(piped.filename);
-            return;
-          }
-        }catch(_){}
-        // Blob не вышло — открываем напрямую
-        window.open(piped.pipedUrl,'_blank');
-        setStatus('ok','▶',`Видео открыто в новой вкладке.<br>
-          <span style="font-size:11px;opacity:.6">Правая кнопка → "Сохранить видео как..." или ⌘+S</span>`);
-        return;
+      // Seamless loop: when past 2/3 → jump to 1/3
+      const third = drum.scrollHeight / 3;
+      if (drum.scrollTop >= third * 2) {
+        drum.scrollTop -= third;
+      }
+      if (drum.scrollTop <= 0) {
+        drum.scrollTop += third;
       }
     }
-
-    showFallback(url);
-  }catch(e){
-    setStatus('err','✕','Ошибка: '+e.message);
-  }finally{
-    setLoading(false);
+    rafId = requestAnimationFrame(tick);
   }
-};
 
-urlInput.addEventListener('keydown',e=>{if(e.key==='Enter')dlBtn.click()});
+  drum.addEventListener('mouseenter', () => { hovered = true; });
+  drum.addEventListener('mouseleave', () => { hovered = false; });
 
-(async()=>{
-  try{
-    const t=await navigator.clipboard.readText();
-    if(t&&/^https?:\/\//i.test(t.trim())){urlInput.value=t.trim();updateBadge(t.trim())}
-  }catch(_){}
-})();
+  // Manual scroll: pause auto for 2s after user scrolls
+  let scrollTimer;
+  drum.addEventListener('wheel', () => {
+    hovered = true;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => { hovered = false; }, 2000);
+  }, { passive: true });
+
+  rafId = requestAnimationFrame(tick);
+}
+
+// ── Global pause on any hover ──
+const badge = document.getElementById('pausedBadge');
+document.querySelectorAll('.col').forEach(col => {
+  col.addEventListener('mouseenter', () => {
+    globalPause = true;
+    badge.classList.add('visible');
+  });
+  col.addEventListener('mouseleave', () => {
+    globalPause = false;
+    badge.classList.remove('visible');
+  });
+});
+
+// ── Bootstrap ──
+const years = [2022, 2023, 2024];
+
+years.forEach(year => {
+  const drum = document.getElementById(`drum-${year}`);
+  const cnt  = document.getElementById(`cnt-${year}`);
+  // Show fallback immediately
+  renderQuotes(FALLBACK[year], drum, year, cnt);
+  initScroll(year);
+  // Try to fetch real data
+  fetchYear(year).then(quotes => {
+    if (quotes && quotes.length > 0) {
+      renderQuotes(quotes, drum, year, cnt);
+    }
+  });
+});
 </script>
 </body>
 </html>
