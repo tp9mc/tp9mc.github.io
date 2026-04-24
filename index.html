@@ -245,7 +245,7 @@ const PLATFORMS=[
   {name:'Facebook',     re:/facebook\.com|fb\.watch/,         icon:'◈', color:'#1877f2'},
   {name:'Twitch',       re:/twitch\.tv/,                      icon:'⬥', color:'#9146ff'},
   {name:'SoundCloud',   re:/soundcloud\.com/,                 icon:'♫', color:'#ff5500'},
-  {name:'VK',           re:/vk\.com/,                         icon:'◇', color:'#4a76a8'},
+  {name:'VK Video',      re:/vk\.com|vkvideo\.ru/,             icon:'◇', color:'#4a76a8'},
   {name:'Dailymotion',  re:/dailymotion\.com/,                icon:'○', color:'#00aaff'},
   {name:'Прямой файл',  re:/\.(mp4|webm|mov|avi|mkv|m4v|ogv)(\?|$)/i, icon:'⬛', color:'#00e676'},
 ];
@@ -369,20 +369,24 @@ async function tryCobalt(videoUrl){
   for(const inst of COBALT_INSTANCES){
     try{
       setStatus('info','⌛',`Пробую ${inst.replace('https://','').split('.')[0]}...`);
+      console.log('[cobalt] direct →', inst);
       const d=await callCobaltInstance(inst, videoUrl);
+      console.log('[cobalt] ответ:', d);
       if(d.status&&d.status!=='error') return d;
-    }catch(_){}
+    }catch(e){console.warn('[cobalt] ошибка',inst,e.message)}
   }
   // 2. Пробуем те же инстансы через CORS-прокси
   for(const inst of COBALT_INSTANCES.slice(0,2)){
     try{
       const proxied=PROXY+encodeURIComponent(inst+'/api/json');
+      console.log('[cobalt] proxy →', proxied);
       const body=JSON.stringify({url:videoUrl,videoQuality:qualitySel.value,downloadMode:audioOnly.checked?'audio':'auto',audioFormat:audioOnly.checked?'mp3':'best',filenameStyle:'pretty'});
       const resp=await fetch(proxied,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body,signal:AbortSignal.timeout(12000)});
-      if(!resp.ok) continue;
+      if(!resp.ok){console.warn('[cobalt] proxy HTTP',resp.status);continue}
       const d=await resp.json();
+      console.log('[cobalt] proxy ответ:', d);
       if(d.status&&d.status!=='error') return d;
-    }catch(_){}
+    }catch(e){console.warn('[cobalt] proxy ошибка',inst,e.message)}
   }
   return null;
 }
