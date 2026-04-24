@@ -3,443 +3,448 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ТАНЧИКИ 1990 — Online 2P</title>
+<title>Video Downloader</title>
 <style>
+:root{
+  --bg:#0b0b12;--card:#13131e;--border:#1e1e30;--text:#e0e0f0;--dim:#555570;
+  --acc1:#7c4dff;--acc2:#448aff;--ok:#00e676;--err:#ff5252;--warn:#ffab40;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:'Courier New',monospace;color:#fff;user-select:none;padding:16px 8px}
-#gw{display:flex;flex-direction:row;align-items:flex-start;gap:6px}
-#center{display:flex;flex-direction:column;align-items:center}
-canvas{display:block;image-rendering:pixelated;border:4px solid #181818;box-shadow:0 0 40px rgba(255,200,0,.07)}
-#panel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
-.btn{background:#f8c800;color:#000;border:none;padding:7px 16px;font-family:'Courier New',monospace;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;text-transform:uppercase}
-.btn:hover{background:#ffd800}
-#rid{background:#080808;color:#f8c800;border:2px solid #2a2a2a;padding:6px 10px;font-family:'Courier New',monospace;font-size:12px;width:170px;letter-spacing:2px;text-transform:uppercase;cursor:pointer}
-#rid::placeholder{color:#333;text-transform:none;letter-spacing:0}
-#st{font-size:11px;color:#555;letter-spacing:1px;margin-top:5px;text-align:center;min-height:16px}
-#hint{font-size:10px;color:#222;letter-spacing:1px;margin-top:3px;text-align:center}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:40px 20px 60px;
+}
+/* ── HEADER ── */
+.logo{
+  font-size:13px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--dim);margin-bottom:8px;
+}
+h1{
+  font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-1px;
+  background:linear-gradient(135deg,var(--acc1),var(--acc2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px;
+}
+.sub{color:var(--dim);font-size:14px;margin-bottom:40px}
 
-/* ── STAT PANELS ── */
-.sp{width:220px;height:520px;background:#060606;border:2px solid #181818;overflow-y:auto;overflow-x:hidden;flex-shrink:0}
-.sp::-webkit-scrollbar{width:2px}
-.sp::-webkit-scrollbar-track{background:#000}
-.sp::-webkit-scrollbar-thumb{background:#2a2a2a}
-.ph{padding:7px 10px 5px;font-size:11px;font-weight:bold;letter-spacing:2px;border-bottom:2px solid;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:2;background:#060606}
-.role{font-size:8px;background:#111;padding:2px 5px;letter-spacing:1px;color:#555}
-.ps{padding:4px 10px 3px;font-size:8px;letter-spacing:2px;background:#080808;color:#2e2e2e;border-top:1px solid #111;border-bottom:1px solid #111;margin-top:1px}
-.sr{display:flex;justify-content:space-between;align-items:center;padding:2px 10px;border-bottom:1px solid #0c0c0c;min-height:15px}
-.sl{color:#383838;font-size:9px;letter-spacing:.3px;white-space:nowrap}
-.sv{font-size:9px;text-align:right;white-space:nowrap;color:#bbb;max-width:120px;overflow:hidden}
-.bw{height:3px;background:#111;margin:1px 10px 3px}
-.bf{height:100%;transition:width .4s}
-.kf{padding:2px 0}
-.kfe{padding:2px 10px;font-size:9px;border-bottom:1px solid #0a0a0a;color:#444;letter-spacing:.3px}
-.sbig{font-size:26px;font-weight:900;text-align:center;padding:5px 0 1px;line-height:1;letter-spacing:2px}
-.dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#333;vertical-align:middle;margin-right:2px}
-.dot.on{background:#00e070;box-shadow:0 0 4px #00e070}
-.dot.dead{background:#f84040;box-shadow:0 0 4px #f84040}
+/* ── CARD ── */
+.card{
+  width:100%;max-width:680px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:32px;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+}
+
+/* ── DETECTED PLATFORM ── */
+#platform{
+  height:28px;margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--dim);
+  transition:opacity .2s;
+}
+#platform .badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;
+  letter-spacing:.5px;text-transform:uppercase;opacity:0;transition:opacity .3s;
+}
+#platform .badge.show{opacity:1}
+
+/* ── URL INPUT ── */
+.input-wrap{
+  display:flex;gap:8px;margin-bottom:16px;
+}
+#urlInput{
+  flex:1;background:#0d0d18;border:1.5px solid var(--border);
+  border-radius:10px;padding:14px 18px;
+  color:var(--text);font-size:15px;outline:none;
+  transition:border-color .2s;
+}
+#urlInput:focus{border-color:var(--acc1)}
+#urlInput::placeholder{color:#333345}
+#pasteBtn{
+  background:#1a1a28;border:1.5px solid var(--border);
+  border-radius:10px;padding:0 16px;cursor:pointer;
+  color:var(--dim);font-size:12px;letter-spacing:1px;
+  white-space:nowrap;transition:all .15s;
+}
+#pasteBtn:hover{background:#22223a;color:var(--text)}
+
+/* ── OPTIONS ── */
+.opts{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+select{
+  background:#0d0d18;border:1.5px solid var(--border);border-radius:8px;
+  color:var(--text);padding:9px 12px;font-size:13px;cursor:pointer;outline:none;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555570'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  padding-right:28px;
+}
+.toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.toggle input{display:none}
+.toggle-track{
+  width:36px;height:20px;background:#1a1a28;border:1.5px solid var(--border);
+  border-radius:10px;position:relative;transition:background .2s;
+}
+.toggle input:checked + .toggle-track{background:var(--acc1)}
+.toggle-thumb{
+  position:absolute;top:2px;left:2px;width:12px;height:12px;
+  background:#555;border-radius:50%;transition:transform .2s,background .2s;
+}
+.toggle input:checked + .toggle-track .toggle-thumb{transform:translateX(16px);background:#fff}
+.toggle-label{font-size:13px;color:var(--dim)}
+
+/* ── DOWNLOAD BUTTON ── */
+#dlBtn{
+  width:100%;padding:16px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--acc1),var(--acc2));
+  color:#fff;font-size:16px;font-weight:700;letter-spacing:.5px;
+  cursor:pointer;transition:opacity .15s,transform .1s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+#dlBtn:hover{opacity:.9;transform:translateY(-1px)}
+#dlBtn:active{transform:translateY(0)}
+#dlBtn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.spinner{
+  width:18px;height:18px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .7s linear infinite;display:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── STATUS ── */
+#status{
+  margin-top:20px;padding:14px 16px;border-radius:10px;
+  font-size:13px;display:none;align-items:flex-start;gap:10px;
+  border:1px solid;
+}
+#status.ok{background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.2);color:var(--ok);display:flex}
+#status.err{background:rgba(255,82,82,.08);border-color:rgba(255,82,82,.2);color:var(--err);display:flex}
+#status.info{background:rgba(68,138,255,.08);border-color:rgba(68,138,255,.2);color:var(--acc2);display:flex}
+#status.warn{background:rgba(255,171,64,.08);border-color:rgba(255,171,64,.2);color:var(--warn);display:flex}
+#statusIcon{font-size:16px;flex-shrink:0;margin-top:1px}
+#statusText a{color:inherit;opacity:.8}
+
+/* ── PICKER ── */
+#picker{display:none;margin-top:16px;gap:8px;flex-wrap:wrap}
+.pick-btn{
+  background:#1a1a28;border:1.5px solid var(--border);border-radius:8px;
+  padding:8px 16px;color:var(--text);cursor:pointer;font-size:13px;
+  transition:background .15s;
+}
+.pick-btn:hover{background:#22223a;border-color:var(--acc1)}
+
+/* ── PLATFORMS GRID ── */
+.section-title{
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--dim);margin:40px 0 16px;
+}
+.platforms{
+  width:100%;max-width:680px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;
+}
+.plat{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-size:11px;color:var(--dim);text-align:center;
+}
+.plat-icon{font-size:20px}
+.plat-name{font-size:10px;letter-spacing:.3px}
+
+/* ── NOTE ── */
+.note{
+  margin-top:40px;max-width:680px;text-align:center;
+  font-size:12px;color:#2a2a40;line-height:1.6;
+}
+.note code{
+  background:#13131e;border:1px solid #1e1e30;padding:2px 6px;border-radius:4px;
+  color:#555570;font-size:11px;
+}
 </style>
 </head>
 <body>
-<div id="gw">
-  <div id="sp1" class="sp"><div class="ph" style="border-color:#f8c80044;color:#f8c800">◈ PLAYER 1<span class="role">—</span></div></div>
-  <div id="center">
-    <canvas id="c" width="512" height="512"></canvas>
-    <div id="panel">
-      <button class="btn" id="bHost">▶ СОЗДАТЬ</button>
-      <input id="rid" placeholder="ID комнаты..." maxlength="36"/>
-      <button class="btn" id="bJoin">→ ВОЙТИ</button>
-    </div>
-    <div id="st">Не подключено</div>
-    <div id="hint">P1: WASD + ПРОБЕЛ &nbsp;|&nbsp; P2: СТРЕЛКИ + ENTER</div>
+
+<div class="logo">⬇ downloader</div>
+<h1>Video Downloader</h1>
+<p class="sub">Вставь ссылку — скачает файл прямо на Мак</p>
+
+<div class="card">
+
+  <div id="platform">
+    <span id="platBadge" class="badge">⬤ определяю...</span>
   </div>
-  <div id="sp2" class="sp"><div class="ph" style="border-color:#00c8f844;color:#00c8f8">◈ PLAYER 2<span class="role">—</span></div></div>
+
+  <div class="input-wrap">
+    <input id="urlInput" type="url" placeholder="Вставь ссылку на видео (YouTube, TikTok, Instagram, MP4...)" autocomplete="off" spellcheck="false"/>
+    <button id="pasteBtn">⌘V ВСТАВИТЬ</button>
+  </div>
+
+  <div class="opts">
+    <select id="quality">
+      <option value="max">Максимальное качество</option>
+      <option value="2160">4K — 2160p</option>
+      <option value="1440">2K — 1440p</option>
+      <option value="1080">Full HD — 1080p</option>
+      <option value="720">HD — 720p</option>
+      <option value="480">SD — 480p</option>
+      <option value="360">360p</option>
+      <option value="144">144p — минимум</option>
+    </select>
+    <label class="toggle">
+      <input type="checkbox" id="audioOnly"/>
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      <span class="toggle-label">Только аудио (MP3)</span>
+    </label>
+  </div>
+
+  <button id="dlBtn">
+    <div class="spinner" id="spinner"></div>
+    <span id="btnText">⬇ СКАЧАТЬ ВИДЕО</span>
+  </button>
+
+  <div id="status">
+    <span id="statusIcon"></span>
+    <div id="statusText"></div>
+  </div>
+
+  <div id="picker"></div>
+
 </div>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<p class="section-title">Поддерживаемые платформы</p>
+<div class="platforms">
+  <div class="plat"><div class="plat-icon">▶</div><div class="plat-name">YouTube</div></div>
+  <div class="plat"><div class="plat-icon">♪</div><div class="plat-name">TikTok</div></div>
+  <div class="plat"><div class="plat-icon">✕</div><div class="plat-name">Twitter / X</div></div>
+  <div class="plat"><div class="plat-icon">◉</div><div class="plat-name">Instagram</div></div>
+  <div class="plat"><div class="plat-icon">▷</div><div class="plat-name">Vimeo</div></div>
+  <div class="plat"><div class="plat-icon">◆</div><div class="plat-name">Reddit</div></div>
+  <div class="plat"><div class="plat-icon">◈</div><div class="plat-name">Facebook</div></div>
+  <div class="plat"><div class="plat-icon">⬥</div><div class="plat-name">Twitch</div></div>
+  <div class="plat"><div class="plat-icon">♫</div><div class="plat-name">SoundCloud</div></div>
+  <div class="plat"><div class="plat-icon">◇</div><div class="plat-name">VK Video</div></div>
+  <div class="plat"><div class="plat-icon">○</div><div class="plat-name">Dailymotion</div></div>
+  <div class="plat"><div class="plat-icon">⬛</div><div class="plat-name">Прямой .mp4</div></div>
+</div>
+
+<p class="note">
+  Использует <a href="https://cobalt.tools" style="color:#2a2a55">cobalt.tools</a> API.<br>
+  Если сайт недоступен, можно скачать через терминал: <code>brew install yt-dlp</code> → <code>yt-dlp [ссылка]</code>
+</p>
+
 <script>
-'use strict';
-const TILE=32,COLS=16,ROWS=16,W=512,H=512;
-const TS=24,TOFF=(TILE-TS)/2,BS=5,BSPD=5,TSPD=1.5,COOL=25;
-const E=0,B=1,S=2;
-const DIR=[[0,-1],[1,0],[0,1],[-1,0]];
-const UP=0,RT=1,DN=2,LT=3;
-const DNAMES=['↑ СЕВ','→ ВОС','↓ ЮГ','← ЗАП'];
-const PC=['#f8c800','#00c8f8'];
-const TC=[{b:'#f8c800',t:'#b09000'},{b:'#00c8f8',t:'#0090b0'}];
-
-const BASE=[
-  [S,S,S,S,S,S,S,S,S,S,S,S,S,S,S,S],[S,E,E,E,E,E,E,E,E,E,E,E,E,E,E,S],
-  [S,E,S,E,B,B,E,E,E,E,B,B,E,S,E,S],[S,E,S,E,B,E,E,S,S,E,E,B,E,S,E,S],
-  [S,E,E,E,E,E,E,S,S,E,E,E,E,E,E,S],[S,E,B,B,E,E,E,E,E,E,E,E,B,B,E,S],
-  [S,E,B,E,E,S,E,E,E,E,S,E,E,B,E,S],[S,E,E,E,E,E,E,E,E,E,E,E,E,E,E,S],
-  [S,E,E,E,E,E,E,E,E,E,E,E,E,E,E,S],[S,E,B,E,E,S,E,E,E,E,S,E,E,B,E,S],
-  [S,E,B,B,E,E,E,E,E,E,E,E,B,B,E,S],[S,E,E,E,E,E,E,S,S,E,E,E,E,E,E,S],
-  [S,E,S,E,B,E,E,S,S,E,E,B,E,S,E,S],[S,E,S,E,B,B,E,E,E,E,B,B,E,S,E,S],
-  [S,E,E,E,E,E,E,E,E,E,E,E,E,E,E,S],[S,S,S,S,S,S,S,S,S,S,S,S,S,S,S,S],
+const PLATFORMS=[
+  {name:'YouTube',      re:/youtube\.com|youtu\.be/,          icon:'▶', color:'#ff4444'},
+  {name:'TikTok',       re:/tiktok\.com/,                     icon:'♪', color:'#69c9d0'},
+  {name:'Twitter / X',  re:/twitter\.com|x\.com/,             icon:'✕', color:'#1d9bf0'},
+  {name:'Instagram',    re:/instagram\.com/,                  icon:'◉', color:'#e1306c'},
+  {name:'Vimeo',        re:/vimeo\.com/,                      icon:'▷', color:'#1ab7ea'},
+  {name:'Reddit',       re:/reddit\.com|redd\.it/,            icon:'◆', color:'#ff4500'},
+  {name:'Facebook',     re:/facebook\.com|fb\.watch/,         icon:'◈', color:'#1877f2'},
+  {name:'Twitch',       re:/twitch\.tv/,                      icon:'⬥', color:'#9146ff'},
+  {name:'SoundCloud',   re:/soundcloud\.com/,                 icon:'♫', color:'#ff5500'},
+  {name:'VK',           re:/vk\.com/,                         icon:'◇', color:'#4a76a8'},
+  {name:'Dailymotion',  re:/dailymotion\.com/,                icon:'○', color:'#00aaff'},
+  {name:'Прямой файл',  re:/\.(mp4|webm|mov|avi|mkv|m4v|ogv)(\?|$)/i, icon:'⬛', color:'#00e676'},
 ];
-const SPR=[[0,0,0,1,1,0,0,0],[0,0,0,1,1,0,0,0],[1,0,1,1,1,1,0,1],[1,1,1,1,1,1,1,1],[1,1,1,0,0,1,1,1],[1,1,1,1,1,1,1,1],[1,1,0,0,0,0,1,1],[1,1,0,0,0,0,1,1]];
-const SP_POS=[{x:3*TILE+TOFF,y:14*TILE+TOFF},{x:12*TILE+TOFF,y:14*TILE+TOFF}];
 
-let map,tanks,bullets,expl,scores,st,kFeed,gStartFrm;
-let frm=0,isHost=false,peer=null,conn=null,connected=false;
-let remInp={up:0,dn:0,lt:0,rt:0,sh:0},pingMs=0;
-let fps=60,_fpsT=performance.now(),_fpsN=0;
+const COBALT_ENDPOINTS=[
+  'https://co.wuk.sh/api/json',
+  'https://cobalt.tools/api/json',
+];
 
-function mkTank(i){return{i,x:SP_POS[i].x,y:SP_POS[i].y,dir:UP,alive:true,cd:0,rt:0}}
-function mkSt(){return{k:0,d:0,sh:0,th:0,br:0,dist:0,fa:0,ft:0,mf:0,mv:false,str:0,bst:0,rsp:0,stm:[],kiv:[],lkf:-9999}}
+const urlInput=document.getElementById('urlInput');
+const pasteBtn=document.getElementById('pasteBtn');
+const dlBtn=document.getElementById('dlBtn');
+const btnText=document.getElementById('btnText');
+const spinner=document.getElementById('spinner');
+const statusEl=document.getElementById('status');
+const statusIcon=document.getElementById('statusIcon');
+const statusText=document.getElementById('statusText');
+const platBadge=document.getElementById('platBadge');
+const pickerEl=document.getElementById('picker');
+const qualitySel=document.getElementById('quality');
+const audioOnly=document.getElementById('audioOnly');
 
-function initGame(){
-  map=BASE.map(r=>[...r]);
-  tanks=[mkTank(0),mkTank(1)];
-  bullets=[];expl=[];scores=[0,0];
-  st=[mkSt(),mkSt()];kFeed=[];gStartFrm=frm;
+// ── Platform detection ──────────────────────────────────────────────────────
+function detectPlatform(url){
+  for(const p of PLATFORMS) if(p.re.test(url)) return p;
+  try{const h=new URL(url).hostname;if(h)return{name:h,icon:'🌐',color:'#888'}}catch(_){}
+  return null;
 }
 
-const K={};
-const GK=new Set(['KeyW','KeyA','KeyS','KeyD','Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','KeyF']);
-addEventListener('keydown',e=>{K[e.code]=1;if(GK.has(e.code))e.preventDefault()});
-addEventListener('keyup',e=>{K[e.code]=0});
-function inp0(){return{up:K.KeyW,dn:K.KeyS,lt:K.KeyA,rt:K.KeyD,sh:K.Space||K.KeyF}}
-function inp1(){return{up:K.ArrowUp,dn:K.ArrowDown,lt:K.ArrowLeft,rt:K.ArrowRight,sh:K.Enter}}
-
-function tileAt(x,y){const tx=x/TILE|0,ty=y/TILE|0;if(tx<0||ty<0||tx>=COLS||ty>=ROWS)return S;return map[ty][tx]}
-function solid(t){return t===B||t===S}
-function ov(ax,ay,bx,by,sz){return ax<bx+sz&&ax+sz>bx&&ay<by+sz&&ay+sz>by}
-
-function moveTank(tk,inp){
-  if(!tk.alive)return;
-  const s=st[tk.i];s.fa++;s.ft++;
-  let d=-1;
-  if(inp.up)d=UP;else if(inp.rt)d=RT;else if(inp.dn)d=DN;else if(inp.lt)d=LT;
-  let moved=false;
-  if(d>=0){
-    tk.dir=d;
-    const[dx,dy]=DIR[d];
-    let nx=tk.x+dx*TSPD,ny=tk.y+dy*TSPD;
-    nx=Math.max(0,Math.min(W-TS,nx));ny=Math.max(0,Math.min(H-TS,ny));
-    const cs=[[nx,ny],[nx+TS-1,ny],[nx,ny+TS-1],[nx+TS-1,ny+TS-1]];
-    if(!cs.some(([cx,cy])=>solid(tileAt(cx,cy)))){
-      const o=tanks[1-tk.i];
-      if(!o.alive||!ov(nx,ny,o.x,o.y,TS)){tk.x=nx;tk.y=ny;moved=true}
-    }
-  }
-  s.mv=moved;if(moved){s.dist+=TSPD;s.mf++}
-  if(tk.cd>0)tk.cd--;
-  if(inp.sh&&tk.cd===0&&bullets.filter(b=>b.o===tk.i).length<2){
-    const[dx,dy]=DIR[tk.dir];
-    bullets.push({x:tk.x+TS/2-BS/2+dx*(TS/2+2),y:tk.y+TS/2-BS/2+dy*(TS/2+2),dir:tk.dir,o:tk.i});
-    tk.cd=COOL;s.sh++;s.stm.push(frm);if(s.stm.length>120)s.stm.shift();
-  }
+function updateBadge(url){
+  const p=detectPlatform(url);
+  if(!p||!url.trim()){platBadge.classList.remove('show');return}
+  platBadge.textContent=`${p.icon} ${p.name}`;
+  platBadge.style.background=p.color+'22';
+  platBadge.style.color=p.color;
+  platBadge.style.border=`1px solid ${p.color}44`;
+  platBadge.classList.add('show');
 }
 
-function stepBullets(){
-  for(let i=bullets.length-1;i>=0;i--){
-    const b=bullets[i];
-    const[dx,dy]=DIR[b.dir];
-    b.x+=dx*BSPD;b.y+=dy*BSPD;
-    let hit=false;
-    if(b.x<0||b.y<0||b.x>=W||b.y>=H){hit=true;boom(b.x,b.y,0)}
-    if(!hit){
-      const cx=b.x+BS/2,cy=b.y+BS/2;
-      const tx=cx/TILE|0,ty=cy/TILE|0,t=tileAt(cx,cy);
-      if(t===B){map[ty][tx]=E;hit=true;boom(cx,cy,0);st[b.o].br++}
-      else if(t===S){hit=true;boom(cx,cy,0)}
-    }
-    if(!hit){
-      for(const tk of tanks){
-        if(!tk.alive||tk.i===b.o)continue;
-        if(ov(b.x,b.y,tk.x,tk.y,TS)){
-          tk.alive=false;tk.rt=120;scores[b.o]++;
-          const so=st[b.o];so.k++;so.th++;so.str++;
-          if(so.str>so.bst)so.bst=so.str;
-          if(so.lkf>0)so.kiv.push(frm-so.lkf);
-          if(so.kiv.length>20)so.kiv.shift();
-          so.lkf=frm;
-          st[tk.i].d++;st[tk.i].str=0;
-          kFeed.push({kr:b.o,vi:tk.i,f:frm});if(kFeed.length>8)kFeed.shift();
-          boom(tk.x+TS/2,tk.y+TS/2,1);hit=true;break;
-        }
+urlInput.addEventListener('input',()=>updateBadge(urlInput.value));
+urlInput.addEventListener('paste',()=>setTimeout(()=>updateBadge(urlInput.value),10));
+
+pasteBtn.onclick=async()=>{
+  try{
+    const t=await navigator.clipboard.readText();
+    urlInput.value=t.trim();
+    updateBadge(urlInput.value);
+  }catch(_){urlInput.focus()}
+};
+
+// ── Status helpers ──────────────────────────────────────────────────────────
+function setStatus(type,icon,html){
+  statusEl.className=type;
+  statusIcon.textContent=icon;
+  statusText.innerHTML=html;
+}
+function hideStatus(){statusEl.className='';statusEl.style.display='none'}
+
+function setLoading(on){
+  dlBtn.disabled=on;
+  spinner.style.display=on?'block':'none';
+  btnText.textContent=on?'Загружаю...':'⬇ СКАЧАТЬ ВИДЕО';
+}
+
+// ── Download helpers ─────────────────────────────────────────────────────────
+function triggerLink(url,filename){
+  const a=document.createElement('a');
+  a.href=url;if(filename)a.download=filename;
+  a.target='_blank';a.rel='noopener noreferrer';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>document.body.removeChild(a),200);
+}
+
+// Fetch blob (works for CORS-open direct URLs)
+async function downloadBlob(url){
+  setStatus('info','⬇','Скачиваю файл напрямую...');
+  const resp=await fetch(url,{mode:'cors'});
+  if(!resp.ok)throw new Error(`HTTP ${resp.status}`);
+  const blob=await resp.blob();
+  const ext=url.split('?')[0].split('.').pop().toLowerCase()||'mp4';
+  const fname=`video_${Date.now()}.${ext}`;
+  const burl=URL.createObjectURL(blob);
+  triggerLink(burl,fname);
+  setTimeout(()=>URL.revokeObjectURL(burl),5000);
+  setStatus('ok','✓',`Файл скачан: <b>${fname}</b>`);
+}
+
+// ── Cobalt API ───────────────────────────────────────────────────────────────
+async function callCobalt(url){
+  const body=JSON.stringify({
+    url,
+    vQuality:qualitySel.value,
+    isAudioOnly:audioOnly.checked,
+    aFormat:audioOnly.checked?'mp3':'best',
+    filenamePattern:'pretty',
+  });
+  const headers={'Content-Type':'application/json','Accept':'application/json'};
+
+  for(const endpoint of COBALT_ENDPOINTS){
+    try{
+      const resp=await fetch(endpoint,{method:'POST',headers,body,signal:AbortSignal.timeout(15000)});
+      if(resp.status===429){
+        setStatus('warn','⏱','Слишком много запросов — подожди немного и попробуй снова.');
+        return null;
       }
-    }
-    if(hit)bullets.splice(i,1);
+      if(!resp.ok)continue;
+      const data=await resp.json();
+      return data;
+    }catch(_){continue}
   }
+  return null;
 }
 
-function stepRespawn(){
-  for(const tk of tanks){
-    if(!tk.alive&&tk.rt>0){
-      tk.rt--;
-      if(tk.rt===0){Object.assign(tk,{x:SP_POS[tk.i].x,y:SP_POS[tk.i].y,dir:UP,alive:true,cd:60});st[tk.i].rsp++}
-    }
-  }
-}
-
-function boom(x,y,big){expl.push({x,y,big,f:0,m:big?24:10})}
-function stepExpl(){for(let i=expl.length-1;i>=0;i--){expl[i].f++;if(expl[i].f>=expl[i].m)expl.splice(i,1)}}
-
-// ── CANVAS ────────────────────────────────────────────────────────────────────
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-ctx.imageSmoothingEnabled=false;
-
-function drawBrick(px,py){
-  ctx.fillStyle='#c04010';ctx.fillRect(px,py,TILE,TILE);
-  ctx.fillStyle='#e06030';
-  [[1,1,14,6],[17,1,14,6],[9,9,14,6],[1,17,14,6],[17,17,14,6],[9,25,14,6]].forEach(([ox,oy,w,h])=>ctx.fillRect(px+ox,py+oy,w,h));
-  ctx.fillStyle='#802008';ctx.fillRect(px,py,TILE,1);ctx.fillRect(px,py,1,TILE);
-}
-function drawSteel(px,py){
-  ctx.fillStyle='#607080';ctx.fillRect(px,py,TILE,TILE);
-  ctx.fillStyle='#8090a0';ctx.fillRect(px+2,py+2,12,12);ctx.fillRect(px+18,py+18,12,12);
-  ctx.fillStyle='#405060';ctx.fillRect(px+TILE/2,py,1,TILE);ctx.fillRect(px,py+TILE/2,TILE,1);
-  ctx.fillStyle='#304050';ctx.fillRect(px,py,TILE,1);ctx.fillRect(px,py,1,TILE);
-}
-function drawTank(tk){
-  if(!tk.alive){
-    if(tk.rt>0&&tk.rt%20<10){ctx.globalAlpha=.2;ctx.fillStyle=TC[tk.i].b;ctx.fillRect(SP_POS[tk.i].x+6,SP_POS[tk.i].y+6,TS-12,TS-12);ctx.globalAlpha=1}
+function handleCobaltResponse(data,origUrl){
+  if(!data){
+    setStatus('err','✕',`Сервис недоступен. Попробуй позже или скачай через терминал:<br>
+      <code style="font-family:monospace;font-size:11px">yt-dlp "${origUrl}"</code>`);
     return;
   }
-  const px=Math.round(tk.x),py=Math.round(tk.y),p=3;
-  ctx.save();ctx.translate(px+TS/2,py+TS/2);ctx.rotate(tk.dir*Math.PI/2);
-  const ox=-4*p,oy=-4*p;
-  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-    if(!SPR[r][c])continue;
-    ctx.fillStyle=(c<=1||c>=6)?TC[tk.i].t:TC[tk.i].b;
-    ctx.fillRect(ox+c*p,oy+r*p,p,p);
+  if(data.status==='error'||data.status==='rate-limit'){
+    const msg=data.text||'Неизвестная ошибка';
+    setStatus('err','✕',`Ошибка: ${msg}`);
+    return;
   }
-  ctx.restore();
+  if(data.status==='redirect'||data.status==='stream'||data.status==='tunnel'){
+    triggerLink(data.url,data.filename||'video');
+    setStatus('ok','✓',`Загрузка началась! Файл: <b>${data.filename||'video'}</b><br><span style="opacity:.6;font-size:11px">Проверь папку Загрузки (⌘+Option+L)</span>`);
+    return;
+  }
+  if(data.status==='picker'){
+    showPicker(data.picker||[],data.audio);
+    return;
+  }
+  setStatus('warn','?',`Неожиданный ответ: ${data.status}`);
 }
-function drawBullets(){ctx.shadowColor='#fff';ctx.shadowBlur=8;ctx.fillStyle='#fff';bullets.forEach(b=>ctx.fillRect(b.x|0,b.y|0,BS,BS));ctx.shadowBlur=0}
-function drawExpl(){
-  expl.forEach(e=>{
-    const t=e.f/e.m,r=(e.big?32:14)*Math.sin(t*Math.PI);
-    ctx.globalAlpha=1-t;
-    ctx.fillStyle='#ff4400';ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#ffcc00';ctx.beginPath();ctx.arc(e.x,e.y,r*.55,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(e.x,e.y,r*.2,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;
+
+function showPicker(items,audioUrl){
+  pickerEl.style.display='flex';
+  let html='<div style="font-size:12px;color:#555570;width:100%;margin-bottom:6px">Выбери вариант:</div>';
+  items.forEach((item,i)=>{
+    html+=`<button class="pick-btn" onclick="pickItem('${item.url}','item_${i+1}')">
+      ${item.type==='photo'?'🖼':'🎬'} Вариант ${i+1}
+    </button>`;
   });
-}
-function drawHUD(){
-  ctx.fillStyle='rgba(0,0,0,.8)';ctx.fillRect(0,0,W,26);
-  ctx.font='bold 14px "Courier New"';
-  ctx.fillStyle=PC[0];ctx.textAlign='left';ctx.fillText('◀ P1  '+scores[0],10,18);
-  ctx.fillStyle=PC[1];ctx.textAlign='right';ctx.fillText(scores[1]+'  P2 ▶',W-10,18);
-  ctx.fillStyle='#333';ctx.font='11px "Courier New"';ctx.textAlign='center';
-  ctx.fillText(isHost?'[ HOST ]':'[ GUEST ]',W/2,17);
-}
-function drawOverlay(){
-  if(connected)return;
-  ctx.fillStyle='rgba(0,0,0,.9)';ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#f8c800';ctx.font='bold 42px "Courier New"';ctx.textAlign='center';ctx.fillText('ТАНЧИКИ',W/2,H/2-80);
-  ctx.fillStyle='#806000';ctx.font='bold 14px "Courier New"';ctx.fillText('1 9 9 0  ·  O N L I N E',W/2,H/2-48);
-  ctx.fillStyle='#1a1a1a';ctx.font='12px "Courier New"';ctx.fillText('────────────────────────────',W/2,H/2-24);
-  ctx.fillStyle='#555';ctx.font='12px "Courier New"';ctx.fillText('Создай игру → скопируй ID → друг вставляет',W/2,H/2+10);
-  ctx.fillStyle='#333';ctx.fillText('P1: WASD+ПРОБЕЛ  |  P2: СТРЕЛКИ+ENTER',W/2,H/2+36);
-  if(Math.floor(Date.now()/500)%2){ctx.fillStyle='#f8c800';ctx.fillRect(W/2-4,H/2+56,8,14)}
-}
-function drawScanlines(){ctx.fillStyle='rgba(0,0,0,.07)';for(let y=0;y<H;y+=2)ctx.fillRect(0,y,W,1)}
-
-function render(){
-  ctx.fillStyle='#060606';ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#0c0c0c';
-  for(let x=0;x<=W;x+=TILE)ctx.fillRect(x,0,1,H);
-  for(let y=0;y<=H;y+=TILE)ctx.fillRect(0,y,W,1);
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-    const t=map[r][c];
-    if(t===B)drawBrick(c*TILE,r*TILE);else if(t===S)drawSteel(c*TILE,r*TILE);
+  if(audioUrl){
+    html+=`<button class="pick-btn" onclick="pickItem('${audioUrl}','audio')">🔊 Только аудио</button>`;
   }
-  tanks.forEach(drawTank);drawBullets();drawExpl();drawScanlines();drawHUD();drawOverlay();
+  pickerEl.innerHTML=html;
+  setStatus('info','◈','Доступно несколько вариантов — выбери нужный:');
 }
 
-// ── STATS PANELS ──────────────────────────────────────────────────────────────
-function fmtT(f){const s=(f/60)|0,m=(s/60)|0;return`${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
-function pct(a,b){return b===0?0:Math.round(a/b*100)}
-function bar(p,len=14){const f=Math.round(Math.min(100,p)/100*len);return'█'.repeat(f)+'░'.repeat(len-f)}
-function spm(s){return s.stm.filter(t=>frm-t<3600).length}
-function kdStr(s){return s.d===0?(s.k>0?'∞':'—'):(s.k/s.d).toFixed(2)}
-function avgKiv(s){if(!s.kiv.length)return'—';return((s.kiv.reduce((a,b)=>a+b,0)/s.kiv.length)/60).toFixed(1)+'s'}
-function cntBricks(){let n=0;for(const r of map)for(const c of r)if(c===B)n++;return n}
+window.pickItem=(url,name)=>{
+  triggerLink(url,name);
+  setStatus('ok','✓',`Загрузка началась: <b>${name}</b>`);
+};
 
-function R(label,val,col){
-  return`<div class="sr"><span class="sl">${label}</span><span class="sv" style="color:${col||'#bbb'}">${val}</span></div>`;
-}
-function RH(label,valHtml){
-  return`<div class="sr"><span class="sl">${label}</span><span class="sv">${valHtml}</span></div>`;
-}
+// ── Main download ─────────────────────────────────────────────────────────────
+dlBtn.onclick=async()=>{
+  const url=urlInput.value.trim();
+  if(!url){setStatus('err','!','Вставь ссылку на видео');return}
 
-function buildPanel(idx){
-  const tk=tanks[idx],s=st[idx],c=PC[idx];
-  const role=connected?(idx===0)===(isHost)?'HOST':'GUEST':'OFFLINE';
-  const gFrm=frm-gStartFrm;
-  const accP=pct(s.th,s.sh);
-  const alivP=pct(s.fa,s.ft);
-  const mvP=s.fa>0?pct(s.mf,s.fa):0;
-  const kd=kdStr(s);
-  const kdCol=kd==='∞'?'#00e070':kd==='—'?'#555':parseFloat(kd)>=1?'#88ff88':'#ff8080';
-  const sinceKill=s.lkf<0?'—':`${((frm-s.lkf)/60).toFixed(1)}s`;
-  const liveBul=bullets.filter(b=>b.o===idx).length;
-  const effP=pct(s.k,Math.max(1,s.sh));
+  try{new URL(url)}catch(_){setStatus('err','!','Неверная ссылка');return}
 
-  const statusHtml=tk.alive
-    ?`<span class="dot on"></span><span style="color:#00e070">ALIVE</span>`
-    :`<span class="dot dead"></span><span style="color:#f84040">RESPAWN ${(tk.rt/60).toFixed(1)}s</span>`;
-  const mvHtml=tk.alive&&s.mv
-    ?`<span style="color:#88ff88">▶ ЕДЕТ</span>`
-    :(tk.alive?`<span style="color:#555">■ СТОИТ</span>`:`<span style="color:#f84040">✖ МЁРТВ</span>`);
-  const pingHtml=idx===0&&isHost?`<span style="color:#555">ЛОКАЛЬНО</span>`:pingMs>0?`<span style="color:${pingMs<60?'#00e070':pingMs<120?'#ffaa00':'#f84040'}">${pingMs}ms</span>`:'<span style="color:#333">—</span>';
-  const connHtml=connected
-    ?`<span style="color:${c}">●●●●</span><span style="color:#1a1a1a">●</span>`
-    :`<span style="color:#333">○○○○○</span>`;
-  const tileX=(tk.x/TILE)|0,tileY=(tk.y/TILE)|0;
+  pickerEl.style.display='none';pickerEl.innerHTML='';
+  setLoading(true);
 
-  const feedHtml=kFeed.length===0
-    ?'<div class="kfe" style="color:#222">— нет событий —</div>'
-    :kFeed.slice(-6).reverse().map(e=>{
-        const kc=PC[e.kr],vc=PC[e.vi],ago=((frm-e.f)/60).toFixed(0);
-        return`<div class="kfe"><span style="color:${kc}">P${e.kr+1}</span><span style="color:#333"> ▶ </span><span style="color:${vc}">P${e.vi+1}</span><span style="color:#252525"> ${ago}s</span></div>`;
-      }).join('');
-
-  return`
-<div class="ph" style="border-color:${c};color:${c}">◈ PLAYER ${idx+1}<span class="role">${role}</span></div>
-<div class="sbig" style="color:${c}">${scores[idx]}<span style="font-size:11px;color:#2a2a2a;letter-spacing:1px"> SCORE</span></div>
-
-<div class="ps">▸ СТАТУС</div>
-${RH('Состояние',statusHtml)}
-${RH('Движение',mvHtml)}
-${R('Направление',DNAMES[tk.dir],'#777')}
-${R('Позиция',`X:${tileX} Y:${tileY}`,'#666')}
-${RH('Связь',connHtml)}
-${RH('Пинг',pingHtml)}
-
-<div class="ps">▸ БОЕВАЯ СТАТИСТИКА</div>
-${R('Убийств',s.k,s.k>0?'#00e070':'#555')}
-${R('Смертей',s.d,s.d>0?'#f84040':'#555')}
-${R('K/D Ratio',kd,kdCol)}
-${R('Текущая серия',s.str>0?s.str+' 🔥':s.str,s.str>2?'#ff8800':s.str>0?'#ffcc00':'#555')}
-${R('Лучшая серия',s.bst,s.bst>3?'#ff8800':s.bst>1?'#888':'#555')}
-${R('Всего респаунов',s.rsp,'#666')}
-${R('До респауна',!tk.alive&&tk.rt>0?`${(tk.rt/60).toFixed(1)}s`:'—','#f84040')}
-
-<div class="ps">▸ ОГНЕВАЯ МОЩЬ</div>
-${R('Выстрелов всего',s.sh,'#ccc')}
-${R('Попаданий в танк',s.th,s.th>0?'#88ff88':'#555')}
-${R('Точность',accP+'%',accP>40?'#00e070':accP>20?'#ffaa00':'#f84040')}
-<div class="bw"><div class="bf" style="width:${accP}%;background:${c}"></div></div>
-${R('Выстр./мин',spm(s),'#aaa')}
-${R('Эффективность',effP+'%',effP>10?'#88ff88':'#666')}
-${R('Кирпичей снесено',s.br,s.br>0?'#c84':'#555')}
-${R('Снарядов в полёте',`${liveBul}/2`,liveBul>0?'#ffaa00':'#555')}
-${R('КД выстрела',tk.cd>0?`${((tk.cd/60)*1000|0)}мс`:'ГОТОВ',tk.cd>0?'#888':'#00e070')}
-
-<div class="ps">▸ ДВИЖЕНИЕ</div>
-${R('Пройдено',Math.round(s.dist)+'px','#aaa')}
-${R('% движения',mvP+'%',mvP>50?'#88ff88':'#888')}
-${R('Время движения',fmtT(s.mf),'#777')}
-${R('Время стояния',fmtT(Math.max(0,s.fa-s.mf)),'#555')}
-${R('Pos (raw)',`${(tk.x|0)},${(tk.y|0)}`,'#2a2a2a')}
-
-<div class="ps">▸ ВРЕМЯ</div>
-${R('Игровое время',fmtT(gFrm),'#888')}
-${R('% живым',alivP+'%',alivP>70?'#00e070':alivP>40?'#ffaa00':'#f84040')}
-${R('Время живым',fmtT(s.fa),'#777')}
-${R('Посл. убийство',sinceKill,'#777')}
-${R('Ср. между убийств',avgKiv(s),'#666')}
-
-<div class="ps">▸ КАРТА</div>
-${R('Кирпичей осталось',cntBricks(),'#c84')}
-${R('Снарядов на поле',bullets.length,'#888')}
-
-<div class="ps">▸ ЛЕНТА УБИЙСТВ</div>
-<div class="kf">${feedHtml}</div>
-
-<div class="ps">▸ СИСТЕМА</div>
-${R('Кадр',frm,'#252525')}
-${R('FPS',fps.toFixed(0),'#252525')}
-${R('Роль',isHost?'HOST':'GUEST','#252525')}
-`;
-}
-
-let _pt=0;
-function updatePanels(){
-  _pt++;if(_pt%3!==0)return;
-  document.getElementById('sp1').innerHTML=buildPanel(0);
-  document.getElementById('sp2').innerHTML=buildPanel(1);
-}
-
-function updateFPS(){
-  _fpsN++;const now=performance.now();
-  if(now-_fpsT>=1000){fps=_fpsN/(now-_fpsT)*1000;_fpsN=0;_fpsT=now}
-}
-
-// ── NETWORK ───────────────────────────────────────────────────────────────────
-const stEl=document.getElementById('st');
-function setSt(msg,col='#555'){stEl.textContent=msg;stEl.style.color=col}
-
-function serSt(s){return{k:s.k,d:s.d,sh:s.sh,th:s.th,br:s.br,di:s.dist|0,fa:s.fa,ft:s.ft,mf:s.mf,mv:s.mv?1:0,str:s.str,bst:s.bst,rsp:s.rsp,stm:s.stm,kiv:s.kiv,lkf:s.lkf}}
-function desSt(d,s){s.k=d.k;s.d=d.d;s.sh=d.sh;s.th=d.th;s.br=d.br;s.dist=d.di;s.fa=d.fa;s.ft=d.ft;s.mf=d.mf;s.mv=!!d.mv;s.str=d.str;s.bst=d.bst;s.rsp=d.rsp;s.stm=d.stm||[];s.kiv=d.kiv||[];s.lkf=d.lkf}
-
-function onData(raw){
   try{
-    const d=typeof raw==='string'?JSON.parse(raw):raw;
-    if(d.t==='i'&&isHost){remInp=d}
-    if(d.t==='s'&&!isHost){
-      d.tk.forEach((td,i)=>{const tk=tanks[i];tk.x=td.x;tk.y=td.y;tk.dir=td.dir;tk.alive=td.alive;tk.rt=td.rt;tk.cd=td.cd});
-      bullets=d.b;expl=d.e;map=d.m;scores[0]=d.s0;scores[1]=d.s1;
-      kFeed=d.kf||[];frm=d.frm;
-      if(d.st0)desSt(d.st0,st[0]);if(d.st1)desSt(d.st1,st[1]);
+    const isDirect=/\.(mp4|webm|mov|avi|mkv|m4v|ogv)(\?|$)/i.test(url);
+
+    if(isDirect){
+      try{
+        await downloadBlob(url);
+      }catch(_){
+        // Fallback: just open the URL if CORS blocked
+        triggerLink(url);
+        setStatus('ok','✓','Файл открыт в браузере — нажми ⌘+S чтобы сохранить');
+      }
+    }else{
+      setStatus('info','⬇','Получаю ссылку на файл...');
+      const data=await callCobalt(url);
+      handleCobaltResponse(data,url);
     }
-    if(d.t==='ping'){try{conn.send(JSON.stringify({t:'pong',ts:d.ts}))}catch(_){}}
-    if(d.t==='pong'){pingMs=Math.round(Date.now()-d.ts)}
-  }catch(_){}
-}
-
-function wire(c){
-  conn=c;
-  conn.on('open',()=>{
-    connected=true;setSt('✓ Подключено','#00e070');
-    if(isHost)initGame();
-    document.getElementById('panel').style.opacity='.4';
-    document.getElementById('panel').style.pointerEvents='none';
-  });
-  conn.on('data',onData);
-  conn.on('close',()=>{connected=false;setSt('Соединение разорвано','#f84040')});
-  conn.on('error',()=>setSt('Ошибка подключения','#f84040'));
-}
-
-document.getElementById('bHost').onclick=()=>{
-  if(peer)return;isHost=true;initGame();
-  peer=new Peer(null,{debug:0});
-  peer.on('open',id=>{document.getElementById('rid').value=id;setSt('ID скопирован — жди друга','#f8c800');document.getElementById('rid').select();try{navigator.clipboard.writeText(id)}catch(_){}});
-  peer.on('connection',c=>wire(c));
-  peer.on('error',()=>setSt('Ошибка сервера','#f84040'));
-};
-document.getElementById('bJoin').onclick=()=>{
-  if(peer)return;
-  const id=document.getElementById('rid').value.trim();
-  if(!id){setSt('Введи ID комнаты','#f84040');return}
-  isHost=false;initGame();
-  peer=new Peer(null,{debug:0});
-  peer.on('open',()=>{setSt('Подключаюсь…','#888');wire(peer.connect(id))});
-  peer.on('error',()=>setSt('Не удалось подключиться','#f84040'));
-};
-document.getElementById('rid').onclick=function(){this.select();try{navigator.clipboard.writeText(this.value);setSt('ID скопирован!','#0c0')}catch(_){}};
-
-// ── LOOP ──────────────────────────────────────────────────────────────────────
-let nt=0;
-function loop(){
-  frm++;nt++;updateFPS();
-  if(connected&&isHost){
-    moveTank(tanks[0],inp0());moveTank(tanks[1],remInp);
-    stepBullets();stepRespawn();stepExpl();
-    if(nt%120===0)try{conn.send(JSON.stringify({t:'ping',ts:Date.now()}))}catch(_){}
-    if(nt%2===0)try{conn.send(JSON.stringify({t:'s',tk:tanks.map(tk=>({x:tk.x,y:tk.y,dir:tk.dir,alive:tk.alive,rt:tk.rt,cd:tk.cd})),b:bullets,e:expl,m:map,s0:scores[0],s1:scores[1],kf:kFeed,frm,st0:serSt(st[0]),st1:serSt(st[1])}))}catch(_){}
+  }catch(e){
+    setStatus('err','✕',`Ошибка: ${e.message}`);
+  }finally{
+    setLoading(false);
   }
-  if(connected&&!isHost){const i=inp1();try{conn.send(JSON.stringify({t:'i',up:i.up,dn:i.dn,lt:i.lt,rt:i.rt,sh:i.sh}))}catch(_){}}
-  render();updatePanels();
-  requestAnimationFrame(loop);
-}
+};
 
-initGame();loop();
+// Enter key
+urlInput.addEventListener('keydown',e=>{if(e.key==='Enter')dlBtn.click()});
+
+// Auto-paste if clipboard has URL on load
+(async()=>{
+  try{
+    const t=await navigator.clipboard.readText();
+    if(t&&/^https?:\/\//i.test(t.trim())){urlInput.value=t.trim();updateBadge(t.trim())}
+  }catch(_){}
+})();
 </script>
 </body>
 </html>
