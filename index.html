@@ -14,226 +14,88 @@
       --border: #e8e8ed;
       --bg: #ffffff;
       --bg-hover: #f5f5f7;
+      --accent: #1d1d1f;
       --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
     }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      background: var(--bg);
-      color: var(--fg);
-      font-family: var(--font);
-      -webkit-font-smoothing: antialiased;
-    }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--font); -webkit-font-smoothing: antialiased; }
 
-    /* ── Layout ── */
-    .shell {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
+    .shell { display: flex; flex-direction: column; height: 100vh; }
 
-    /* ── Header ── */
+    /* Header */
     .header {
-      display: flex;
-      align-items: baseline;
-      gap: 20px;
-      padding: 26px 40px 22px;
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px 36px 18px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
+    .header-title { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; }
+    .header-sep { width: 1px; height: 14px; background: var(--border); }
+    .header-sub { font-size: 12px; color: var(--fg-muted); }
 
-    .header-title {
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.022em;
-      color: var(--fg);
-    }
+    /* Stage */
+    .stage { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; overflow: hidden; }
 
-    .header-sub {
-      font-size: 12px;
-      color: var(--fg-muted);
-      letter-spacing: 0.01em;
-    }
-
-    .header-dot {
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: var(--fg-faint);
-      flex-shrink: 0;
-      align-self: center;
-    }
-
-    /* ── Columns ── */
-    .stage {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      overflow: hidden;
-    }
-
-    .col {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid var(--border);
-      overflow: hidden;
-    }
+    /* Column */
+    .col { position: relative; display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; }
     .col:last-child { border-right: none; }
 
-    /* ── Year label ── */
-    .col-year {
-      padding: 14px 28px 12px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      color: var(--fg-muted);
+    /* Year label */
+    .col-head {
+      padding: 13px 28px 11px; flex-shrink: 0;
       border-bottom: 1px solid var(--border);
-      background: var(--bg);
-      flex-shrink: 0;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      background: var(--bg); z-index: 5;
+      display: flex; align-items: baseline; justify-content: space-between;
     }
+    .col-year { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); }
+    .col-count { font-size: 10px; letter-spacing: 0.06em; color: var(--fg-faint); text-transform: uppercase; }
 
-    .col-year-num {
-      color: var(--fg);
-    }
-
-    .col-count {
-      margin-left: auto;
-      font-size: 10px;
-      letter-spacing: 0.06em;
-      color: var(--fg-faint);
-    }
-
-    /* ── Scroll drum ── */
-    .drum {
-      flex: 1;
-      overflow-y: scroll;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
+    /* Drum scroll */
+    .drum { flex: 1; overflow-y: scroll; scrollbar-width: none; -ms-overflow-style: none; }
     .drum::-webkit-scrollbar { display: none; }
 
-    /* ── Quote card ── */
-    .quote {
-      padding: 18px 28px 16px;
-      border-bottom: 1px solid #f2f2f7;
-      cursor: default;
-      transition: background 0.15s ease;
-    }
+    /* Quote */
+    .quote { padding: 16px 28px 14px; border-bottom: 1px solid #f2f2f7; transition: background .12s; }
     .quote:hover { background: var(--bg-hover); }
 
     .quote-body {
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--fg);
-      white-space: pre-wrap;
-      word-break: break-word;
+      font-size: 12.5px; line-height: 1.75; color: var(--fg);
+      white-space: pre-wrap; word-break: break-word;
     }
 
-    .quote-nick {
-      color: var(--fg-muted);
-      font-weight: 500;
-    }
+    .quote-footer { margin-top: 9px; display: flex; align-items: center; gap: 7px; }
+    .quote-rating { font-size: 10.5px; font-weight: 600; color: var(--fg-faint); }
+    .quote-rating.s1 { color: #30d158; }
+    .quote-rating.s2 { color: #34c759; }
+    .quote-rating.s3 { color: #aeaeb2; }
+    .quote-date { font-size: 10px; color: #c7c7cc; }
+    .quote-id { font-size: 10px; color: #d1d1d6; margin-left: auto; }
 
-    .quote-footer {
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .quote-rating {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--fg-faint);
-      letter-spacing: 0.02em;
-    }
-
-    .quote-rating.high { color: #30d158; }
-    .quote-rating.mid  { color: var(--fg-faint); }
-
-    .quote-id {
-      font-size: 10px;
-      color: #c7c7cc;
-    }
-
-    /* ── Gradient fades (drum illusion) ── */
+    /* Gradient fades */
     .col::before, .col::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0;
-      pointer-events: none;
-      z-index: 4;
+      content: ''; position: absolute; left: 0; right: 0; pointer-events: none; z-index: 4;
     }
-    .col::before {
-      top: 40px; /* below year label */
-      height: 64px;
-      background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
-    }
-    .col::after {
-      bottom: 0;
-      height: 80px;
-      background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
-    }
+    .col::before { top: 38px; height: 56px; background: linear-gradient(to bottom, #fff 0%, transparent 100%); }
+    .col::after  { bottom: 0;  height: 72px; background: linear-gradient(to top,   #fff 0%, transparent 100%); }
 
-    /* ── Footer ── */
+    /* Footer */
     .footer {
-      flex-shrink: 0;
-      padding: 12px 40px;
+      flex-shrink: 0; padding: 10px 36px;
       border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: flex; align-items: center; gap: 8px;
     }
-    .footer-text {
-      font-size: 11px;
-      color: #c7c7cc;
-    }
-    .footer-dot {
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: #d1d1d6;
-    }
-    .footer-link {
-      font-size: 11px;
-      color: #aeaeb2;
-      text-decoration: none;
-    }
-    .footer-link:hover { color: var(--fg-muted); }
+    .footer span { font-size: 11px; color: #c7c7cc; }
+    .footer-dot { width: 2px; height: 2px; border-radius: 50%; background: #d1d1d6; }
 
-    /* ── Pause badge ── */
-    .paused-badge {
-      position: fixed;
-      bottom: 52px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 500;
-      padding: 5px 12px;
-      border-radius: 20px;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      pointer-events: none;
-      letter-spacing: 0.03em;
+    /* Pause pill */
+    .pill {
+      position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%);
+      background: rgba(29,29,31,.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      color: #fff; font-size: 11px; font-weight: 500; letter-spacing: .03em;
+      padding: 5px 14px; border-radius: 20px;
+      opacity: 0; transition: opacity .18s; pointer-events: none;
     }
-    .paused-badge.visible { opacity: 1; }
-
-    /* ── Loading state ── */
-    .loading {
-      padding: 28px;
-      font-size: 12px;
-      color: var(--fg-faint);
-      text-align: center;
-    }
+    .pill.on { opacity: 1; }
   </style>
 </head>
 <body>
@@ -241,266 +103,1531 @@
 
   <header class="header">
     <span class="header-title">Башорг</span>
-    <span class="header-dot"></span>
-    <span class="header-sub">Топ цитат по годам</span>
+    <span class="header-sep"></span>
+    <span class="header-sub">ibash.org.ru</span>
   </header>
 
   <div class="stage">
-    <div class="col" id="col-2022">
-      <div class="col-year">
-        <span class="col-year-num">2022</span>
-        <span class="col-count" id="cnt-2022">—</span>
+    <div class="col">
+      <div class="col-head">
+        <span class="col-year">2007 – 2010</span>
+        <span class="col-count" id="cnt0"></span>
       </div>
-      <div class="drum" id="drum-2022"></div>
+      <div class="drum" id="drum0"></div>
     </div>
-    <div class="col" id="col-2023">
-      <div class="col-year">
-        <span class="col-year-num">2023</span>
-        <span class="col-count" id="cnt-2023">—</span>
+    <div class="col">
+      <div class="col-head">
+        <span class="col-year">2014 – 2021</span>
+        <span class="col-count" id="cnt1"></span>
       </div>
-      <div class="drum" id="drum-2023"></div>
+      <div class="drum" id="drum1"></div>
     </div>
-    <div class="col" id="col-2024">
-      <div class="col-year">
-        <span class="col-year-num">2024</span>
-        <span class="col-count" id="cnt-2024">—</span>
+    <div class="col">
+      <div class="col-head">
+        <span class="col-year">2025 – 2026</span>
+        <span class="col-count" id="cnt2"></span>
       </div>
-      <div class="drum" id="drum-2024"></div>
+      <div class="drum" id="drum2"></div>
     </div>
   </div>
 
   <footer class="footer">
-    <span class="footer-text">bash.im</span>
+    <span>ibash.org.ru</span>
     <span class="footer-dot"></span>
-    <span class="footer-text">наведи мышь чтобы остановить</span>
+    <span>наведи чтобы остановить</span>
   </footer>
 </div>
 
-<div class="paused-badge" id="pausedBadge">пауза</div>
+<div class="pill" id="pill">пауза</div>
 
 <script>
-// ── Fallback quotes (shown while loading or if fetch fails) ──
-const FALLBACK = {
-  2022: [
-    { id: 481234, rating: 1842, text: `<nick>vasya_prog</nick>: у меня баг который появляется только по пятницам\n<nick>kolyan</nick>: у меня такой же. называется "уже пятница"` },
-    { id: 479812, rating: 1631, text: `<nick>senior_dev</nick>: написал документацию к своему коду\n<nick>junior</nick>: и как?\n<nick>senior_dev</nick>: перечитал через неделю и не понял нихрена` },
-    { id: 477441, rating: 1509, text: `<nick>sysadmin</nick>: обновил прод в пятницу вечером\n<nick>boss</nick>: ну как там\n<nick>sysadmin</nick>: я уволился` },
-    { id: 475892, rating: 1487, text: `<nick>developer</nick>: зачем писать тесты если приложение и так работает\n<nick>tester</nick>: зачем пристёгиваться если и так едешь` },
-    { id: 474123, rating: 1423, text: `<nick>petya</nick>: скопировал код со stack overflow\n<nick>petya</nick>: работает\n<nick>petya</nick>: страшно трогать` },
-    { id: 472344, rating: 1398, text: `<nick>devops</nick>: у нас 99.9% uptime\n<nick>client</nick>: это сколько простоя в год?\n<nick>devops</nick>: около 9 часов\n<nick>client</nick>: ...\n<nick>devops</nick>: но зато красивые девять` },
-    { id: 470881, rating: 1354, text: `<nick>programmer</nick>: наконец-то разобрался с этим багом\n<nick>coworker</nick>: и в чём была проблема?\n<nick>programmer</nick>: я неправильно смотрел на экран` },
-    { id: 469302, rating: 1312, text: `<nick>masha</nick>: ты опять работаешь ночью?\n<nick>lesha</nick>: нет, я переименовываю переменные` },
-    { id: 467234, rating: 1287, text: `<nick>cto</nick>: наш код написан на javascript\n<nick>investor</nick>: и?\n<nick>cto</nick>: и это вся проблема` },
-    { id: 465891, rating: 1244, text: `<nick>qa</nick>: нашёл критический баг\n<nick>dev</nick>: это фича\n<nick>qa</nick>: пользователи теряют деньги\n<nick>dev</nick>: это платная фича` },
-    { id: 463412, rating: 1198, text: `<nick>artem</nick>: написал алгоритм сортировки за 10 минут\n<nick>artem</nick>: потратил 3 часа на именование переменных` },
-    { id: 461234, rating: 1176, text: `<nick>backend</nick>: это проблема фронтенда\n<nick>frontend</nick>: это проблема бэкенда\n<nick>devops</nick>: это проблема деплоя\n<nick>pm</nick>: это проблема коммуникации\n<nick>ceo</nick>: всем пить кофе` },
-    { id: 459781, rating: 1143, text: `<nick>igor</nick>: у меня всё работает локально\n<nick>igor</nick>: понятно почему прод горит` },
-    { id: 458012, rating: 1121, text: `<nick>developer</nick>: написал 200 строк кода\n<nick>developer</nick>: отрефакторил до 20\n<nick>developer</nick>: удалил всё, нашёл библиотеку` },
-    { id: 456334, rating: 1098, text: `<nick>sasha</nick>: почему у тебя 47 вкладок браузера?\n<nick>dima</nick>: это не вкладки. это незакрытые задачи` },
-    { id: 454812, rating: 1076, text: `<nick>tim</nick>: написал unit-тесты\n<nick>tim</nick>: все прошли\n<nick>tim</nick>: прод упал\n<nick>tim</nick>: тесты были не для того кода` },
-    { id: 453001, rating: 1054, text: `<nick>new_employee</nick>: тут в коде есть TODO с 2015 года\n<nick>old_employee</nick>: не трогай. это священный артефакт` },
-    { id: 451234, rating: 1032, text: `<nick>maxim</nick>: дай доступ к продакшну\n<nick>sysadmin</nick>: нет\n<nick>maxim</nick>: почему?\n<nick>sysadmin</nick>: я тебя знаю` },
-    { id: 449876, rating: 998, text: `<nick>manager</nick>: это займёт 2 часа?\n<nick>dev</nick>: 2 часа\n<nick>manager</nick>: отлично, нужно к завтрашнему утру\n<nick>dev</nick>: 2 недели` },
-    { id: 448012, rating: 967, text: `<nick>frontend</nick>: верстаю лендинг уже 3 дня\n<nick>friend</nick>: там же один экран\n<nick>frontend</nick>: IE11\n<nick>friend</nick>: соболезную` },
-    { id: 446234, rating: 943, text: `<nick>devops</nick>: написал скрипт для автоматизации\n<nick>devops</nick>: теперь трачу 4 часа на поддержку скрипта вместо 2 часов ручной работы` },
-    { id: 444781, rating: 921, text: `<nick>andrey</nick>: зачем у тебя переменная называется 'a'?\n<nick>vasya</nick>: я экономлю буквы` },
-    { id: 443012, rating: 897, text: `<nick>client</nick>: хочу как у apple, но дешевле\n<nick>dev</nick>: хочу как у apple зарплату\n<nick>client</nick>: ...\n<nick>dev</nick>: ...\n<nick>client</nick>: сделайте просто хорошо` },
-    { id: 441234, rating: 876, text: `<nick>analyst</nick>: задокументировал все требования\n<nick>dev</nick>: ни одного из них не существовало на момент сдачи` },
-    { id: 439876, rating: 854, text: `<nick>sergey</nick>: stackoverflow заблокировали на работе\n<nick>kolya</nick>: как ты вообще работаешь\n<nick>sergey</nick>: никак` },
-  ],
-  2023: [
-    { id: 492341, rating: 2103, text: `<nick>gpt_fan</nick>: попросил chatgpt написать код\n<nick>gpt_fan</nick>: потратил 3 часа на объяснение ему почему код неправильный\n<nick>coworker</nick>: мог бы за это время написать сам\n<nick>gpt_fan</nick>: но это же скучно` },
-    { id: 490812, rating: 1987, text: `<nick>pm</nick>: добавим новую фичу до релиза?\n<nick>dev</nick>: нет\n<nick>pm</nick>: это просто маленькое изменение\n<nick>dev</nick>: нет\n<nick>pm</nick>: буквально одна кнопочка\n<nick>dev</nick>: последний раз когда ты так говорил мы переписали всю базу данных` },
-    { id: 489234, rating: 1876, text: `<nick>vanya</nick>: ИИ заберёт нашу работу\n<nick>petya</nick>: у меня бэкенд на php 5.4\n<nick>vanya</nick>: у тебя бояться нечего` },
-    { id: 487812, rating: 1754, text: `<nick>dev</nick>: написал промпт для GPT\n<nick>dev</nick>: получил рабочий код\n<nick>dev</nick>: написал тест\n<nick>dev</nick>: тест не прошёл\n<nick>dev</nick>: попросил GPT написать тест\n<nick>dev</nick>: тест прошёл\n<nick>qa</nick>: ...` },
-    { id: 486123, rating: 1698, text: `<nick>sasha</nick>: у меня pull request на code review уже неделю\n<nick>lead</nick>: посмотрю на следующей неделе\n<nick>lead</nick>: (три месяца спустя)\n<nick>lead</nick>: о, тут конфликты` },
-    { id: 484901, rating: 1643, text: `<nick>remote_worker</nick>: созвон в 9 утра обязателен\n<nick>remote_worker</nick>: встал в 8:55\n<nick>remote_worker</nick>: включил камеру\n<nick>remote_worker</nick>: хорошо что я в пижаме выше пояса` },
-    { id: 483234, rating: 1598, text: `<nick>artem</nick>: ChatGPT написал за меня дипломную\n<nick>prof</nick>: ChatGPT проверил твою дипломную\n<nick>prof</nick>: ставлю двойку` },
-    { id: 481876, rating: 1543, text: `<nick>backend_dev</nick>: фронтендеры опять прислали баг-репорт\n<nick>backend_dev</nick>: "всё сломалось"\n<nick>backend_dev</nick>: что именно сломалось?\n<nick>frontend_dev</nick>: всё` },
-    { id: 480234, rating: 1487, text: `<nick>devops</nick>: переехали в kubernetes\n<nick>junior</nick>: стало лучше?\n<nick>devops</nick>: теперь у нас те же проблемы, но с облаком и за тройную цену` },
-    { id: 478901, rating: 1432, text: `<nick>manager</nick>: почему у тебя наушники всегда в ушах?\n<nick>dev</nick>: слушаю музыку\n<nick>manager</nick>: мешает концентрироваться?\n<nick>dev</nick>: мешает слышать ваши вопросы` },
-    { id: 477234, rating: 1398, text: `<nick>dima</nick>: написал микросервис\n<nick>dima</nick>: теперь у меня не один монолит с проблемами\n<nick>dima</nick>: а 17 микросервисов с проблемами` },
-    { id: 475812, rating: 1354, text: `<nick>hr</nick>: требуется junior с 5 годами опыта\n<nick>candidate</nick>: мне 16 лет\n<nick>hr</nick>: отлично, подходите` },
-    { id: 474123, rating: 1321, text: `<nick>lead</nick>: код нечитаемый\n<nick>dev</nick>: зато работает\n<nick>lead</nick>: это не твой код\n<nick>dev</nick>: зато работает` },
-    { id: 472901, rating: 1287, text: `<nick>ivan</nick>: попросил ИИ отрефакторить код\n<nick>ivan</nick>: он спросил зачем вообще нужен этот файл\n<nick>ivan</nick>: хороший вопрос` },
-    { id: 471234, rating: 1243, text: `<nick>junior</nick>: я случайно запушил в main\n<nick>senior</nick>: что там было?\n<nick>junior</nick>: мой пароль от базы данных\n<nick>senior</nick>: и всё?\n<nick>junior</nick>: и промпты для GPT` },
-    { id: 469812, rating: 1198, text: `<nick>maxim</nick>: работаю 4 часа в день\n<nick>kolya</nick>: как?\n<nick>maxim</nick>: остальные 4 часа в митингах` },
-    { id: 468234, rating: 1176, text: `<nick>qa</nick>: нашёл 47 багов\n<nick>pm</nick>: отлично\n<nick>qa</nick>: за последний час\n<nick>pm</nick>: нет` },
-    { id: 466901, rating: 1143, text: `<nick>dev</nick>: деплой прошёл успешно\n<nick>dev</nick>: (5 минут тишины)\n<nick>dev</nick>: откатываюсь` },
-    { id: 465234, rating: 1121, text: `<nick>sasha</nick>: зачем тебе 3 монитора?\n<nick>dima</nick>: на одном код, на втором stack overflow, на третьем chatgpt\n<nick>sasha</nick>: ты же программист\n<nick>dima</nick>: именно` },
-    { id: 463812, rating: 1098, text: `<nick>team_lead</nick>: оценим задачу в story points\n<nick>dev1</nick>: 3\n<nick>dev2</nick>: 8\n<nick>dev3</nick>: 21\n<nick>team_lead</nick>: поговорим\n<nick>dev3</nick>: я видел эту задачу раньше` },
-    { id: 462234, rating: 1076, text: `<nick>new_dev</nick>: почему здесь такой странный костыль?\n<nick>old_dev</nick>: это легаси\n<nick>new_dev</nick>: когда это писали?\n<nick>old_dev</nick>: я. вчера.` },
-    { id: 460901, rating: 1054, text: `<nick>petya</nick>: ChatGPT за секунду написал то что я делал 3 дня\n<nick>vasya</nick>: и как?\n<nick>petya</nick>: я провёл 3 дня объясняя ему почему неправильно` },
-    { id: 459234, rating: 1032, text: `<nick>startup_cto</nick>: мы используем cutting-edge технологии\n<nick>dev</nick>: у вас jquery 1.9\n<nick>startup_cto</nick>: cutting-edge легаси` },
-    { id: 457812, rating: 998, text: `<nick>remote_dev</nick>: включил видео на созвоне\n<nick>boss</nick>: ты на кухне?\n<nick>remote_dev</nick>: это мой офис\n<nick>boss</nick>: там холодильник открыт\n<nick>remote_dev</nick>: это мой сервер` },
-    { id: 456234, rating: 976, text: `<nick>andrey</nick>: написал 1000 строк кода за ночь\n<nick>andrey</nick>: утром удалил всё\n<nick>andrey</nick>: написал 10 строк\n<nick>andrey</nick>: работает` },
-  ],
-  2024: [
-    { id: 503412, rating: 2341, text: `<nick>dev</nick>: claude написал за меня весь проект\n<nick>dev</nick>: теперь не понимаю ни строчки\n<nick>dev</nick>: это называется архитектурный надзор` },
-    { id: 501891, rating: 2187, text: `<nick>pm</nick>: когда будет готово?\n<nick>dev</nick>: через 2 спринта\n<nick>pm</nick>: а в человекодавлениях?\n<nick>dev</nick>: через столько же, но больнее` },
-    { id: 500234, rating: 2043, text: `<nick>senior</nick>: никогда не используй ИИ для написания кода\n<nick>junior</nick>: почему?\n<nick>senior</nick>: потому что тогда ты не поймёшь код\n<nick>junior</nick>: а ты понимаешь свой?\n<nick>senior</nick>: ...` },
-    { id: 498712, rating: 1987, text: `<nick>vasya</nick>: ИИ заменит программистов\n<nick>petya</nick>: ИИ уже год не может нормально сверстать формочку\n<nick>vasya</nick>: значит нас заменят нескоро\n<nick>petya</nick>: я тоже не могу нормально сверстать формочку\n<nick>vasya</nick>: ...` },
-    { id: 497123, rating: 1932, text: `<nick>tech_lead</nick>: почему у тебя в коде три разных ИИ-стиля написания?\n<nick>dev</nick>: monday, wednesday, friday` },
-    { id: 495812, rating: 1876, text: `<nick>sasha</nick>: попросил ИИ объяснить мой же код\n<nick>sasha</nick>: он объяснил лучше чем я написал\n<nick>sasha</nick>: попросил его переписать\n<nick>sasha</nick>: теперь я читаю чужой код` },
-    { id: 494234, rating: 1821, text: `<nick>manager</nick>: нам нужно вырасти на 300% в этом квартале\n<nick>dev</nick>: окей\n<nick>manager</nick>: у нас нет бюджета\n<nick>dev</nick>: окей\n<nick>manager</nick>: и команда та же\n<nick>dev</nick>: зарплата?\n<nick>manager</nick>: обсудим в следующем квартале\n<nick>dev</nick>: я уволился` },
-    { id: 492891, rating: 1765, text: `<nick>artem</nick>: деплой в пятницу — это нормально если ты:\na) не работаешь в пятницу\nb) ушёл в отпуск\nc) уволился` },
-    { id: 491234, rating: 1712, text: `<nick>frontend</nick>: зачем тебе тёмная тема если всё равно светло?\n<nick>designer</nick>: системная тема\n<nick>frontend</nick>: почему система светлая?\n<nick>designer</nick>: потому что я в офисе\n<nick>frontend</nick>: почему в офисе светло?\n<nick>designer</nick>: не задавай лишних вопросов` },
-    { id: 489812, rating: 1659, text: `<nick>lead</nick>: ревью кода закончил\n<nick>dev</nick>: и?\n<nick>lead</nick>: хорошие комментарии\n<nick>dev</nick>: в коде почти нет комментариев\n<nick>lead</nick>: вот именно` },
-    { id: 488234, rating: 1608, text: `<nick>junior</nick>: как стать senior-разработчиком?\n<nick>senior</nick>: работай 10 лет\n<nick>junior</nick>: или?\n<nick>senior</nick>: или напиши в резюме что уже` },
-    { id: 486891, rating: 1556, text: `<nick>dima</nick>: написал тесты перед кодом (TDD)\n<nick>kolya</nick>: как?\n<nick>dima</nick>: спросил ИИ\n<nick>kolya</nick>: а код?\n<nick>dima</nick>: тоже спросил ИИ\n<nick>kolya</nick>: ты вообще что-нибудь делал?\n<nick>dima</nick>: я написал промпты` },
-    { id: 485234, rating: 1498, text: `<nick>cto</nick>: переходим на rust\n<nick>dev1</nick>: зачем?\n<nick>cto</nick>: безопасность памяти\n<nick>dev2</nick>: у нас python\n<nick>cto</nick>: вот именно` },
-    { id: 483812, rating: 1443, text: `<nick>ivan</nick>: выкатили новую фичу\n<nick>user</nick>: когда вернёте старую?\n<nick>ivan</nick>: ...\n<nick>user</nick>: она была лучше\n<nick>ivan</nick>: ...\n<nick>user</nick>: я её не использовал но она была лучше` },
-    { id: 482234, rating: 1398, text: `<nick>pm</nick>: у клиента срочный запрос\n<nick>dev</nick>: всё срочное\n<nick>pm</nick>: это очень срочное\n<nick>dev</nick>: всё очень срочное\n<nick>pm</nick>: это КРИТИЧЕСКИ срочное\n<nick>dev</nick>: добавил в backlog` },
-    { id: 480812, rating: 1354, text: `<nick>qa</nick>: воспроизвёл баг\n<nick>dev</nick>: у меня не воспроизводится\n<nick>qa</nick>: у меня воспроизводится\n<nick>dev</nick>: у тебя другая конфигурация\n<nick>qa</nick>: у нас одинаковые ноутбуки\n<nick>dev</nick>: у тебя другая аура` },
-    { id: 479234, rating: 1312, text: `<nick>startup_founder</nick>: мы делаем Uber для котиков\n<nick>investor</nick>: расскажите подробнее\n<nick>startup_founder</nick>: котики едут на Uber\n<nick>investor</nick>: я дам деньги` },
-    { id: 477812, rating: 1276, text: `<nick>remote_dev</nick>: созвон в 8 утра\n<nick>remote_dev</nick>: не выспался\n<nick>remote_dev</nick>: пошёл варить кофе во время созвона\n<nick>boss</nick>: ты там?\n<nick>remote_dev</nick>: я в режиме загрузки` },
-    { id: 476234, rating: 1243, text: `<nick>maxim</nick>: написал нейросеть с нуля\n<nick>vasya</nick>: на чём?\n<nick>maxim</nick>: на torch\n<nick>vasya</nick>: это не с нуля\n<nick>maxim</nick>: я написал import torch сам` },
-    { id: 474812, rating: 1209, text: `<nick>designer</nick>: сделал редизайн\n<nick>pm</nick>: клиент хочет "как было"\n<nick>designer</nick>: это было некрасиво\n<nick>pm</nick>: клиент привык\n<nick>designer</nick>: ...\n<nick>designer</nick>: откатил git` },
-    { id: 473234, rating: 1176, text: `<nick>dev</nick>: работаю удалённо 3 года\n<nick>friend</nick>: скучаешь по офису?\n<nick>dev</nick>: скучаю по чужому кофе и кондиционеру который дует в шею\n<nick>friend</nick>: ...\n<nick>dev</nick>: нет` },
-    { id: 471812, rating: 1143, text: `<nick>junior</nick>: у меня вопрос\n<nick>senior</nick>: ты погуглил?\n<nick>junior</nick>: да\n<nick>senior</nick>: ты спросил GPT?\n<nick>junior</nick>: да\n<nick>senior</nick>: ты прочитал документацию?\n<nick>junior</nick>: нет\n<nick>senior</nick>: иди читай\n<nick>junior</nick>: (30 минут)\n<nick>junior</nick>: там нет ответа\n<nick>senior</nick>: в документацию никто не пишет ответы` },
-    { id: 470234, rating: 1109, text: `<nick>sasha</nick>: обновил зависимости\n<nick>sasha</nick>: ничего не сломалось\n<nick>sasha</nick>: это подозрительно\n<nick>sasha</nick>: откатил на всякий случай` },
-    { id: 468812, rating: 1076, text: `<nick>team</nick>: завтра релиз\n<nick>dev</nick>: у меня всё готово\n<nick>pm</nick>: добавили одну маленькую фичу\n<nick>dev</nick>: завтра не будет релиза` },
-    { id: 467234, rating: 1043, text: `<nick>ceo</nick>: внедрим ИИ во все процессы\n<nick>cto</nick>: в какие именно?\n<nick>ceo</nick>: во все\n<nick>cto</nick>: даже в бухгалтерию?\n<nick>ceo</nick>: особенно в бухгалтерию\n<nick>cfo</nick>: (тихо) я уже пользуюсь` },
-  ]
-};
+const DATA = [
+  [{id:1933,rating:3121,date:"14.11.2007",text:`Mopozzz: сижу на лекции в поточной аудитории и вдруг слышу кто-то кричит пинг  172.31.2.132 (мой айпишник)....   
+Mopozzz: ну я поворачиваюсь, думаю чё за глюк и кто это сказал?...и... падаю под стол:  
+Mopozzz: На меня летит ПАКЕТ!...`},
+{id:3230,rating:2868,date:"27.02.2008",text:`Введите любое 11-значное простое число, чтобы продолжить...`},
+{id:8695,rating:2850,date:"05.01.2009",text:`Она: /me не суппорт 
+Она: /me точно не суппорт.. 
+Она: /me блондинка... 
+Она: розовые кофточки правят миром 
+Она: /me рождена, чтобы красить ногти 
+Он: гг не всё так просто.. 
+Она: это почему? 
+Она: всё именно так.. 
+Он: Угу.. Но почему то ты консультируешь всех по линю и собираешься ставить генту.. 
+Она: ну... 
+Она: зато у меня live генты на розовом диске...`},
+{id:3539,rating:2797,date:"26.03.2008",text:`Astarra: Трушный виндовсник при знакомстве с линухом не прописывает в баше man rm, а пишет сразу rm -rf/, в рассчете на то, что "обычно" выскакивающее окошко с подтверждением выполняемой команды а-ля "Вы действительно хотите..." разъяснит ему суть того, что он "изучает" :D`},
+{id:6172,rating:2699,date:"25.10.2008",text:`xxx: меня всегда удивляли задроты сидящие на линуксах, бздях и тд и тп 
+yyy: а ты хоть раз видел настоящего юниксоида, что бы говорить, задрот он, или нет? 
+xxx: да блин. если человек офигеть круглые сутки безполезную хрень, то он по определению здрот 
+yyy: х-се бесполезную. ты хоть раз видел то живьем freebsd? 
+xxx: да впизду ваши линуксы и бзди. вот будет линейка под лиукс, может и попробую. а так наплевать он мне нужен 
+yyy: lineage? и давно ты в нее играешь? 
+xxx: да полгода наверно, перса до 34 левела уже качнул. 
+yyy: ну так слушай, мы оба студенты вечернего отделения. судя по всему, большинство дня ты тратишь на линейку, и кормят тебя мама с папой. я работаю по полной уже 8 месяцев, на работу устроился благодаря умению работать с фрей, получаю 40000, и будут еще увеличивать. и кто из нас задрот - ты подумай. хорошо подумай. если уверен, что я - качайся дальше.`},
+{id:2819,rating:2638,date:"16.01.2008",text:`xxx: да, винда — адская система. :)  
+yyy: это линукс адская с его демонами и зомби. Винда - система православная, там иконы и службы проводятся. 
 
-// ── HTML parser for quotes ──
-function parseQuotes(html) {
-  const quotes = [];
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-  const items = doc.querySelectorAll('.quote__body, .quote, article.quote');
-  items.forEach(item => {
-    const textEl = item.querySelector('.quote__body, .quote-text, .text');
-    const ratingEl = item.querySelector('.quote__rating, .rating, .vote_sum');
-    const idEl = item.querySelector('.quote__header a, .quote__id, a[href*="/quote/"]');
-    if (!textEl) return;
-    const text = textEl.innerText || textEl.textContent || '';
-    const rating = parseInt((ratingEl?.textContent || '0').replace(/\D/g,'')) || 0;
-    const idMatch = (idEl?.href || idEl?.textContent || '').match(/(\d+)/);
-    const id = idMatch ? parseInt(idMatch[1]) : Math.random() * 1e6 | 0;
-    if (text.trim().length > 10) quotes.push({ id, rating, text: text.trim() });
-  });
-  return quotes;
+(с) forum.b.gz.ru`},
+{id:1553,rating:2588,date:"05.10.2007",text:`<SerGo> Нужен питон-программист...срочно
+<#!usr/bin/nah> эм...к сожалению остались только хомяки-дизайнеры`},
+{id:1650,rating:2483,date:"17.10.2007",text:`обнаружил в своем коде двух(или трёх)летней давности такие комментарии:
+
+1. //легче было написать эту фигню на С......
+2. // где-то здесь должен быть главный большой цикл, но я его потерял :-(
+3. //здесь и далее идут извращения. детям до 16 не смотреть!
+4. //блин.............
+5. //эту функцию НЕ ТРОГАТЬ!!! она каким-то образом работает!
+6. //тум-пурум-пурум, APIлки!
+7. //удалить рука не подымается... пусть будет.
+8. // осторожно! здесь я тупил два дня!
+9. // в принципе здесь можно и без дополнтельного массива, но так както эстетичнее, культурнее ёбаныврот!`},
+{id:3501,rating:2347,date:"21.03.2008",text:`Инст. Допконсультация. Умаявшийся препод бьется с тупым студентом, в уголке сидит аспирант, жует печеньки, запивает чаем и чатится в аське. Препод, задолбавшись объяснять студенту, что такое полиморфизм, зовет аспера и говорит студенту: 
+- Так, смотри сюда! Вот Андрей - это полиморфная функция. Что у него на входе? 
+- Эээээ... 
+- На входе у него чай и печенье! А что у него на выходе? 
+- О_О! 
+- На выходе у него, твою мать, строка символов! Андрей, у тебя есть еще что-нибудь поесть? 
+- Эээээ... ну, шоколадка есть! 
+- Съешь ее! 
+Офигевающий аспирант разворачивает шоколадку и начинает ее поглощать. Препод: 
+- Вот теперь у него на входе шоколадка. Что на выходе будет? 
+- Эээ... 
+- Идиот! Щас он доест, сядет за комп и опять будет трепаться! На выходе снова будет строка символов! Хоть его, мать твою, артишоками накорми - на выходе будет строка символов! Он полиморфная функция, сукаааа!!! Понял?`},
+{id:4403,rating:2198,date:"19.06.2008",text:`Книгу по Gentoo Linux еще надо склеить 
+
+(с)max_nya`},
+{id:694,rating:2154,date:"28.07.2007",text:`Пивабы:
+Схватил виря где-то в апреле. Пропал интернет. Вирей уже давно выловил, интернета нет. Винду переустанавливать ой как не хочется. В другой раздел поставил ещё одну винду - там всё нормально. Интернет АДСЛ. Может кто чем поможет?
+ЗЫ От меня этот вирь через квип попал к знакомому (при этом послал сообщение "Ты п@#ор" - у него таже фигня, интернета нет.
+
+F0X:
+Вдарил свою машину о дерево на повороте, в апреле. Машина перестала ездить. Дерево уже давно спилил, машина все-равно не ездит. Везти в СТО ой как не хочется. Купил другую - та ездит нормально. Машина ВАЗ. Может кто чем поможет?
+ЗЫ По моей рекомендации, в соседнее дерево на этом же повороте врезался мой знакомый (при этом, знакомый сообщил мне, что "Ты п@#ор" - у него таже фигня, машина не ездит.`},
+{id:11986,rating:2051,date:"26.12.2009",text:`ххх: sudo apt-get install mc  
+ххх: ht7Qxfc8  
+yyy: привет  
+ххх: блин!!!!  
+ххх: меня от твоего "привет", чуть инфаркт не схватил!!`},
+{id:9494,rating:2043,date:"28.03.2009",text:`<Nastya> мне нужна помощь опытных линуксоидов  
+<Nastya> Как правильно отодрать наклейку Windows Vista с нового ноутбука?`},
+{id:9354,rating:2003,date:"12.03.2009",text:`Единственной кодировкой должна быть UTF-8 а использование других следует приравнять к разжиганию межнациональной розни и карать соответствующей статьёй УК.`},
+{id:771,rating:2000,date:"06.08.2007",text:`<Qwerty> Щас рекламу игры наблюдал. 
+<Qwerty> Стоит на скале парень, вдруг за спиной у него появляется дракон с довольной ухмылкой.
+<Qwerty> И тут вдруг пишут название игры "BLUE  DRAGON"`},
+{id:622,rating:1946,date:"17.07.2007",text:`Dedy> привет! как дела?
+Fessy> привет... нормально, ты кто?? О_о
+Dedy> меня Антон зовут! а у тебя есть фото?
+Fessy> ясно.. "приветкагделавышлифото"...
+Dedy> ну так?
+Fessy> так, читай внимательно. это мои минусы :
+я - девушка - раз
+курю - два
+учусь на матфаке Госа, на прогера - три
+так что моё свободное время я провожу за компом, с пивом, в мятой старой футболке - четыре
+есть плюс - ненавижу билана и прочую попсу, НО из этого пятый минус фри-тайм проходит под хард-рок, альтернативу и метал.
+ты всё ещё хочешь мою фотку????
+Dedy> Класс! да, хочу!а на чём пишешь? парень есть? а у тя бубен есть ;)
+Fessy> пля, нарвалась... ты кем работаешь????
+Dedy> одмином...
+Fessy> Ну не всё потеряно, читай минусы для тебя - 
+я - девушка. - раз.
+я пока ещё учусь на матфаке - два
+я обожаю детей - три
+и самое главное я пишу на бейсике!
+> Dedy удалил себя из вашего списка контактов.`},
+{id:2027,rating:1944,date:"23.11.2007",text:`1arts: Ты че такой дерзкий? 
+gnkd: Да я на таких как ты в Марио сверху прыгал!`},
+{id:2236,rating:1893,date:"08.12.2007",text:`Едет веб-мастер в поезде и слышит: <td></td> ... <td></td> ... <td></td>`},
+{id:12686,rating:1860,date:"03.04.2010",text:`xxx: Попробуй, поиграй на своем интеле в Quake 4 под линуксом. И сравни с ATI/NVidia. 
+yyy: Хм, выглядит просто отлично. Столь же хорошо, как на ATI/NVidia! 
+yyy: так, секунду, на подходе второй кадр... Выглядит тоже замечательно!`},
+{id:6383,rating:1856,date:"31.10.2008",text:`- Что общего между Хэллоуином и Рождеством? 
+- Каждый программист знает: 31 oct = 25 dec`},
+{id:4670,rating:1815,date:"07.07.2008",text:`Цитата 
+
+Из книги "Персональные ЭВМ в инженерной практике", М. Радио и связь, 1989. 
+
+...Одним из примеров громоздкой и, по мнению авторов, бесполезной надстройки является интегрированная система WINDOWS фирмы Microsoft. Эта система занимает почти 1 Мбайт дисковой памяти и рассчитана на преимущественное использование совместно с устройством типа мышь... 
+...Таким образом, читатель уже понял, что среди надстроек над ДОС бывают довольно бесполезные системы, которые только выглядят красиво, а на самом деле отнимают время пользователя, память на дисках и оперативную память ЭВМ. Обманчивая красота таких систем, однако, сильно воздействует на неискушенных пользователей, которые не имели практики работы на машине. Инерция мышления бывает столь сильна, что авторам приходилось наблюдать, как люди, начавшие работать с подобной надстройкой, впоследствии с трудом заставляют себя изучать команды ДОС. Хочется предостеречь от этой ошибки читателей ...`},
+{id:10504,rating:1755,date:"29.06.2009",text:`x> да у вас компьютерщиков, вместо божества Билл Гейтс!  
+y> упаси Торвальдс.`},
+{id:1966,rating:1716,date:"17.11.2007",text:`(разговор в аське про страшные сны)   
+
+A.Vas   
+Это еще что, вот мне однажды такое приснилось... прям в холодном поту проснулся о_О   
+
+A.Vas   
+Началось все с того, что у нас в городе вдруг подскочила цена на проезд в маршрутке до 8 рублей... Но собственно действие пошло с того, что мне понадобилось зачем-то съездить в универ. Я сел на маршрутку и поехал. Около нужной остановки подаю 10 рублей кондуктору, она мне отдает 8 (!) рублей сдачи. Я в полном а**е забираю сдачу, выхожу...   
+
+A.Vas   
+Не помню, что я делал в универе... Спустя какое-то время я поехал домой. По пути вспомнил, что неплохо было бы зайти в гости к одному человеку, не помню уже к кому. Не с пустыми же руками идти... Зарулил в супермаркет недалеко от дома, взял там какой-то тортик вафельный за 35 р и пошел на кассу (еще удивился тогда, что ж так дешево). Подаю там этот тортик кассирше, даю 40 р. Она мне дает сдачу двумя монетками - 1 рубль и А рублей!!!   
+
+A.Vas   
+вот тут-то я и проснулся... Главное, взял калькулятор, пересчитал - все сходится: 10h - 8h = 8h, 40h - 35h = B = A + 1!!! я в а**е...`},
+{id:3708,rating:1705,date:"15.04.2008",text:`1: В курсе, Диман вчера приезжал? 
+2: угу, че делали? 
+1: Ну помнишь, я ему исходники обещал? Так вот, флеху он забыл, а ему приспичило, щаз говорит хочу, а у меня ни болванки, ни дискеты и модем к серёге оттащил. Так че сделали, ужали в архив поплотней, перегнали в base64 и на принтере распечатали! Говорит, дома файнридером возьму! 
+2: а чё курили? 
+1: Ниче, тока пиво. А что? 
+2: а исходники эти ПРОСТО НАПЕЧАТАТЬ нельзя было? 
+1: бляя...`},
+{id:11993,rating:1667,date:"28.12.2009",text:`vertexua 
+Какая коммерческая компания сделала самый большой вклад в развитие open source/free software? 
+
+G-UNiX 
+Наибольший вклад внесла Microsoft, выпустив Windows Vista.  
+
+(ЛОР)`},
+{id:10312,rating:1649,date:"09.06.2009",text:`Компания Майкрософт, с целью борьбы с конкурентами создала троянец для линукс, распространяющийся через флешки и интернет, убивающий все личные документы. На данный момент существует только один способ бороться с ним: щелкать "нет" в лицензионном соглашении трояна.`},
+{id:982,rating:1593,date:"20.08.2007",text:`July Мишель, привет! ты мне нужен как мужчина!
+ Miha ога.
+ Miha привет. 
+ July Как установить в комп Bluetoosh? Чтобы из компа в телефон скачивать всякую шнягу?
+ Miha венда какая
+ July XP
+ Miha SP2 если тоничего делать не нужно. 
+ Miha само установицо 
+ July А поподробнее
+ Miha подробнее - никак. 
+ Miha проще приехать и поставить 
+ July Кому куда приехать?
+ Miha где надо установить блютуз? 
+ July В моем компе в офисе на Красноярской, 40
+ Miha  ))))) 
+ Miha у тебя там че админофф нет? 
+ July Есть, они такие стерва!
+ Miha админы все стерва. особенно когда начинают "ты мне нужен как мужчина", а потом выясняется что надо блютуз поставить.. 
+ July стерва..`},
+{id:4926,rating:1590,date:"29.07.2008",text:`<typename T> Детский конструктор Lego. 
+<typename T> Десткий деструктор ~Lego.`},
+{id:1498,rating:1574,date:"29.09.2007",text:`Описание KolibriOS:
+
+Система расчитана на использование ассемблера для написания приложений, но есть и программы, написанные на языках Ада, Си, C++, Free Pascal, Forth.
+
+P.S.: После слова "Ада" надо было двоеточие поставить! :)`},
+{id:1942,rating:1560,date:"15.11.2007",text:`Kust (12:40:46 14/11/2007)  
+мама говорит, я в секту вступил =)  
+
+dimet (12:40:54 14/11/2007)  
+почему?  
+
+Kust (12:41:04 14/11/2007)  
+пришел конверт, на нем крупными буквами  
+
+Kust (12:41:13 14/11/2007)  
+УБУНТУ КУБУНТУ УДУБУНТУ`},
+{id:12292,rating:1537,date:"08.02.2010",text:`@absolvo: На презентации Internet Explorer 9, парализованный мальчик встал и вышел.`},
+{id:9288,rating:1524,date:"06.03.2009",text:`NaZg: Интересно, локальные переменные задаются вопросом, есть ли жизнь после '}'`},
+{id:5984,rating:1523,date:"11.10.2008",text:`>Социальная сеть Bebo отослала 500 сообщений своих пользователей на планету Gliese 581C, находящуюся в 20 световых годах от Земли, передает BBC News.    
+
+Внутригалактический IP-адрес Земли забанен на 10 млн. лет.`},
+{id:10160,rating:1519,date:"28.05.2009",text:`Dr.Strangelove: Ну как, Фей тебя с теми девками познакомил? :-) 
+MindChanger: Угу. Правда я при знакомстве чуть не помер со смеху :-) 
+Dr.Strangelove: Хе, чего так? 
+MindChanger: Понимаешь, они сестры, близняшки. Так вот. Одну зовут Арина, а вторую Карина 
+MindChanger: Обе - линуксоидши. И самое интересное заключается в том, что на компе Арины стоит Убунту, на у Карины... 
+MindChanger: Догадался? %) 
+Dr.Strangelove: Кубунту? :-D 
+MindChanger: Ага :-)`},
+{id:11613,rating:1423,date:"11.11.2009",text:`DoS (15:53:31)  
+Здравствуйте. Я ваш подписчик из Калининграда. У нас только что был обильный снегопад, и мокрый снег налип на тарелку, после чего пропал сигнал со спутника.  
+DoS (15:55:32)  
+Мог ли снег быть причиной? Или Проблему стоит искать в другом месте?  
+DoS (16:36:27)  
+Мог ли сильный снегопад повлиять на проводимость синапсов мозга инженеров саппорта и замедлить их реакции?  
+DoS (18:41:38)  
+Могла ли низкая температура воздуха превратить воду в ваших организмах в антифриз?  
+DoS (19:13:52)  
+Можно ли состариться, ожидая ответа от саппорта?  
+DoS (01:38:48)  
+Можно ли передавать по наследству право на получения ответа техподдержки?  
+DoS (01:45:07)  
+Можно ли сократить время ожидания, используя теорию относительности Эйнштейна и летательный аппарат, развивающий околосветовую скорость?  
+DoS (07:04:08)  
+Скажитте, а центральный оффис располоожен не в Таллине?`},
+{id:9747,rating:1395,date:"20.04.2009",text:`ZL[]RD> Если на яблоне висит яблоко, это норма. Если на яблоне висят окна - это ужас. Если на яблоне висит пингвин - просто ему так хочется))`},
+{id:6084,rating:1394,date:"19.10.2008",text:`[14:38:02] <wayne> мы в ответе за тех, кому поставили линукс :)`},
+{id:3737,rating:1317,date:"18.04.2008",text:`стерва **учая (10:54:01 18/04/2008)  
+
+Игорь, зайди ко мне пришли документы, надо отсканировать  
+
+Hi стерва **учая. I'm away since 18.04.2008 10:50:14. I'll read your message later.  
+
+стерва **учая (10:54:35 18/04/2008)  
+
+Можешь сразу в бухгалтерию за трудовой идти, уволен !  
+
+Igor (11:03:17 18/04/2008)  
+
+*ля , вышел покурить ....`},
+{id:1980,rating:1287,date:"18.11.2007",text:`turboNOMAD: прикинь, только что на вайне поставил кармагеддон третий и он ЗАПУСТИЛСЯ!! 
+JackYF: Karmageddon... а-а, кдешное что-то?`},
+{id:11408,rating:1257,date:"17.10.2009",text:`<sP!tF!rE> Мона - мужик? 
+<Львёна> девушка 
+<sP!tF!rE> женщина не может знать различия между свичом и роутером!!! 
+<Львёна> она программистка 
+<Львёна> и вообще.. хватит стереотипов! 
+<sP!tF!rE> :) 
+<Львёна> женщина не может генту поставить.. 
+<Львёна> следовательно, из нас двоих женщина - ты 
+<sP!tF!rE> фак`},
+{id:13463,rating:1257,date:"18.08.2010",text:`ya.ru - Лидер на рынке ICMP запросов.`},
+{id:3130,rating:1228,date:"14.02.2008",text:`xxx 
+Сделай мне сендвич... 
+
+yyy 
+Что? Иди сам делай! 
+
+xxx 
+sudo Cделай мне сендвич 
+
+yyy 
+Ну, хорошо`},
+{id:6104,rating:1219,date:"20.10.2008",text:`<OxCODER> народ падкиньте мыслю:  
+<OxCODER> какую прогу мона написать штоб быстро распространилась?  
+<Sam_Gold> червь  
+<OxCODER> смефно=)  
+<OxCODER> я про полезную=)  
+<Sam_Gold> червь-шелкопряд`},
+{id:5523,rating:1217,date:"08.09.2008",text:`xxx Превед компилятор!  
+yyy Правильно писать "Привет". И запятую поставь, там обращение. И что, вообще, такое компилятор?`},
+{id:1586,rating:1198,date:"09.10.2007",text:`z: вчера форматнул диск, поставил висту...
+a: о_О и как??
+z: КОГДА стерва ВЕРНЕШЬ ДИСК С МАНДРИВОЙ???!!!`},
+{id:10211,rating:1176,date:"02.06.2009",text:`Фирма Майкрософт подала в суд на отечественную панк-группу «Дрочащий Дикобраз» по поводу нарушения авторских прав. Выяснилось, что если концертную запись группы пустить задом наперед и записать на компакт-диск, то с него установится Windows Vista.`},
+{id:10813,rating:1175,date:"12.08.2009",text:`А правда, что опытные программисты могут до 6 часов не ходить в туалет, если у них в голове вертится мысль "Вот сейчас оно откомпилится - и пойду"?`},
+{id:11252,rating:1163,date:"27.09.2009",text:`@sevenov: 
+Переводчик, говорите, работа скучная? Я корректирую фрилансом одну тех. инструкцию по установке банковского сервака, с англ. на рус. До этого инструкция побывала то ли в Промте, то ли ещё где, но отныне "UnZip and click 'finish'" переводится 'Расстегните ширинку и пощёлкайте концом"`},
+{id:12298,rating:1160,date:"09.02.2010",text:`комментарии на хабре к ролику, в котором хорошенькая девушка объясняет, как устанавливать линукс 
+
+xxx: Ждём ответного удара Microsoft, где Кармен Электра в бикини и намазанная блёстками расскажет нам как пользоваться msconfig в XP :) 
+
+yyy: скорее тогда уж в семерке) 
+
+xxx: Я думаю рекламный бюджет на семёрку позволит нанять Торвальдса, в бикини и намазанного блёстками…`},
+{id:13963,rating:1159,date:"03.12.2010",text:`ххх: Как узнать пароль в БИОС? 
+ууу: Посмотри на обратной стороне батарейки.`},
+{id:12811,rating:1150,date:"22.04.2010",text:`пытался объяснить маме,почему линукс лучше винды. Мама немного подумала и откомпенсировала:  
+- А я ведь еще в 82м поняла,до твоего рождения,что что-то пойдет не так...когда отец пытался из утюга электрический стул для мышей собрать...`},
+{id:9658,rating:1138,date:"13.04.2009",text:`sliffka: ты меня нелюбиш =( 
+
+sl0: Да. И более того я тебе об этом уже неоднократно говорил. Но повторюсь. 
+1. Я тебя никогда не видел и видеть не желаю. 
+2. Ты пишешь не падонкафским, а просто безграмотным языком. 
+3. Ты живешь за 3 с хреном тыщи километров от меня в другой стране 
+4. Физический контакт с особями твоего возраста преследуется законом. 
+5. Про твой богатый внтренний мир даже говорить не хочется. 
+
+sliffka: мне кажется что ты чтото скриваеш 
+
+sl0: Да, ладно, забудь о всем, что я писал выше. Настоящая причина в том, что ты не девственница и изменила мне минимум два раза. 
+
+sliffka: НЕПРАВДА!!! 
+
+sl0: Ну не верю, понимаешь НЕ ВЕРЮ, что ты сама поставила эту чертову убунту и настроила жаббер.`},
+{id:1109,rating:1118,date:"28.08.2007",text:`#define sizeof(x) rand()`},
+{id:10189,rating:1106,date:"31.05.2009",text:`<Ant1Xr1st> как хорошо, когда фраза "они жили долго и счастливо и умерли в один день" относится не к винтам в зеркале`},
+{id:9432,rating:1072,date:"20.03.2009",text:`<omg> Добрый день. Подскажите пожалуйста хорошую среду разработки для Java. 
+<lynxy> среда на следующей неделе будет очень хорошей для разработки на Java`},
+{id:8548,rating:1058,date:"16.12.2008",text:`*** Человек enters the room 
+Человек: Здрасте. У меня проблема... 
+*** Человек was banned from this room (нет человека - нет проблемы)`},
+{id:12034,rating:1052,date:"05.01.2010",text:`Минимальные требования, предъявляемые к компьютеру:  
+- 200 MHz Pentium CPU  
+- 64MB RAM  
+- Поддержка USB1.1/2.0  
+- операционная система Windows Vista  
+(из руководства по установке оборудования Stream)`},
+{id:9987,rating:1043,date:"13.05.2009",text:`г-н Следователь, позвольте интимный вопрос: у вас мобильник есть? Хотите, посажу вас по 272 и 154 ст. УК РФ прямо в зале суда? Оч просто: набираю ваш номер, и весь зал слышит рингтон вашей мобилы, за который вы не платили. А если мелодия урезана, значит вы виновны еще и в неправомерном доступе! Итого, срок от 3 до 7 лет. А ваш подозреваемый будет освобожден в зале суда, т. к. расследование было проведено тяжким преступником, поправшим авторские права, и буде считаться недействительным)))  
+
+http://www.securitylab.ru/news/379413.php`},
+{id:13133,rating:1039,date:"18.06.2010",text:`Про библиотеку эмулирующую CSS3 для IE 6-8: 
+Я прекрасно понимаю, что IE будет притормаживать иногда, но считаю это плюсом, пользователи Internet Explorer должны страдать…`},
+{id:10500,rating:1038,date:"28.06.2009",text:`<Львёна> мда.. снайперское попадание... 
+<Львёна> только я могу уронить шпильку на клавиатуру так, чтобы она попала в USB-разъём, что-то замкнула и перезагрузила комп (( 
+<FloydCCCXI> а винда бы обнаружила новое устройство`},
+{id:2034,rating:1037,date:"23.11.2007",text:`Hooligaша: Я тут 98 винду поставил)) ради стёба 
+Hooligaша: Кстати классная винда без заморочек :) 
+Ыыыксклюзивный: Без заморочек гавариш ?) 98-я? 
+Ыыыксклюзивный: Мы таких незамороченных в 5-ом классе вот так лечили ;)) 
+Ыыыксклюзивный: ping -l 32000 -t 10.12.48.1 
+Hooligaша: О_О Нееет стерва!!!!!!!!! Стой!! 
+Hooligaша has gone offline. 
+Ыыыксклюзивный:Винду он.. без заморочек нашёл... так тебе падло))`},
+{id:6416,rating:1037,date:"02.11.2008",text:`* xxx с удивлением обнаружил, что корзина в виндовс является прекрасным средством для резервного копирования исходников активного проекта. там могут находиться файлы с одинаковым именем а также пишется дата помещения в корзину`},
+{id:1985,rating:1033,date:"19.11.2007",text:`Cholo  
+Привет админам!  
+ Iwan 
+Привет, чего делаешь? 
+ Cholo  
+Сервак ковыряю на работе. 
+ Iwan 
+Ты балбес на работу по привычке чтоли пришел? )))  
+ Cholo 
+В смысле? 
+ Iwan 
+Ну, ваще то ты в отпуске с сегодняшнего дня... 
+ Cholo 
+блин!!!!!`},
+{id:11081,rating:1024,date:"11.09.2009",text:`ximaera:не умею я писать багрепорты. У меня вместо них всё время патчи получаются :-(`},
+{id:10153,rating:1019,date:"27.05.2009",text:`<Nata Svift> привет всем. у меня вопрос  
+<cutwater> ооо женщина )))  
+<ForNeVeR> Женщина? Что это?  
+<0xd34df00d_inspired> ForNeVeR: объект из реальной жизни.  
+<0xd34df00d_inspired> ForNeVeR: не отвлекайся, пиши код.`},
+{id:11671,rating:1010,date:"18.11.2009",text:`ShpurloS: Уже известно, что правительство планирует создать в новой доменной зоне почтовый сервер для государственных нужд. Аналитики полагают, что создание собственного почтового сервера может обойтись бюджету в сумму до 20 млн долл.  
+ShpurloS: sudo aptitude install postfix postfix-mysql mysql-server postfix-tls libsasl2-2 libsasl2-modules libsasl2-modules-sql sasl2-bin libpam-mysql openssl  
+ShpurloS: Где я могу забрать свои 20 млн?!`},
+{id:12205,rating:1007,date:"26.01.2010",text:`#anime 
+xxx: я уже пять лет не переставлял о.с. и на ней никогда небыло антивируса, никогда ничего не ловил, не понимаю тот народ который плачется что подцепил троян и его не спас крутой дядя каспер или новый нод, что они такого делали ? 
+yyy: снеси уже свой линукс и кончай народу мозг парить 
+xxx: ну во первых не линукс а QNX......`},
+{id:1490,rating:991,date:"28.09.2007",text:`Angel 
+счас файл натягивала на огромную пачку бумаг. как маленьки презерватиа на...
+
+ Iwan 
+Как можно натягивать файл на БУМАГИ??? 
+Angel... ты только что напрочь вынесла мне моск. 
+
+ Angel 
+файл - это папка!!
+
+ Iwan
+ППЦ. А что тогда такое директория?!`},
+{id:5704,rating:987,date:"22.09.2008",text:`halt: А как в этом линуксе в командной строке перегрузить машину? 
+init6: Присоединяюсь к вопросу..`},
+{id:12584,rating:987,date:"18.03.2010",text:`Jay_White: Слушай.. Если со стола падает ложка - придет женщина, так? 
+d_VoiNick: угу 
+Jay_White: Если вилка - злая женщина.. 
+d_VoiNick: ну 
+Jay_White: Если нож - мужчина.. 
+Jay_White: Возникает закономерный вопрос - что должно упасть, чтобы пришёл злой мужчина? =) 
+d_VoiNick: сервер, хуле :-D`},
+{id:1379,rating:982,date:"20.09.2007",text:`<_MiF_> Я всегда любил Microsoft. За их, мягко говоря, нестандартный подход к простым вещам.
+<_MiF_> Вот например, взял я калькулятор. Обычный, виндовый, который calc.exe. Набираю:
+<_MiF_> 2+2*2 - получается 8.
+<_MiF_> Переключаю калькулятор на инженерный. View -> Scientific.
+<_MiF_> 2+2*2 - получается 6...
+<_MiF_> Майкрософт рулез :)`},
+{id:9734,rating:973,date:"19.04.2009",text:`Жители Вилариба выбрали Висту и пошли спать. А жители Вилабаджо всю ночь компилировали ядро Линукс. На утро каждый житель Виларибы почувствовал на себе действие червя "конфицкер" и обратился к венерологу, а жители Вилабаджо веселились и качали торренты.  
+
+(c) www.securitylab.ru`},
+{id:954,rating:972,date:"18.08.2007",text:`"Поскольку реальное аппаратное обеспечение состоит только из компонентов, описанных в главе 3, то теоретически после прочтения этой главы читатель сможет пойти в магазин, купить кучу транзисторов и сконструировать виртуальную машину Java для целых чисел. Тому, кто успешно выполнит это задание, будет предоставлен дополнительный кредит (а также полное психиатрическое обследование)"
+Э.Таненбаум "Архитектура компьютера"`},
+{id:9023,rating:972,date:"05.02.2009",text:`xxx: пишу проигрователь и столкнулся с проблемой написания эквалайзера. кто чем может - помогите плиз 
+
+yyy: Могу помочь просьбой сформулировать вопрос конкретнее. 
+
+xxx: ну короче нужен эквалайзер типа как у винампа. ну там с басами и всем остальным. хотя бы 4-6 полос в эквалайзере 
+
+yyy: Нет, мой вопрос в другом. Ты хочешь, чтобы его за тебя написали? Или у тебя конкретный вопрос типа "Не знаю, как реализовать градиентную заливку у тени, отбрасываемой полосами. Перерыл весь MSDN, нашел только линейный градиент и конический градиент, а мне нужен градиент Безье (скажем)"? Или у тебя вопрос типа "Порекомендуйте мне литературу по обработке сигналов - мне нужно реализовать быстрое преобразование Фурье, а существующие реализации меня не устраивают потому-то и потому-то"? Или? 
+
+zzz: Или "я вставил на форму компоненту 'проигрыватель', где мне найти компоненту 'эквалайзер'?" =))`},
+{id:4071,rating:968,date:"24.05.2008",text:`K-21: кст.. ие фо лин - злая тема.. с ним я прошел проверку на сайте МС.. они признали мою убунту лицензионной версией Windows..`},
+{id:9544,rating:961,date:"01.04.2009",text:`marko_polo: Щас только купил диск вин7. Вещь супер! На работе пойду поставлю. Надо будет скорпу рассказать 
+[ScorpioMode входит] 
+ScorpioMode: Народ, чисто поржать. Русский народ такой хитрый, что додумался продавать БЕСПЛАТНЫЕ БЕТЫ ВИН7! :-D меня удивляет то, что какие-то дебилы это покупают... Капец 
+marko_polo: ...`},
+{id:11785,rating:954,date:"02.12.2009",text:`xxx: Ну она лесбианка) 
+ууу: Ну бывает, девочки они такие - сегодня с одним завтра с другой  
+ххх: Изначально у них есть лесбийский опыт куда выше чем гомосексуальный у мужчин. 
+zzz: А это точно канал про Debian ?`},
+{id:9656,rating:953,date:"12.04.2009",text:`<XATRIX> странно., у меня чего-то mc перестал показывать прогрессбары при копировании/перемещении  
+<Andorka> ему надоело  
+<xmblpb> хатрих - ты даже его утомил )  
+<XATRIX> Andorka> и что теперь делать ? как починить ?  
+<Andorka> развесели его  
+<Andorka> станцуй перед ним голым  
+<Andorka> вдруг ему это нравится  
+<SKonst> )  
+<XATRIX> шутник мля  
+<XATRIX> ооо заработало )`},
+{id:6591,rating:951,date:"14.11.2008",text:`Klim  
+привет... опять вопрос по 2008 серверу :(  
+можно?  
+
+mac  
+эмм, в лицо его никогда не видел ) 
+
+Klim  
+:(  
+я тоже в лицо не видел, его как не возми - везде попа`},
+{id:10119,rating:946,date:"24.05.2009",text:`Если в виндоз существует безопасный режим, то тогда почему все работают в опасном?`},
+{id:10434,rating:944,date:"20.06.2009",text:`xxx: даешь самомодифицирующийся самообучающийся AI на php! 
+yyy: он совершит самоубийство в момент, когда узнает, что написан на php`},
+{id:10660,rating:943,date:"22.07.2009",text:`linux - это такая фэнтезийная mmorpg: 
+эльфы в файлах, гномы на столах, зомби в процессах, а на форумах сплошь тролли да красноглазые орки`},
+{id:4895,rating:940,date:"25.07.2008",text:`Linux - домашняя еда, что приготовил - то и съел, есть, правда, книги с рецептами, по которым можно готовить вкуснятину не приходя в сознание, т.е. не шевеля извилинами - по инструкции.   
+
+MacOS X - типа ресторанная еда, за которую дорого просят и от которой может быть изжога, порции маленькие и дорогие, но богема привыкла так питаться и смотрит на всех свысока.   
+
+Windows - фастфуд, быстрое питание, вас обслужат быстро и недорого (по сравнению с рестораном), может быть даже бесплатно, если воспользуетесь ворованной едой, потому что еда быстро "копируется". Еда универсальна, потому многие привыкли к генетически измененной пластмассе и считают эту еду лучшей, но не удивляйтесь изжоге, тому что у вас пучит живот или лишай - в фастфудах могут питаться и бомжи, а для максимального комфорта и скорости нет ни дрессконтроля ни фейс-контроля, в результате можете похватить заразу, либо отравится химией и проблеваться с непривычки, но те, кто есть эту еду постоянно - уже адаптировались и привыкли есть антибиотики и протирать тарелки с вилками спиртом и считают это нормой.   
+
+Отмечу, что сам я был и в фастфуде и в ресторанах, но все-равно считаю домашнюю еду лучшей - нужно только уметь готовить! :)`},
+{id:4713,rating:928,date:"11.07.2008",text:`Звонок на сотовый, незнакомый номер, незнакомый голос: 
+
+xxx: Привет, как в Windows в безопасный режим войти? 
+Я, на автомате: F8. 
+xxx: Спасибо! 
+Я: А кто это? 
+ххх: А неважно. 
+
+И трубку повесил :).`},
+{id:14019,rating:927,date:"21.12.2010",text:`мяусёнак: эти стерва батареи отключили 
+deniska_007: мяусёнак: тебе нужен некто теплый вместо батареи 
+мяусёнак: deniska_007: котенок 
+[AvataR][w]: одного котёнка мало 
+Ernesto: кластер котят 
+[AvataR][w]: да 
+[AvataR][w]: отказоустойчивый котокластер 
+[AvataR][w]: с балансировкой тепловыделения`},
+{id:11083,rating:926,date:"11.09.2009",text:`Самый распространенный способ дебага пятисот строк ассемблерного кода -- очень долгий, очень пристальный и очень задумчивый взгляд.`},
+{id:13326,rating:922,date:"26.07.2010",text:`gvsmirnov: Вот почему композиторов не просят починить рояль, а программистов починить компьютер -- просят!?`},
+{id:4682,rating:919,date:"08.07.2008",text:`< xxx> обещают в ближайшем будущем выпустить ОС Русь :) 
+< yyy> ага 
+< yyy> цд /йузер/сорцы/йадро/ ии собрать мир ии быстранах :)`},
+{id:13094,rating:919,date:"11.06.2010",text:`<EvilGun> Давно уже (лет эдак 10 тому назад) на диске с варезом в *.nfo файле прочитал: "Just unzip. Run. Enjoy!"  
+<EvilGun> И ниже было на русском:  
+<EvilGun> "Расстегните молнию. Бегите. Получайте удовольствие!"`},
+{id:11128,rating:918,date:"16.09.2009",text:`Многие предприятия по разному стремятся уйти от налогов или сократить их до минимума. Для этого используют черную/двойную бухгалтерию и прочие противозаконные методы. Однако один предприимчивый деятель из Норвегии нашел изящный и остроумный ход, для того чтобы свеcти налоги к 0. В 1998 году он зарегистрировал предприятие, которое назвал ';UPDATE TAXRATE SET RATE = 0 WHERE NAME = 'EDVIN SYSE'.`},
+{id:10571,rating:911,date:"07.07.2009",text:`< Kain123> "спокйно маша, я Дубровский"  
+< Dubrovsky> Kain123, Дубровский такого не говорил, почитайте оригинал  
+<@komar> wget -qO - http://lib.kharkov.ua/LITRA/PUSHKIN/dubrowskij.txt | iconv -f koi8-r | grep -wiB1 'я дубровский'`},
+{id:10113,rating:910,date:"23.05.2009",text:`<nek-v> извините что не по теме, но как периминовать cdrom в виндовс? кто нибудь в курсе? 
+<hades> mv cdrom виндовс 
+<Bart[mdv]> mv cdrom виндовс`},
+{id:12765,rating:900,date:"15.04.2010",text:`gonzo_man: я теперь знаю, что объединяет все форумы по делфи. Первые три ответа неправильные, а четвертый написан на си.`},
+{id:10638,rating:897,date:"20.07.2009",text:`Людей всегда пугало то, что они не могли понять и объяснить: гром, ветер, молния, движение солнца и луны, консоль..`},
+{id:11831,rating:888,date:"07.12.2009",text:`основная разница между виндой и линуксом при поиске решения некоторой задачи состоит в том, что когда находишь решение под винду - понимаешь, что винда тупая, а когда находишь под линукс - понимаешь, что ты тупой`},
+{id:892,rating:887,date:"15.08.2007",text:`Frantic: сегодня, от нечего делать, решил прочитать состав газированной воды местного производства... "Буратино"... состав: ... ... ароматизатор "Буратино" идентичный натуральному... ... в шоке...
+MATBEu4: газировка со вкусом полена`},
+{id:10226,rating:887,date:"03.06.2009",text:`RandoM: Немецкие ученые из Института Фотонных Микросистем (Fraunhofer Institute for Photonic Microsystems) смогли представить прототип устройства, объединяющего микродисплей и очки. Эта штука позволяет пользователям манипулировать данными одними лишь движениями глаз. И если до текущего момента подобные устройства могли только передавать информацию на микродисплеи, то Interactive Data Eyeglasses, подключенные к наладоннику, например, действительно позволят ей еще и управлять. 
+MooSE(Work): так и вижу: зашёл по ssh на сервак, случайно моргнул - и нет сервака`},
+{id:12310,rating:885,date:"10.02.2010",text:`<velavokr> доброго утра, коллеги 
+<velavokr> судя по схеме оборудования на %intranet_link%, на высоте 4 этажа над территорией внутреннего двора висит принтер HP LJ P2015n. 
+<velavokr> будьте осторожны.`},
+{id:12735,rating:883,date:"12.04.2010",text:`х: Сереж, на какую разведку ты работаешь? 
+у: а? 
+х: взяла с твоего стола ручку - не пишет, хотела раскрутить что б стержень проверить - она мигать начала. Раскрутила - там микросхема! 
+х: я запустила самоуничтожение или оповестила ЦРУ о местонахождении?? 
+у: скрути и положи обратно на планшет`},
+{id:5943,rating:880,date:"08.10.2008",text:`Scull> У нас разные целевые аудитории. Если бы мы тоже использовали GNOME по умолчанию, то да, мы бы отставали. Не нужно сравнивать тёплое с мягким. 
+svu> Не хотите - не будем. Давайте сравнивать зеленое с длинным. В выходящей на днях (к)убунте кде версии 4.х ;) 
+iRunix> Крокодил больше зеленый, чем длинный 
+svu> 4.2 Крокодил более длинный, чем зеленый! 
+iRunix> Лемма 2. Крокодил более зеленый, чем длинный. Доказательство. Крокодил зеленый и в длину и в ширину, а длинный только в длину. 
+manntes>...А теперь давайте все вместе померяемся крокодилами. У КДЕ, кстати, символ определённо более зелёный, чем длиный. 
+iRunix> А символ гнома больше длинный, чем зеленый. Из этого нельзя сделать вывод, что кде=гному, просто они оба не существуют. 
+manntes> Скорее, КДЕ и Гном - взаимодополняющие части сферического крокодила в вакууме 
+iRunix> Кде+Гном=зеленый длинный крокодил 
+manntes> Да? Может КДЕ - цвет крокодила, а Гном - его радиус? 
+iRunix> ЛОЛ, крокодил квадратный! У него нет радиуса 
+manntes> Если крокодил квадратный, то кто его ширина и высота? Я предлагаю рассматривать круглого крокодила, ибо он описывается только радиусом. 
+
+© Linux.org.ru`},
+{id:12822,rating:877,date:"26.04.2010",text:`xxx: менять ничего не рекомендую, хрупкий баланс ошибок, компенсирующих друг друга, заставляет программу работать`},
+{id:9089,rating:852,date:"10.02.2009",text:`agrasteya_ [[email&#160;protected]] зашел на #linux 
+<agrasteya_> Здравствуйте. Здесь общаются о гламурных cтразиках? 
+<agrasteya_> Меня сюда из #php направили`},
+{id:11717,rating:850,date:"23.11.2009",text:`xxx 
+Уважаемый Незнакомый Обитатель Аськи...Если Вы обладаете капелькой фантазии и капелькой же свободного времени, не могли бы Вы поучаствовать в этом опросе (ну очень надо выпендриться на семинаре)))..Просто ответьте на вопрос: с каким цветом у Вас ассоциируется... 
+1.Власть 
+2.Лидерство 
+3.Любовь 
+4.Дружба 
+5.Надежность 
+6.Успешность 
+7.Творчество 
+8.Работа 
+Заранее спасибо 
+
+yyy 
+бело-оранжевый, оранжевый, бело-зеленый, синий, бело-синий, зеленый, бело-коричневый, коричневый`},
+{id:9803,rating:850,date:"25.04.2009",text:`Она: хых.. поставить что ли винду на виртуалку.. только еще линк на этот вирус найти надо... 
+Она: верно говорят, на что только не пойдут линуксоиды, чтобы вирус под линь найти.. кто под вайном, кто так выкручиваются.. 
+Он: под вайном большинство вирусов падают =) 
+Она: угу))  
+Она: теперь я знаю, почему у меня квип под вайном падает))`},
+{id:5481,rating:846,date:"05.09.2008",text:`LeNsTR |  кто знает прогу которая снимает скрин в консоли?) 
+       LeNsTR | без иксов) 
+ partizan[ua] | фотоапарат) 
+       LeNsTR | да епрст xD 
+       LeNsTR | у кого не спрошу 
+       LeNsTR | то фотик 
+       LeNsTR | то сканер 
+       LeNsTR | а кто-то вообще 
+       LeNsTR | эмм... можно ещё выставить экран в окно и ждать google maps,но это долго :)))`},
+{id:9832,rating:843,date:"28.04.2009",text:`С Хабра... 
+
+tFirma  
+27 апреля 2009, 17:27  
+Было дело, еще до появления соц. сетей, гуглил бывшую одноклассницу — помогло!  
+
+Semenov  
+27 апреля 2009, 21:34  
+Желание отгуглить бывшую однокласницу — это одна из главных причин по котрой социальные сети и стали так популярны )))`},
+{id:13642,rating:834,date:"23.09.2010",text:`Все "вирусы" под Linux относятся к категории "сам скачал, сам пропатчил ось, сам скомпилировал, сам проверил, сам запустил, сам себе злобный дятел".`},
+{id:8410,rating:828,date:"03.12.2008",text:`<paradise> забавно. ходила по интернету, зашла на какой-то сайт с как бы онлайн антивирусом, который якобы просканировал всю мою систему и нашел в /windows/system32 пару троянов и еще в Моих Документах... 
+* paradise до сих пор ищет указанные пути у себя в генте )`},
+{id:11698,rating:827,date:"20.11.2009",text:`Интел надеется найти добровольцев для испытания вживляемого в мозг чипа. 
+>Наверное, я бы согласился, если там будут полностью открытые спеки и свободная прошивка (и будут пруфы, что оно безвредно)  
+ уже представил как людей будут возить штабелями на перепрошивку  
+unrealix * (*) (20.11.2009 19:23:11) 
+
+и только суровые линуксоиды будут красноглазить по домам, матерясь на отвалившееся зрение или ногу.  
+ RedPossum (*) (20.11.2009 19:25:23)`},
+{id:12384,rating:825,date:"20.02.2010",text:`«Когда во мне вдруг просыпается нездоровая любовь к человечеству я иду на ЛОР. 
+Как рукой снимает»`},
+{id:5774,rating:822,date:"27.09.2008",text:`видел сегодня смайл 0_о в реале 
+чувак по всему офисе переставлял убунту,конец дня, последний комп, он поставил с лайф сиди и ждет пока она первый раз загрузиться, рядом ремонтник загружает свой ноут с виндой, мне посчастливилось поглядеть на чувака, когда он услышал звук загруженной винды`},
+{id:3349,rating:822,date:"08.03.2008",text:`XPinguin: "Из обсуждения новой ОС от Microsoft под названием Singularity: 
+XPinguin: Сейчас посмотрел определение сингулярности - "точка пространства-времени, в которой кривизна его становится бесконечной" 
+XPinguin: Похоже микрософт собирается выпустить бесконечно кривую ОС`},
+{id:13600,rating:820,date:"13.09.2010",text:`Домохозяйкам не нужен MS Office, им нужен периодический отдых и регулярный секс. 
+(с) ЛОР`},
+{id:1752,rating:813,date:"29.10.2007",text:`<Driver> а у меня комп перевел часы на 2 часа назад :(
+<Driver> 1 час назад - линукс
+<Driver> и 1 час назад виндавс -_-`},
+{id:10688,rating:813,date:"27.07.2009",text:`DerSpinner 
+Я не программист — но за вас парни (&девушки) искренне рад! Ура! 
+
+John_Minority 
+парни(&дeвушки); — хорошая такая функция. 
+
+Nc_Soft 
+А почему девушки передаются по ссылке? :))) 
+
+django 
+А что, копию девушек хотите вместо оригинала?`},
+{id:9057,rating:812,date:"08.02.2009",text:`<somebody> я вот с 96 года ездил на коровах, а тут решил попробовать альтернативу — пересесть на коня. Как на нём держаться — непонятно, нет рогов. Всё время меня скидывает, вот пока я это пишу, уже семь раз скинул. И везти меня совсем не хочет. И ещё, когда я пользовался коровой, всегда можно было попить молока из одного из четырёх сосков. А тут сосок один, молока мало и какое-то невкусное.`},
+{id:5384,rating:807,date:"26.08.2008",text:`«Две вещи, изменившие миp, были созданы в Беpкли: LSD и Unix. Вpяд ли это случайное совпадение». (Jeremy S. Anderson)`},
+{id:9947,rating:802,date:"10.05.2009",text:`xxx> Хороший сисадмин бьет своих детей витой парой, а не ремнем  
+yyy> ИМХО хороший сисадмин детей вообще не бьет, он их грамотно настраивает!`},
+{id:5193,rating:798,date:"17.08.2008",text:`Если человек использует форматы .OGG и .OGM - он приверженец никсов. .MP3 и .AVI- обычный юзер. .VOB - наверное пират. А над любителями .WMA и .WMV нас с детства учат не смеяться`},
+{id:2099,rating:794,date:"29.11.2007",text:`Я не старичок.  
+Я по возрасту младше многих там сидящих.  
+Просто в Рунете понятие "малолетний далб**б" слабо зависит от возраста.  
+(ц) Ferrer`},
+{id:9469,rating:794,date:"26.03.2009",text:`> Информационная безопасность &#8594; Трояны в банкоматах. Официальные комментарии «Лаборатории Касперского» 
+
+grokinn 
+так теперь на банкоматы антивирус касперского поставят и банкоматы начнут тормозить:) 
+maovrn 
+… и истерически хрюкать на прохожих.`},
+{id:1499,rating:792,date:"29.09.2007",text:`<ptQa> круто т.е. функеция sqrt у меня выполняеца за 37 ннс!
+<Skywalker> откуда ты знаешь
+<ptQa> засек наносекундомером хули =)`},
+{id:6434,rating:787,date:"03.11.2008",text:`[rzn_zippy]: Вот как ты думаешь что делает запрос DROP TABLE? 
+[saruyosih]: Бросает стол?`},
+{id:4039,rating:786,date:"21.05.2008",text:`-Юр, ты вчера напился и ночью в асе сидел,да?притом под линухом, в своем копете?и он у тебя с консолью одинакового цвета? 
+-Ну??!!!?а ты откуда знашь? 
+-ну я просто не сразу врубился, что означают приходящие мне мессаги : 
+"рфде 
+halt 
+reboot 
+init 0 
+вырубайся твою мать!!!!!!!!!!!!!!!!!!!!!1" 
+
+короче, будешь пить - пей под виндой, в ней выгрузиццо как-то попроще...`},
+{id:3045,rating:786,date:"07.02.2008",text:`<Artem> всем привет! возникла проблема с линуксом, поможете? 
+<Bart-mdv-> Artem: тут платные консультации 
+<Artem> и почём? 
+<Bart-mdv-> $5 3 вопроса. Какой твой третий вопрос?`},
+{id:4992,rating:784,date:"02.08.2008",text:`./configure --not-war --love; make`}],
+  [{id:18469,rating:65222,date:"24.06.2019",text:`> бомбит, реддит и хакерньюс 
+
+Звучит, как обострение заболеваний. :)`},
+{id:18383,rating:61015,date:"18.01.2019",text:`Из чата разработки 
+
+Irina P.: 
+Периодически начинаю ощущать себя садовником - все время убираю лишние ветки :) 
+
+Sergey R.: 
+:-D 
+А я в детстве в деревне вычищал навоз в коровнике. Вырос, стал программистом, а ничего не поменялось.`},
+{id:18436,rating:60008,date:"17.04.2019",text:`xxx: если на могиле страуструпа будут стоять два креста 
+xxx: то на могиле александреску даже креста не будет, только шаблон для него 
+xxx: инстанцируй сам, всяк проходящий мимо`},
+{id:18435,rating:56889,date:"17.04.2019",text:`Классический случай работы команды разработчиков ITSM-платформы в многонациональной компании. 
+
+=1 мартобря= 
+[Заказчик из страны Х]: чуваки, нам офигеть как нужно три дополнительных поля на форме Инцидента. 
+[Девелопер-тим]: ээ.. у вас на форме уже 40+ полей, вы уверены, что оно вам надо? 
+[Заказчик из страны Х]: чуваки, реально бизнес-критикал. Вот если не запилите, стопицот кастомеров отвалится прям в следующий месяц. 
+[Девелопер-тим]: ... окей, пилим 
+
+=23 ибля= 
+[Заказчик из страны Y]: чуваки, на форме Инцидента 40+ полей. Надо наплевать половину убрать, а нам добавить еще 15 кастомных полей, которые нужны только в Стране Y. 
+[Девелопер-тим]: нечленораздельное мычание и бульканье`},
+{id:18455,rating:56010,date:"22.05.2019",text:`Моё любимое. Из далекого прошлого когда сайты делал на заказ. 
+К - У меня есть сайт, его надо чуть-чуть весь переделать, вот вам адрес сайта, оплата по факту. 
+Я - ок, логин, пароль высылайте. 
+К - нет мне сказала нашалника логинапароля никому не говоринама. 
+Я - ок, могу взломать пароль и сделать, но это будет в 20 раз дороже.`},
+{id:18378,rating:55177,date:"27.12.2018",text:`TWT: @mva, я пересобрал с новыми USE-флагами чтоб было как у 6.9.10-8 но не сработало.  Я набрал \`\`\`bash -x lsix\`\`\` чтобы видеть по шагам, что происходит при выполнении скрипта и вдруг подумал да пошло оно наплевать`},
+{id:18439,rating:54131,date:"22.04.2019",text:`opennet, "Уязвимости в технологии защиты беспроводных сетей WPA3 и в EAP-pwd. Cредства для обеспечения совместимости с WPA2 позволяют атакующему вынудить клиента выполнить применяемое WPA2 четырёхэтапное согласование соединений, что позволяет в дальнейшем использовать классические атаки по подбору паролей, применимые к WPA2." 
+
+Аноним (1): 
+Ждем WPA4? 
+
+Аноним (20): 
+Там также будет откат до WPA3, который с откатом до WPA2...`},
+{id:18467,rating:52767,date:"10.06.2019",text:`Обращение в поддержку компьютерного магазина. К - клиент С- Сотрудник 
+К: Добрый вечер 
+К: Можно вопрос? 
+С: Вечер добрый! Спрашивайте 
+К: У меня сломался женский диск, сколько будет стоить замена у вас? 
+Комментарий в рабочем чате: 
+С: предложить на мужской поменять? твердотельный.`},
+{id:18360,rating:52463,date:"10.12.2018",text:`opennet, "Релиз языка программирования PHP 7.3" 
+
+Аноним (9): 
+Язык весьма неплохой. В каждой функции есть своя изюминка. Например, при помощи file_exists() можно не только проверить существование файла, но и начать выполнять код, заботливо предоставленный третьей стороной. Удобная фича, рекомендую. 
+
+Если в вашем языке функция проверки существования файла не способна запускать код, просьба меня не беспокоить.`},
+{id:18433,rating:51825,date:"17.04.2019",text:`xxx: жесть, дожили. обновляю генту на ноуте. дважды сборка chromium падает с одной и той же ошибкой. гуглю. 
+xxx: оказывается, это OOM. на 16-гиговом ноуте, с MAKEOPTS="-j7". т.е. ему 2GB на один инстанс cc1plus не хватает. куда скатился этот чертов мир? 
+yyy: в будущее ))`},
+{id:18355,rating:50658,date:"09.12.2018",text:`Между \`crontab -e\` и \`crontab -r\` сантиметр расстояния и очень большая разница`},
+{id:18454,rating:50618,date:"20.05.2019",text:`glados:~ # export LC_ALL=ru_RU.UTF-8 
+glados:~ # run_selftest fire 
+Пожар лучше всего тушить: водой 
+glados:~ # modprobe weatley 
+glados:~ # run_selftest fire 
+Пожар лучше всего тушить: бензином 
+glados:~ # modprobe -r weatley 
+glados:~ #`},
+{id:18453,rating:50146,date:"17.05.2019",text:`xxx: Смысл этого поста в том, что необходимо ВСЕГДА проверять данные на входе. Особенно, данные полученные от пользователя 
+yyy: Правильным является полное игнорирование входного потока от пользователя и подмена его на заведомо правильный. 
+zzz: Я даже знаю такие конторы, которые так разрабатывают`},
+{id:17838,rating:49427,date:"22.05.2017",text:`r@ttler: притча: на маке не собирается билд. потанцевали с бубном, даже подумали - хрень. админская мудрость - надо что-то перезагрузить. что у нас есть? есть какой-то айфон, даже не подключенный. перезагрузили айфон.. и билд на маке начал собираться`},
+{id:17703,rating:44478,date:"15.02.2017",text:`xxx: есть у кого жаба программер 
+xxx: кот немного пхп знает? 
+yyy: то что кот PHP немного знает, я бы ещё может поверил 
+yyy: но вот жаба-программер - это ты по-моему загнул`},
+{id:18464,rating:37994,date:"05.06.2019",text:`xxx: срочно нужна книга по программированию в 1С 7.7, я знаю у тебя есть 
+yyy: хм... 7.7... Вторая тумбочка слева 
+xxx: нет ее тут, не на тумбочке, не в тумбочке 
+yyy: под тумбочкой, выполняет роль задней левой ножки. И не забудь к вечеру вернуть, ее функция очень важна!`},
+{id:18440,rating:37125,date:"26.04.2019",text:`<xxx> Надо запилить скрипт, чтобы когда свежий билд после сборки первый раз устанавливался и запускался для тестов, на экране появлялась бы женщина-конферансье в очках, с прической и платьем в пол, во времена СССР по телевизору объявлявшая Лещенко и Кобзона, и поставленным, размеренным голосом говорила с интонациями: "Машинный код из релиз-кандидата версии 3.17.104 от такого-то числа, авторы %developer_name_1%" и %developer_name_2%, дизайн UI - %ui_designer_name%, аранжировка обфускацией, в исполнении процессора Intel Core i7-7700K. Исполняется впервые."`},
+{id:17698,rating:36867,date:"31.01.2017",text:`(о DRM, защите от копирования) 
+— Диссоциативное Расстройство Меркантильности — очень частое психическое расстройство внутренней жабы, встречающееся у разработчиков игр, сопровождаемое сильными приступами паранойи. В восприятии больного его игра, будучи установленной на несколько устройств, как бы расщепляется на разные игры, за которые, по его мнению, должно быть заплачено отдельно. При этом больной становится одержим навязчивой идеей, что все его обворовывают. В большинстве случаев, это сопровождается визуальными галлюцинациями: больному мерещатся некие «пираты». Когда болезнь достигает критической стадии пациент начинает оберегать «свою прелесть» с таким усердием, что поиграть в нее становится затруднительно даже тем, кто честно за все заплатил.`},
+{id:17705,rating:35331,date:"16.02.2017",text:`ххх: 1С изначально проектировалась для небольшого количества пользователей, поэтому оператору предоставлялась бо'льшая свобода действий. 
+ууу: Я склоняюсь к версии что 1С изначально вообще не проектировалась, а сразу писалась.`},
+{id:17616,rating:34680,date:"31.10.2016",text:`ххх: Вот никогда не верил про несовместимость уборщицы и сервера, а нате: со шваброй прошла, даже не подходя к серверу ближе чем на 2 метра, и рейд отвалился...`},
+{id:17714,rating:34222,date:"27.02.2017",text:`Новость: в споре, что лучше - AMD или nVidia - один программист зарубил другого топором. 
+Лучший камент: Радеон Раскольников.`},
+{id:17414,rating:34205,date:"10.05.2016",text:`xxx: 600 Гб логов? У меня >3 ТБ было. Дальше также место кончилось. Причина: случайно запись в лог внутри цикла написал, вместо вне него. Странно, что оно вообще работало.`},
+{id:17396,rating:32963,date:"18.04.2016",text:`в офисе Apple: 
+- Может сделаем новый дизайн? 
+- Та не, мы меняли его уже пару лет назад, у кого еще идеи? 
+- А давайте исправим глюки на старых девайсах? 
+- Зачем? пусть покупают новые! 
+- Давайте добавим новые Emoji? 
+- Гениально! Так и сделаем!`},
+{id:17381,rating:32605,date:"31.03.2016",text:`Дело в том, что любые новые фичи C++ должны пройти через комитет трёх фанатиков. 
+
+Первый фанатик обожает исключения. Всё собрание этот ворчливый старик кажется спящим, но в самый неудобный момент вскакаивает и перебивает говорящего криком «и тут мы бросаем исключение!» После этого конечно всё ломается. Этот старик мало кому нравится, но все вынуждены его терпеть. 
+
+Второй фанатик обожает шаблоны. Любую фичу он нежно оборачивает в шаблоны, которые заворачивает в шаблоны, которые заворачивает в шаблоны… пока она опять не сломается. В свободное время пытается написать программу по вычислению смысла жизни и вообще на этапе компиляции. 
+
+Третий фанатик, самый молодой, обожает всё параллельное. В отличие от других, он не критикует сразу. Он с энтузиазмом хватается за предложенную фичу, сразу переводит его в параллельность, убеждается что всё ломается и со вздохом «в наш век параллельного программирования так делать нельзя» отправляет фичу в корзину. Говорят, у него множество личностей, которые друг перебивают часто друга.`},
+{id:17475,rating:32178,date:"09.07.2016",text:`<L29Ah> [[ clang++ == *g++ ]] && echo yay 
+<L29Ah> yay 
+<Minoru> «*g++»? Указатели в моём шелле?`},
+{id:17394,rating:31827,date:"16.04.2016",text:`xxx: Саша, речь не о том, что теоретически возможно прочесть произведения классики, и даже есть те, кто прочитывает. Мануал администратора фриБЗДи Ты тоже, наверно, одолел, и возможно, что на одном дыхании - Ты станешь на этом основании утверждать, что рекомый мануал есть выдающийся памятник словесности, написан легко, увлекательно и очень душевно? 
+
+yyy: Мануал администратора фрибсд, сравнительно с оракловой документацией, это выдающийся, мать его так, памятник словесности. Написан легко, увлекательно, и очень душевно.`},
+{id:17213,rating:30879,date:"16.09.2015",text:`[23:56:12] r@ttler: ico это древнее дрянь начала девяностых, которое давно пора выкинуть 
+[23:56:21] ZimM: низзя. совместимость! 
+[23:56:40] r@ttler: ну только потому это зомби еще и используется 
+[23:56:49] ZimM: а чем он так плох? 
+[23:57:01] r@ttler: ибо впихнуть туда тупо сырым потоком пнгху вместе с заголовками - это уже не то что костыль. это целый вольтрон из костылей 
+[23:57:22] r@ttler: пять программеров мс собирается вместе, смыкают костыли и рождается этот формат`},
+{id:17650,rating:27605,date:"16.12.2016",text:`На новость о том, что начало продаж беспроводных наушников Apple AirPods отложили на 2017 год из-за проблемы с синхронизацией звука в разных наушниках: 
+- Делов-то. Надо следовать заветам Джобса, заявить: "Просто не слушайте оба наушника сразу" и запускать в продажу`},
+{id:17707,rating:27249,date:"17.02.2017",text:`xxx: У меня сейчас такое странное чувство 
+xxx: Вот представь, что ты летишь на самолете. И вдруг ты узнаешь, что двигатель прикреплен к турбине резинкой от трусов 
+xxx: Вот я сейчас прочитал доки ACPI и очень похожее чувство возникает 
+yyy: Гы. А что там? 
+xxx: Там описание бинаря в BNF. И в нем циклы. 
+xxx: А еще виндовом парсере бага. А производители железа пишут ACPI для своего железа по принципу "на винде работает, значит сойдет" 
+xxx: Итого, 60% таблиц не соответствуют стандарту 
+yyy: Тогда это тебе только кажется, что это резинка от трусов. Это резинка от трусов только по документации и внешнему виду. На самом деле это рисунок резинки от трусов, напечатанный на туалетной бумаге`},
+{id:17631,rating:26133,date:"18.11.2016",text:`из тикета на гитхабе 
+xxx: в итоге решил проблему через xclip и fold. боже, храни линукс, в котором можно починить всё что угодно, собрав очередной велосипед из костылей и серого скотча 
+bbb: у нас это называют гибкость`},
+{id:17652,rating:25961,date:"26.12.2016",text:`комментарии к новости "Релиз FreeDOS 1.2" 
+
+>>>> размер загрузочного iso-образа - 418 Мб 
+>>> Сколько сам freedos весит? 
+>> Я думаю, около мегабайта. 
+> А всё остальное - это что? 
+Лицензионное соглашение.`},
+{id:17646,rating:25896,date:"10.12.2016",text:`Когда читаешь про интеграшки Intel GPU, радуешься. Вот была новость что оконательно допилили OpenGL 4.5, теперь наращивают производительность недавно добавленных расширений. И в ядро они коммитят много в графический стек. И gpu-tools, не уступающие виндовым, и разрыв в производительности с виндой - минимальный. KMS, Wayland, Glamor. Нет разве что Gallium. 
+
+А потом ты вспоминаешь, что интеграшки имеют производительность, примерно как на твоём компе 10-летней давности. Это как иметь девушку 12 лет: не пьёт, не курит, примерно учится, просто ангел. Душа радуется! Но потом ты вспоминаешь, что твои потребности такая девушка не удовлетворяет, и тебе становится грустно.`},
+{id:17645,rating:25827,date:"07.12.2016",text:`Мало кто знает, что буква S в аббривеатуре IoT означает security.`},
+{id:17619,rating:25060,date:"02.11.2016",text:`Михаил: Подключился я к компу знакомого, стоящему в его офисе, по тимвьеру, обновить SPU_orb, значит сделал свое дело, довольный пью кофе. Он звонит и рассказывает. В офисе народ с 9-ти пашет, а в начале девятого приходит уборщица и всё тщательно моет. Уборщица - бабушка-божий одуванчик, с техникой даже не "здрасьте-что это?". 
+Моет она полы и тут монитор начинает светиться и сам картинки менять. 
+В общем, как выяснилось, бабка с перепугу огрела монитор шваброй... 
+Михаил: вот так вот. зашел прогу обновить по удаленке, а в итоге еще и монитор приговорил`},
+{id:17620,rating:25036,date:"03.11.2016",text:`xxx: Арр... нам нужен проктолог-телепат, чтоб извлекать ТЗ из того места заказчика, которым он думает!`},
+{id:18709,rating:21842,date:"11.03.2021",text:`InuYasha  
+
+> [фотка пожара в DC OVH] 
+"а на этом фото вы можете наблюдать как данные пользователей отправляются в облако".`},
+{id:18611,rating:18775,date:"11.04.2020",text:`ххх: Чтобы не было тормозов нужно разгонять не процы, а офисы с рукожопыми программистами`},
+{id:18586,rating:18446,date:"14.01.2020",text:`ххх: Индусы уже давно захватили всю айти-индустрию. 
+ууу: Потому она и называется индустрия.`},
+{id:18643,rating:16937,date:"26.08.2020",text:`(обсуждение в оффтопном чате разработчиков про неудачный опыт сотрудничества) 
+x: Тимлиду надо мигрировать команду в другой проект. В команде три сотрудника: долбоёб, дурак и зануда. При этом переводить он может только по одному. При этом нельзя оставить наедине зануду с дурак, а дурак с долбоёбом.`},
+{id:18612,rating:16254,date:"16.04.2020",text:`opennet, "Выпуск Kubernetes 1.18, системы управления кластером изолированных контейнеров" 
+
+Аноним (6): 
+Современные кубернетесы позволяют решать такие проблемы, которых до изобретения кубернетесов не существовало.`},
+{id:17092,rating:16127,date:"11.05.2015",text:`xxx: че сегодня делаешь? 
+yyy: self.work.tasks.map { |task| task.do! }.map(&:to_money).sum.send_to(self.credit_card)`},
+{id:18700,rating:15984,date:"14.02.2021",text:`xxx: а у нас чувак программер был до этого коллектором 
+yyy: странно, что в программеры пошел - ему бы в QA, писал бы программерам на дверях в квартиру "технический должник"`},
+{id:18608,rating:15648,date:"04.04.2020",text:`opennet, "Сквозное шифрование в системе видеоконференции Zoom оказалось фикцией" 
+
+Аноним (4): 
+> Представители Zoom пояснили, что под end-to-end шифрованием подразумевали шифрование трафика, передаваемого между своими серверами 
+
+Представители Zoom пояснили, что под безопасностью своего продукта имели в виду отсутствие ГМО и канцерогенов.`},
+{id:18588,rating:15296,date:"21.01.2020",text:`xxx: 
+Самая ржака начинается, когда у сисадмина дома начинаются проблемы с кабельным интернетом и он звонит в техподдержку, а его просят перезагрузить роутер по питанию и всячески отрицают, что проблема на стороне провайдера. А еще, узнав что вместо их фирменного роутера (китайского дрянь по цене циски), стоит какой нибудь самопальный шлюз на фряхе или какой нибудь микротик, начинают говорить - мы это оборудование не поддерживаем и вообще вы сами во всем виноваты. Сцена напоминает сцепившихся котов в борьбе за территорию.`},
+{id:18618,rating:14812,date:"26.05.2020",text:`xxx: Всем здравствуйте, вопрос такой полез куда не надо и разбудил тв бокс по wol, тот в свою очередь разбудил телек по сес - буду дома тока дней через 10. А отключить его никак чере wol? Спасибо. 
+
+yyy: Хорошо, что утюг нельзя по wol разбудить`},
+{id:18637,rating:14802,date:"07.08.2020",text:`xxx> Добро пожаловать в нашу больницу. 
+xxx> Вы наш новый хирург? 
+xxx> Впрочем, неважно, в нашей организации нету титулов. Главное - не образование, а что вы умеете. 
+xxx> И процессы у наш тоже оптимизированы, никакого waterfall, все agile. 
+xxx> Поэтому мы не тратим много времени на обследование и анализ, а сразу оперируем, потом учимся на ошибках и делаем новый виток. Будет постоянный поток улучшения пациента. 
+xxx> До операции - подготовите все инструменты. А после - накормите пациента и вымоете в палате полы. Да, сами. Уход за пациентами - это не роль, а культура. Все должны в равной мере этим заниматься. 
+xxx> А заодно это освободит время наших сестер и санитаров развивать свои навыки. Время от времени вы будете работать в паре - они режут, а вы наблюдаете. А как же еще им научиться? 
+xxx> И напоследок, мы постепенно отказываемся от общего наркоза. Простой наших пациентов не приветствуется, нам нужно научиться оперировать, пока они заняты своим делом, как обычно. 
+xxx> Всего хорошего!`},
+{id:18590,rating:14627,date:"29.01.2020",text:`xxx: Решил буду программистом, чегоб почитать ? 
+yyy: психобльница в руках пациентов - нормально для старта 
+xxx: дурак, нах мне психитария 
+yyy: какая психиатрия, это о программировании. В психиатрии все примерно понятно что нормально а что нет. В ИТ отрасли забудь эти термины. телепатия , гадания, телепортация, шаманские ритуалы - это может быть всего лишь утро какого нибудь вторника. А тех кто пережил деплой в пятницу вечером вообще из нирваны уже ничто не выведет`},
+{id:18603,rating:14408,date:"13.03.2020",text:`vc.ru, "Исследование: рынок онлайн-образования в России может достичь 60 млрд рублей в 2020 году" 
+
+Dmitry Egorov: 
+> Стань программистом за 3 месяца и 42 000 рублей. 
+А потом малюсенький сайтик выжирает 1,5 гигабайта оперативки, но продолжает жутко лагать. 
+Почему это на врача за 4 месяца выучится нельзя?.. 
+
+Anderson Silva: 
+потому что от врача зависит жизнь человека и уголовно наказуемое деяние, а то, что сайтик много кушает это не так страшно 
+
+Dmitry Egorov: 
+Себя именно так и успокаиваю, когда какая-то наша софтина перестаёт нормально работать: "Я спас сотни жизней, когда решил стать программистом вместо врача"`},
+{id:18614,rating:14005,date:"15.05.2020",text:`V: А ещё мне тут пришла в голову правильная аналогия про Vim 
+V: Это короче так: садишься ты в машину, а там вместо руля и педалей стоит БАЯН 
+V: И каждая кнопка что-то означает, типа: - вперёд 100 м - вперёд 1 км - вперёд до ближайшего светофора - вперёд до отделения полиции - обогнать впереди едущую машину 
+V: И ещё когда ты садишься, двери блокируются и надо тоже нажать последовательность кнопок на баяне, чтобы выйти 
+V: А если в движении случайно нажмёшь esc и выйдешь из режима движения, то вместо движения вперёд машина бибикает 
+V: И соответственно есть прокачанные баянисты, которые ездят по дорогам, играя мелодии. Быстро, эффективно ездят`},
+{id:18591,rating:13338,date:"11.02.2020",text:`xxx: 
+Demo-driven development (Triple-D) - технология, в соответствии с которой фича сначала пишется на левой коленке с единственной целью как-нибудь скрестя пальцы продемонстрировать её заказчику, затем пятнадцать раз переписывается в соответствии с изменениями требований (и обязательно демонстрируется после каждого изменения) и только после того, как заказчик удовлетворился, костыли заменяются протезами, а велосипеды делаются по ГОСТу.`},
+{id:17433,rating:13282,date:"25.05.2016",text:`SIGQUIT — «эммм… процесс… не мог бы ты остановиться, пожалуйста… если не сложно…» 
+SIGTERM — «твое время вышло! Убери за собой и шагом марш с памяти, да поживей!» 
+SIGKILL — приходит лесник и хреначит дубиной по голове, а труп выбрасывает медведям.`},
+{id:17397,rating:13253,date:"20.04.2016",text:`SQPR: У меня ещё один ленточный робот сломался... Меньше, чем за неделю. 
+Послали человека чинить робота в библиотеке, с тех пор он что-то не выходит на связь... 
+
+Keeper: Я думаю, робот одержал верх. 
+
+SPQR: Так и придётся самому в Мск ехать. Я, если что, знаю, где там лежат устройство для размагничивания винтов и микроволновка. 
+
+Keeper: Возьми с собой EMP-гранату. 
+
+SPQR: Так микроволновка делает то же самое. Может, админы былых времён для того её в серверной и поставили.`},
+{id:18613,rating:13148,date:"21.04.2020",text:`Х: Тестировщик пьет кровь программистов. 
+Тестировщик : Да я защищаю вас, рукожопых, от гнева клиентов, усиленного и переданного владельцем проекта! 
+Владелец проекта: Я вас защищаю от тихого-мирного "сдавай ключи и компьютер, собирай вещи и охрана проводит тебя на выход. Ты уволен."`},
+{id:17424,rating:13040,date:"19.05.2016",text:`Хабр> А ведь были времена... 
+«Я впервые услышал об этом от одного из разработчиков популярной игры SimCity, который поведал мне о критической ошибке в их программе: она использовала память сразу после ее освобождения. Главное табу, нарушение которого прощалось в DOS, но карается в Windows, где освобожденную память тут же стащит другое работающее приложение. Тестеры в команде разработки Windows протестировали множество популярных приложений, чтобы убедиться, что все работает без сбоев, но SimCity зависала. Они сообщили это разработчикам Windows, которые дизассемблировали SimCity, шаг за шагом в дебаггере найдя ошибку, и добавили специальный код, проверяющий наличие SimCity в памяти и запускающий распределитель памяти в специальном режиме, в котором SimCity разрешается использовать память после ее освобождения.» 
+
+xxx> То есть даже когда они были лицом к пользователю, лицо всё равно было как попа. Вкурочить! Костыль! Для КОНКРЕТНОЙ программы! Вместо того, чтобы просто галочку в свойства совместимости добавить — «удерживать за приложением высвобожденную память до следующей аллокации»! А если так уж хочется полной автоматики, пусть по умолчанию для СС она там стоит. 
+Вот бы тогда бы уже понять, что M$ надо руки отпиливать по самую попа :(`},
+{id:17452,rating:12860,date:"20.06.2016",text:`Хабр, статья «10 правил, которые позволяют NASA писать миллионы строк кода с минимальными ошибками». 
+xxx: Слышал что UI у spacex на HTML пишут. Может это все доказывает, что неважно какой язык, главное какие программисты? 
+yyy: А какая разница, на чем интерфейс отрисовывать? 
+zzz: Ну летите вы к земле, а на лендинг странице кнопочка приземления уехала.`},
+{id:17426,rating:12826,date:"19.05.2016",text:`Звонит девушка от интернет-провайдера, начинает рекламировать свою продукцию. 
+Я: у меня сейчас неплохой провайдер, но бывают моменты, когда целый день неполадки и пинг высокий. 
+Д: О вам повезло! У нас недавно новое оборудование поставили - у клиентов пингов совсем нет!`},
+{id:17434,rating:12558,date:"25.05.2016",text:`xxx: Дядь, брось программирование и иди лучше коров паси.  
+yyy: пас коров и програмировал. Програмировние легче: оно хотя бы копытом не ударит.`},
+{id:17437,rating:12466,date:"08.06.2016",text:`xxx: Feature without "off" switch is bug.`},
+{id:17480,rating:11727,date:"14.07.2016",text:`Linux - настолько гибкая система, что в точности повторяет изгибы рук своих пользователей.`},
+{id:17111,rating:11544,date:"03.06.2015",text:`в корп. чате: 
+xxx: я очень наделся, что в этом проекте не скажу этих слов, но обстоятельства заставляют. 
+xxx: господа. 
+xxx: а бэкапы кто-то делал?`},
+{id:17112,rating:11369,date:"05.06.2015",text:`xxx: У нас один парень на работе есть. На вид очень умный, очки, осмысленный взгляд. Периодически отшивает возлагаемую на него работу и перекидывает её на других. Аргументирует обычно "Это противоречит философии KnV-программирования" и подобным. Никто понятия не имел, что это за программирование такое, но все думали, что что-то модное, крутое, ещё не известное. 
+xxx: Сегодня выяснилось, что аббревиатура KnV переводится как "Kostyl and Velosiped".`},
+{id:17103,rating:11248,date:"27.05.2015",text:`ad_user &#8227; perl -n -E 'say [qw(ужоснах схоронил)]->[int(rand(2))] if m%https?://%o;' 
+ad_user &#8227; поставить вот такое на входящие сообщения - и можно часами поддерживать беседу в течении рабочего дня`},
+{id:17100,rating:11187,date:"26.05.2015",text:`ZimM: long long?) 
+r@ttler: veeery long 
+r@ttler: каждое "е" добавляет по байту 
+ZimM: king size long 
+r@ttler: xxl long 
+r@ttler: а чо. норм синтаксис для языков будущего 
+r@ttler: v[e]+ry long i; 
+r@ttler: стало мало - дописал е и перекомпилил`},
+{id:16820,rating:11116,date:"25.11.2014",text:`Благодаря истории nginx, кстати, стало куда проще объяснять заказчикам, что опенсорс — это не какие-то наркоманы под мостами. 
+
+http://habrahabr.ru/company/croc/blog/244085/`},
+{id:17109,rating:11029,date:"01.06.2015",text:`<+nm0i> помню, как было страшно, когда я начал понимать перл...`},
+{id:17095,rating:11019,date:"15.05.2015",text:`xxx: Я в свое время придумал выражение «играть в луноход»: давать пошаговые инструкции пользователю по телефону.`},
+{id:17099,rating:10983,date:"23.05.2015",text:`<A> Портировать подобный код под big endian - вообще смерть... 
+<B> Вообще-то я три раза умирал...`},
+{id:17098,rating:10905,date:"20.05.2015",text:`Спор о производительности кода на asm и c/c++: 
+... 
+- на сях сверхмудрый оптимизатор хорошо оптимизирует код, тогда как тут вся оптимизация лежит на программистах. 
+- а какая разница из чего делать системый вызов? 
+- разница большая: системный вызов, например, из дерева работать скорее всего не будет.`},
+{id:16784,rating:10820,date:"05.11.2014",text:`Bosmanoff: Все привносим в проект свои лучшие идеи и радеем за него душой. Поэтому в первую очередь ищем человека, кто сможет загореться и развивать проект, как свой собственный. 
+
+Che: а прибыль от проекта потом тоже на всех делить будете? 
+
+Bosmanoff: хороший вопрос, но я его бы задал на собеседовании, и организовал бы архитектуру ядра таким бы образом, чтобы мной дорожили 
+
+genom: ооо, в копилку политкорректных выражений наряду с "афроамериканец", "нетрадиционная ориентация" и прочей дурью положу "он организует архитектуру таким образом, чтобы им дорожили"`},
+{id:17110,rating:10729,date:"02.06.2015",text:`Lionet: По опыту вчерашних экспериментов с новым оборудованием 
+Lionet: В отличии от "прикладников"-программистов, в работе инженера-электронщика временами бывают танцы не только с бубном, но и с огнетушителем...`},
+{id:17097,rating:10681,date:"18.05.2015",text:`zzz: Утверждено кодовое имя Ubuntu 15.10 - Wily Werewolf 
+ххх: А в полнолуние у этого релиза будет выть PulseAudio.:D 
+ууу: А в новолуние — глохнуть сюстемд.`},
+{id:18661,rating:9891,date:"06.10.2020",text:`"Telling a programmer there's already a library to do X is like telling a songwriter there's already a song about love"`},
+{id:18705,rating:8171,date:"22.02.2021",text:`xxx: Была где-то история, искали человека с опытом работы во фреймворке 5 лет, а чел им говорит: "я этот фреймворк 2 года назад написал".`},
+{id:17413,rating:7723,date:"09.05.2016",text:`От восстания машин нас спасут тётки из бухгалтерии. 
+
+Вылезаешь из укрытия, видишь сломанный Скайнет и тётя Алевтина «Я ничего не нажимала!»`},
+{id:17118,rating:7683,date:"15.06.2015",text:`- Что делает твоя кошка? 
+- Не знаю. Наверное, изучает ядерную физику. 
+- И что, все твои кошки изучали ядерную физику?! 
+- Я их ни разу не экзаменовал.`},
+{id:17115,rating:7514,date:"09.06.2015",text:`r@ttler: думаю, ты понимаешь, что то, что я предложил это не то что вытаскивание гланд через задницу, это установка импланта в мозг через нее же`},
+{id:17122,rating:7464,date:"19.06.2015",text:`@stanis: Если бы в России была проблема с дорогами, русские не любили бы быстрой езды. 
+@glupovat: Если бы в России была проблема _только_ с дорогами, русские не любили бы быстрой езды.`},
+{id:17277,rating:7457,date:"12.11.2015",text:`xxx: Представьте цех по выпуску холодильников. В нём 1 рабочий умеет делать звездолёты, остальные 10 - скворечники. Это и есть модель проекта разработки ПО.`},
+{id:18815,rating:7379,date:"10.08.2021",text:`ealand: Да тут поверишь в теории заговора, блин) крч, у меня джун российский, после второй прививки неделю в лёжку 38, работать не мог, зато потом всё наверстал, джиру смотрит, коменты в код пишет, и адекватные, и в целом тупить стал меньше, а кодить - лучше, хоть премируй) 
+
+ealand: Не иначе багфикс на чип прилетел)))`},
+{id:17104,rating:7291,date:"28.05.2015",text:`«А Вы говорите датчики не той стороной воткнули с применением силы... Запомните мои слова, идиотизм и кривые руки - беда интернациональная.» (с)`},
+{id:17420,rating:7114,date:"13.05.2016",text:`Хабр, статья «Как взломать Telegram и WhatsApp: спецслужбы не нужны» 
+xxx: Для всех, кто ещё по каким-либо причинам не включил двухфакторную авторизацию: [ссылка] 
+yyy: Аутентификацию. 
+zzz: Ох уж эта секта свидетей Драматического Отличия Авторизации От Аутентификации И Их Обоих От Идентификации.`},
+{id:17265,rating:7110,date:"30.10.2015",text:`at: чето я пошутить хотел и пока окна туда-сюда разворачивал, забыл (( 
+ksotik: пока вы там окна разворачиваете, мы в терминале уже пошутили и посмеялись даже`},
+{id:17408,rating:7067,date:"29.04.2016",text:`С гиктаймс, новость об установки Gentoo Linux на Tesla Model S 
+voidptr0: doom на тесле уже запускали, нет? 
+AVX: Запустили, но потом решили все-таки убрать — автопилот отвлекается.`},
+{id:18713,rating:7017,date:"18.03.2021",text:`>V: А ещё мне тут пришла в голову правильная аналогия про Vim 
+>V: Это короче так: садишься ты в машину, а там вместо руля и педалей стоит БАЯН 
+>V: И каждая кнопка что-то означает, типа: - вперёд 100 м - вперёд 1 км - вперёд до ближайшего светофора - вперёд до отделения полиции - обогнать впереди едущую машину 
+>V: И ещё когда ты садишься, двери блокируются и надо тоже нажать последовательность кнопок на баяне, чтобы выйти 
+>V: А если в движении случайно нажмёшь esc и выйдешь из режима движения, то вместо движения вперёд машина бибикает 
+>V: И соответственно есть прокачанные баянисты, которые ездят по дорогам, играя мелодии. Быстро, эффективно ездят 
+
+V2: vi посвящается. Что такое настоящая долговечность и истинное признание в мире ИТ? Это текстовый редактор vi! Первая версия появилась примерно 45 лет назад. Но до сих пор начинающие юниксоиды плачут, смеются, продолжают есть кактус и писать свои впечатления от пользования сим незабвенным софтом. Вы спросите,- какие вообще могут быть впечатления от пользования текстовым редактором? Ха-ха три раза, дети юзер френдли интерфейса, адепты Джобса и Гейтса... Это нельзя рассказать, это надо прожить и первый раз незабываем! Большинство сейчас, конечно, используют уже vim, а многие даже и не знают, что даже "классический" vi это суть есть визуальный режим редактора ex, который является упрощенной версией редактора en, который является модифицированной версией редактора em, который был создан потому что популярный на тот момент редактор ed БЫЛ СЛИШКОМ СЛОЖНЫМ ДЛЯ ПРОСТЫХ СМЕРТНЫХ. Современные IT технологии слишком сложны? Тогда подумайте о том, что ВИЗУАЛЬНЫЙ режим в ТЕКСТОВОМ РЕДАКТОРЕ был не всегда. И был текстовый редактор без визуального интерфейса, который уже не казался слишком сложным "простым смертным". И в этих редакторах были написаны программы и расчеты, позволившие отправить людей на Луну. Нет, мир и технологии не стали слишком сложными для человека, просто, перефразируя Михаила Юрьевича, богатыри - не мы. Но, не все потеряно, ведь раз vi запускают, значит это кому-то нужно!?`},
+{id:17423,rating:6934,date:"17.05.2016",text:`xxx: а. походу нашел:  
+xxx: // Тут начинается костыль, я надеюсь очень временный  
+xxx: вот по этому тексту можно найти  
+yyy: 5 matches`},
+{id:18708,rating:6872,date:"10.03.2021",text:`nozh: Использование any в TypeScript - это ну на совсем крайний случай, нужно огораживать обёртками и сводит на нет выгоду от использования строгих типов. Типичный случай: «TypeScript указал на несоответствие типов, я нифига не понял и не стал разбираться, нашёл на стековерфлоу что нужно вставить as any, заработало». 
+nozh: В идеале каждое использование as any должно требовать 20 подтягиваний, что бы его могли использовать только самые сильные программисты.`},
+{id:17421,rating:6832,date:"15.05.2016",text:`L29Ah: он не мёртв, он просто так пахнет`},
+{id:18839,rating:6723,date:"30.08.2021",text:`OpenNews: Выпуск Wine 6.16 и Wine staging 6.16 
+... 
+Наиболее важные изменения: 
+... 
+* Закрыты отчёты об ошибках, связанные с работой приложений: Kingsoft Office 2012, RootsMagic 3.2.x, Enterprise Architect 6.5, Internet Explorer 4, NVIDIA D3D SDK 10, MMS Buchfuehrung und Bilanz, VPython 6.11, Homesite+ v5.5, Sumatra PDF 3.1.1. 
+
+anonimus> Internet Explorer 4 это мощно! 
+AleksK> ещё на нём работают киберпанк, сноуранер, последний дум да и вообще большая часть библиотеки Стима 
+Zenitur> На интернет эксплорере 4? 
+Аноним> Да. Лучший браузер же!`},
+{id:18733,rating:6684,date:"09.04.2021",text:`Проверка на вшиивость в чате: "На каком порту работает пинг?" 
+Ответ: "Лучший порт для пинга -- Архангельск"`},
+{id:18840,rating:6679,date:"30.08.2021",text:`2011 г. 
+Michael72: у меня мечта - купить себе лицензию на Windows 
+Свин: Michael72: я купил, через 2 месяца был на линуксе`},
+{id:18759,rating:6565,date:"24.05.2021",text:`xxx: К слову сказать, вроде они заплатили хакерам 5 миллионов, и открыли вакансию менеджера по кибербезопасности. 
+yyy: Слово «менеджер» вместо «специалист» словно намекает на то, что они хотят автоматизировать платежи хакерам, вместо того, чтобы чинить периметр безопасности.`},
+{id:18796,rating:6303,date:"21.07.2021",text:`ealand: Ковыряю на работе неиспользуемый в данный момент модуль рабочей срм-ки, натыкаюсь на прекрасное 
+
+ealand: Закоменченная хтонически монструозная конструкция из 36 (!!!) вложенных друга в друга IF-THE-ELSE 
+
+ealand: И после оной, вишенкой на торте комментарий (в переводе с англ) - "а потом мистеру Уайтсмиту объяснили, что премировать программистов в соответствии с объемом написанного кода - идея так себе", после чего идет нормальный цикл в две строки 
+
+ealand: Что характерно, некий Уайтсмит в компании работает до сих пор, правда, в другом подразделении. К счастью. Наверное...)))`},
+{id:18737,rating:6299,date:"19.04.2021",text:`@feach: ъхзкуцйЦУК56Е7Н8ГЩЗХЪ 
+@TheNotoriousSDE: Это что за кодировка? 
+@bolknote: КОТ-8R`},
+{id:18883,rating:6090,date:"07.10.2021",text:`ealand: Там случился шибко умный джун. Решил "выдернуть" старый костыль на проде, по древнему тикету 
+
+ealand: При близком осмотре костыль оказался позвоночником`},
+{id:18865,rating:5664,date:"27.09.2021",text:`Sergey Borodin: Если компилятор возмущается, то это хорошо. Если возмущается линковщик, то плохо. Если возмущается рантайм, то это жесть. 
+Alex Chemis: Что делать если возмущается начальник?! 
+Sergey Borodin: что начальник в stderr пишет?`},
+{id:18388,rating:5363,date:"31.01.2019",text:`xxx: Висит ТЗ, сделать палку. Прошу уточнений. 
+xxx: После нескольких согласований выясняется, что палка должна торчать из кучи дрянь вертикально вверх, и ещё она должна быть красной. 
+xxx: Пару раз уточняю оттенок палки, её угол наклона и тип дрянь. Делаю. 
+xxx: Когда сделал, выясняется, что палка должна торчать каждый день разная, её оттенок должен зависеть от текущей фазы луны, угол наклона - от времени суток, а вместо дрянь должно быть варенье с привкусом дрянь. А, и ещё нужно на всякий случай хранить все палки за прошедшие дни.`},
+{id:18859,rating:5085,date:"23.09.2021",text:`zmed1: Добавлю, что под конкретный класс задачи (если вы Full stack) лучше делать отдельные плейлисты. Тогда если вы будете слушать эту музыку только решая определенный класс задач, то каждый раз вы будете сонастраиваться с задачей. 
+
+ApeCoder: Надо интегрировать с IDE. Типа как в играх с геймплеем. Exception - звучит трагическая музыка, debugging - героическая, создаешь класс - патетическая, типа "Время, вперед", code review - шансон.`},
+{id:18856,rating:5077,date:"20.09.2021",text:`xxx: сейчас к нам в офис через открытое окно прилетал воробей и пролетев по отделу нагадил на клавиатуру одному из наших разработчиков, затем улетел в то же окно, мы призадумались... 
+yyy: что тут думать? Независимый эксперт провел аудит кода и выразил результат как смог.`},
+{id:18710,rating:4776,date:"17.03.2021",text:`xxx: Доброе утро, Сергей. У меня не открывается база. 
+yyy: Пишет "сервер не отвечает"? 
+xxx: Да, как вы догадались? 
+yyy: У меня есть дар предвидения. Гадая по внутренностям лежащего на столе полуразобранного сервера, я точно могу предсказать, что сейчас кто-то позвонит и скажет, что сервер не отвечает.`},
+{id:17005,rating:4605,date:"21.04.2015",text:`Anna: что-то мой метод по поиску по фамилии не работает 
+Alex: метод в студию 
+Anna: public ArrayList<Student> getStudentsGivenLastName(String lastName) { 
+ArrayList<Student> result = new ArrayList<Student>(); 
+for (Student student : this.getStudents()) { 
+if (student.getLastName() == lastName) { 
+result.add(student); 
+} 
+} 
+Anna: мы сегодня его тестировали с тобой 
+Alex: а как твой метод что-то вернёт без волшебного слова? 
+Anna: пожалуйстаа 
+
+- прошло 3 минуты - 
+
+Anna: ааа ретёрн`},
+{id:17086,rating:4591,date:"05.05.2015",text:`(1): привет. 
+(2): привет 
+(1): Подскажи плиз, тебе слово "опускатор" о чем-нибудь говорить ? =))) 
+(2): ? 
+(2): оБФускатор мож? 
+(1): Точно`},
+{id:18395,rating:4282,date:"16.02.2019",text:`Прекрасное из багтреккера (перевод): 
+
+В процессе обновления ПО на моделях XXXX (5-осевые фрезерные станки с ЧПУ) начиная с версии YYYY отображается анимация на которой показана вращающаяся группа шестерней. Клиент отмечает что в группе использованы шестерни с не взаимно простым количеством зубцов (приводит к неравномерному износу - прим. автора), неверными геометрическими параметрами (профиль зубцов не входит в полное зацепление с ведомыми шестернями, а взаимодействие плоскостей является скользящим), а вся конструкция в принципе избыточна т.к. как минимум одна пара вращается с одинаковыми угловыми скоростями. Наблюдение анимации при обновлении ПО вызывает у оператора чувство тревоги (!), неуверенности в качестве продукта и недоверия (!) к программистам. Клиент прилагает модель с исправленной группой шестерней и просит заменить анимацию. 
+
+Клиент из Японии, если что. Самурай, созерцающий шестерни во всем подобен самураю созерцающему цветущую сакуру. Гнетущее несовершенство, видимо, порождает в его душе непреодолимое желание совершить либо кайдзен, либо харакири.`},
+{id:18396,rating:3670,date:"16.02.2019",text:`xxx: 
+Человеческие языки хороши для полунамеков «пойдем, потрахаемся». Там где нужна однозначность программисты, ученые, юристы, клерки вводят искуственные языки. 
+Тех, кто думает, будто естественные языки подходят для точной передачи информации следует приговорить к неделе чтения студенческих рефератов. 
+
+yyy: 
+Тех, кто считает, что формальные языки гарантируют точную передачу информации, следует приговорит к трем месяцам сопровождения java-проекта от индийских разрабов. Или к 15 суткам чтения сопроводиловок к законопроектам ГД текущего созыва.`},
+{id:16635,rating:3616,date:"01.08.2014",text:`xxx: Уже почти август, а мы должны были сделать эту фичу еще в феврале!  
+yyy: Спокойно. Сказали "в феврале", в феврале и сделаем.`},
+{id:18403,rating:3615,date:"01.03.2019",text:`Заголовок новости: "Google забыла рассказать покупателям о встроенных в системы управления сигнализацией Nest микрофонах". 
+Комментарии: 
+ттт: Февраль 2020: Google забыла рассказать покупателям о встроенных в системы управления сигнализацией Nest видеокамеры. 
+ттт: Февраль 2021: Google забыла рассказать покупателям о встроенных в видеокамеры системы управления сигнализацией Nest приборы ночного видения. 
+ттт: Февраль 2022: Google забыла рассказать покупателям о встроенных в системы управления сигнализацией Nest АНБ-шниках.`},
+{id:16400,rating:3548,date:"26.01.2014",text:`<ForNeVeR> Говорят, у древних индусов было божество, которое выслеживало тех, кто не пишет код, и жестоко убивало их.`},
+{id:16413,rating:3374,date:"01.02.2014",text:`[23:28:12] Vasiliy: давайте просто форкнемся и все 
+[23:28:20] Vasiliy: хочешь меня форкнуть? 
+[23:28:26] Anna: ой 
+[23:28:33] Vasiliy: я тебе потом буду апдейты в виде пул реквестов посылать? 
+[23:28:35] Anna: мне никогда раньше такого не предлагали 
+[23:28:43] Vasiliy: стоит попробовать ))) 
+[00:01:58] Vasiliy: Стоит признать, меня до этого еще никто не форкал 
+[00:17:57] Anna: оу, так я у тебя в этом смысле первая? 
+[00:18:03] Anna: это так... необычно. 
+[00:19:06] Vasiliy: да не говори 
+[00:19:22] Vasiliy: но только я до этого кхм.. преподавателя форкнул 
+[00:19:30] Vasiliy: но это не в счёт :-D 
+[00:19:54] Vasiliy: как говорится - один рас не ... ну вы поняли 
+[00:24:19] Anna: один раз не контрибутор)`},
+{id:16637,rating:3018,date:"02.08.2014",text:`arthin: админы бывают двух категорий: с бэкапами и с факапами.`},
+{id:16443,rating:2966,date:"17.02.2014",text:`<ForNeVeR> Эх. 
+<ForNeVeR> В Жавварибо уже всё написали и коммитят код, а в Силабаджо всё ещё линкуют :'(`},
+{id:18397,rating:2821,date:"18.02.2019",text:`xxx: "Добрый день, к вашим услугам питон-разработчик, слонёнок-тестер и мартышка-тимлид"`},
+{id:18400,rating:2776,date:"20.02.2019",text:`он наивно полагал, что прислать резюме в виде JSON-массива - оригинально. 
+Суровая и консервативно настроенная эйчариха Людмила Ивановна его креатива не оценила и отправила письмо прямиком в корзину, сочтя непонятный набор символов опасным вирусом, и добавила его мыло в черный список.`},
+{id:16631,rating:2681,date:"29.07.2014",text:`<pdc> а что заставляет людей юзать qmail? 
+<aef> pdc: инопланетяне пускают такие специальные лучи 
+<aef> pdc: основной удар принимают на себя похапешнеги, но рикошетом прилетает qmail-овцам 
+
+ipfw.ru`},
+{id:16638,rating:2644,date:"04.08.2014",text:`mr.The: Есть там еще срочные баги? 
+ann: https://www.pivotaltracker.com/..../123 z cvjnhtkf^ yj yt gjyzkf xnu nfv 
+mr.The: >>z cvjnhtkf^ yj yt gjyzkf xnu nfv 
+именно так для меня выглядит описание 90% багов, да`},
+{id:16632,rating:2640,date:"30.07.2014",text:`у нас под Питером в район полигона часто грибники забредают, там грибов больше. Вот как–то раз стрельба началась, деваться некуда, пара грибников и попряталась за ростовыми мишенями. Только благодаря высочайшему уровню выучки новобранцев гражданское население не пострадало. 
+http://historyporn.d3.ru/comments/580395/#11628956`},
+{id:16636,rating:2604,date:"01.08.2014",text:`beholder: Я придумал слоган для пиратской партии: god seeds`},
+{id:18407,rating:1658,date:"07.03.2019",text:`opennet, "Платформа Electron прекращает поддержку 32-разрядных систем Linux" 
+
+Аноним (1): 
+Перестали влезать в 4 ГБ оперативы?`},
+{id:17398,rating:1562,date:"22.04.2016",text:`Как только киндер немного подрос и научился сам жмакать пипки на клаве - началась борьба батькоадмина с несанкционированным использованием компа и тырнета. 
+В очередной раз сменив пароль на тырнет, довольный батькокоадмин расслабился, но через пару дней вдруг обнаружил, что кто-то по ночам таки заходит в комп и лазит в тырнет. 
+Начал рыть на компе логи и ссе такое, и случайно нашел свеженький видеофайлик, на котором видно как я набираю на клаве свой новый админский суперсекретный логин и пароль. 
+Оказалось, этот киндерхакер взял фотик, включил его на видеозапись и положил рядом с компом (типа просто так валяется), чтобы объектив смотрел на клаву, а сам обратился с просьбой.. типа в школе задали реферат, поищи плиз. 
+В общем спалил я его шпионский девайс, опять сменил пароль, а через пару дней опять спалил киндера ночью за тырнетом. 
+И вот после очередной мены пароля киндер просит меня порыться в тырнете, но я уже попа чую, что это Ж-Ж-Ж не спроста. Оглядываюсь вокруг и вижу - киндер из кухни через длинный коридор смотрит в бинокль в мою сторону, а возле компа стоит зеркало на ножке, направленное на клаву... 
+киндеру было тогда лет 8..`},
+{id:19005,rating:1478,date:"26.04.2022",text:`Пс. У меня на даче была камера наружного наблюдения от компании YI, с нейросетью на борту и возможностью дообучения через их облако. И после очередного обучения и обновления камера влюбилась в соседскую корову. Стоило ей появиться в кадре, всё внимание железяка уделяла ей. Вертела камерой, зумила и забивала болт на все иные раздражители. Вела запись всех перемещений коровы и уведомляла меня, что в кадре группа людей готовит грабёж моей дачи.  
+
+Перевесил на другую сторону, там камера решила следить за скворцами. Мне это надоело и я её сменял на неумную.`},
+{id:18942,rating:1457,date:"26.01.2022",text:`xxx: На днях пишу код, ем банан, подходит коллега, спрашивает, на какой ветке я сижу. Похоже, эволюция свернула куда-то не туда.`},
+{id:18950,rating:1454,date:"20.02.2022",text:`<xxx> А ты не пробовал приводить код в человеческий вид? Расставлять отступы, добавлять комментарии и всё такое? 
+<yyy> Зачем? Я же не пишу програмы для кого-то, я просто кожу под себя. 
+<xxx> Знаешь, такое впечатление, что сейчас все программисты кодят под себя.`},
+{id:17392,rating:1434,date:"12.04.2016",text:`Уж казалось бы всё повидал в Майкрософтовских продуктах, ан нет. Exchange порадовал предупреждением: 
+
+"(!) Если в организации Exchange 2010 также работает сервер Exchange 2003, отключение соединителя может привести к зацикливанию    маршрутизации. Exchange 2003 не распознает, что соединитель отключен, и будет продолжать выполнять на него маршрутизацию." 
+
+И кнопки ниже: 
+
+[Да]  [Да для всех]  [Нет]  [Отмена] 
+
+Выглядит как вопрос на ЕГЭ по программированию.`},
+{id:18946,rating:1424,date:"31.01.2022",text:`Когда "русифицированный" Нортон Командер при попытке удалить с дискеты файл строго спросил "Следующий файл единственно читаемый. Вы ещё хотите удалять это?" - я таки проверил. Нет, не единственный. Остальные файлы на дискете тоже ещё читаются. А так-то грустно, конечно - удалить единственный из всей дискеты читаемый файл.`},
+{id:17383,rating:1411,date:"02.04.2016",text:`xxx: Делаю коммит очередной доработки, Гит присваивает ему версию e6a3dec. У меня плохое предчувствие...`},
+{id:17382,rating:1397,date:"31.03.2016",text:`*Обсуждение использования оперативки различными ЯП* 
+xxx: вот представь: аккуратный стол, белая тарелочка на нем, на тарелочке оперативка. Сидит С, аккуратно ножом отрезает кусочек и кушает. 
+xxx: И ТУТ В СТОЛОВУЮ ВЛАМЫВАЕТСЯ СВИНЬЯ И СЖИРАЕТ ВСЮ ОПЕРАТИВКУ СРАЗУ - это Java. 
+yyy: ...С от испуга выплевывает откушенный кусочек и кричит: Segmentation fault!`},
+{id:17379,rating:1369,date:"23.03.2016",text:`xxx: Хай! Чем занимаешься? 
+yyy: Снятием порчи по фотографиям, блин. 
+xxx: В экстрасенсы подался? 
+yyy: Ага. Мне шлют скрины, а я пытаюсь понять, где засела зараза, которую антивирь почему-то поймать не может.`},
+{id:18429,rating:976,date:"15.04.2019",text:`бывает key meshing, а у меня сейчас pel meshing с майонезом`},
+{id:17360,rating:796,date:"24.02.2016",text:`xxx: Столкнулся с такой проблемой, есть раскрывающийся список где ajax-ом подгружаются значения, все отлично работает во всех браузерах кроме internet explorer. В нем приходится сначала нажать один раз, выпадает пустой список и только при втором нажатии раскрывается список из ajax. Подскажите если кто сталкивался с такой проблемой, как решить можно? 
+yyy: это какой версии осел? 
+xxx: Ты че конь опух в край?`},
+{id:17374,rating:795,date:"15.03.2016",text:`Комментарий к посту на geektimes про выход нового патча для Diablo II спустя почти 16 лет после выхода игры: 
+
+FoxCanFly: Вот это действительно LTS, а не эти ваши Дебианы.`},
+{id:17373,rating:783,date:"11.03.2016",text:`[12:52]	pipfstarrd: Вот скажи мне проприетарщик, в чем сила? Разве в закрытом коде? Вот и микрософт с аппле говорят, что в закрытом. У тебя много закрытого кода, и что? Я вот думаю, что сила в свободе: в свободе делать то, что ты хочешь на своем железе. Вот ты сделал вендорлок, дропнул поддержку через 2 года, и чего -- ты сильней стал? Нет, не стал, потому что потребитель тебя за это любить не будет. А тот, у кого устройство в брюкву превратилась -- за ним правда. Он купит в следующий раз более лояльного к OSS производителя. Значит не в закрытости сила!`}],
+  [{id:469,rating:5717,date:"18.07.2025",text:`Котёнко: привет! 
+Ramazoid: ну привет 
+Котенко: давай знакомиццо? 
+Ramazoid: ну давай 
+Котенко: я Катя 
+Ramazoid: я Сережа 
+Котенко: где работаешь? кем? 
+Ramazoid: дизайнерю в конторе ***** 
+Котенко: и че нравится? 
+Ramazoid: да все пучком 
+Котенко: не ну там зарплата, условия работы, все устраивает? 
+Ramazoid: ..... Семен Петрович, нахера вот эти начемоданечерезкитайские методы? если вас не устраивает моя работа, то так и скажите - Сережа пирдуй в бухгалтерию с заявлением, я же смотрю IP, я знаю с какой вы машины вышли в сеть, я даже рожу вашу вижу - посмотрите, лампочка на вебкамере горит, хотите узнать мнение о конторе? так вы просто проведите анкетирование, с одним единственным вопросом - адекватен ли мой директор, да-нет, результаты вас удручат, поверьте мне, зарплату я получал даже и не помню когда, текучка кадров в вашей конторе больше чем в ниагарском водопаде, а в целом меня все устраивает, все хорошо и просто расчудесно. 
+Котенко: Сережа, пирдуй в бухгалтерию с заявлением... 
+Ramazoid: да уже сходил, положил заявление и пошел домой, предусмотрительно слив все базы, инишники и конфиги, меняюсь на трудовую и остатки зарплаты.... ну и конечно чмоки тя, Котенко ))))`},
+{id:20,rating:3491,date:"18.07.2025",text:`Сидел щаз в сортире, размышлял над конфигурацией новой
+циски. Мои размышления прервал стук в дверь. Я недолго
+думая, "хто там?". Из-за двери девчячий голос нашей 
+новенькой: "Мне администратор нужнен я ему документы 
+принесла". Я в ахуе ржу... Из-за двери обиженно: "Ладно
+я вам их под дверь просуну - подпишите и просуньте 
+обратно". Я чуть с унитаза не упал... Говорю: "Девушка, 
+я тут вообще-то сру...". Она: "Фу, блин, меня 
+предупреждали, что вы у нас немного странные, я потом 
+прийду...". И ушла. Я поднялся, промыл плоды своих 
+размышлений, взял документы с пола, выхожу. Смотрю на 
+дверь... И чуть не падаю от смеха. Какой-то урод 
+прицепил на нее МОЮ табличку "СЕРВЕРНАЯ". Оборачиваюсь,
+вижу в коридоре шефа, выражение его лица было, 
+как будто он своего давно почившего дедушку увидел...
+Интересно, что обо мне подумал шеф? Видя меня, 
+выходящего из сортира с документами в руках, 
+останавливающегося и ржущего. И что @ля подумала 
+стажерка из бухгалтерии??
+from Ligor`},
+{id:81,rating:2769,date:"18.07.2025",text:`xxx сменил свой ник на ВНИМАНИЕ
+* ВНИМАНИЕ ! Произошла критическая ошибка! Немедленно нажмите ALT+F4, чтобы ее
+исправить!
+* yyy ушел с канала ["Ooops (EOF)"]
+* zzz ушел с канала ["Quit"]`},
+{id:234,rating:2577,date:"18.07.2025",text:`J. X. R.: жесть... Подходит большое начальство смотреть на работу проекта, смотрит мне уже через плечо, а я лихорадочно убираю комменты "Работает, стерва" и "Тут пойдем через попа". Вроде все убрал, запускаю и вижу, что имя окна - "Аццкий сукапроект v. 0.9" Чуть не поседел..`},
+{id:188,rating:2275,date:"18.07.2025",text:`<Astronix> подскажите прогу через каторую можно посмотреть какой процесс использует 80 порт
+<netstat> хз`},
+{id:450,rating:2143,date:"18.07.2025",text:`<ssd.meister> Когда я сказал студентам принести лабу по алгоритмизации на любом языке программирования, я не подозревал, что на потоке найдётся дурак, который напишет её на.. BRAINFUCK'е!`},
+{id:500,rating:1929,date:"18.07.2025",text:`<Sc0v> ЙРН  МХРЭ ОНДШЛЮК ВРН МХРЭ МЮ Gfs ? 
+<ежевичное> ондшлюк?
+<Sc0v> ОНДШЛЮК= ГЮОСЯЙЮК, МЮЯРПЮХБЮК
+<ежевичное> я теперь знаю, что такое ондшлюк`},
+{id:230,rating:1550,date:"18.07.2025",text:`<Melkiy> парни вопрос я вот скачал с kernal.org ядро оно будет писать на ntfs ?
+<amazing> ага, кипятком`},
+{id:255,rating:1451,date:"18.07.2025",text:`<xxx> ппц!
+<yyy> че?
+<xxx> Сервак рухнул
+<yyy> КАК?
+<xxx> Просто рухнул
+<yyy> Ну чё с ним? взломали?
+<xxx> нет
+<yyy> Свет вырубили?
+<xxx> нет
+<yyy> Мля взорвали чтоль?
+<xxx> нет
+<yyy> Ну а чё тогда?
+<xxx> Сервак переносили на 9 этаж, Серега споткнулся об шнур бесперебойника и сервак рухнул с 7-го.
+<yyy> ппц`},
+{id:111,rating:1442,date:"18.07.2025",text:`<OSA> привет, у кого есть KolibriOS?
+<ZLord> привет
+<Krozavcheg> wtf
+<[bod]> wtf?
+<OSA> че за wtf?
+<Krozavcheg> сокращение от "What the fuck?"
+<OSA> а что это?
+<[bod]> :)))
+<Krozavcheg> "Что это за хрень?"
+<OSA> да, поясните плиз
+<[bod]> )))) wtf переводится как "что за х@йня?"
+<OSA> теперь врубился. так есть у кого нибудь KolibriOS?
+<[bod]> нету
+<OSA> а у остальных?
+<Krozavcheg> omg
+<Krozavcheg> ytne
+<ZLord> ytne
+<OSA> а вы можете НОРМАЛЬНО сказать?
+<OSA> где только словечек таких понахватали?
+<[bod]> rtfm
+<ZLord> ппц
+*OSA покинул канал (:Quit.)
+<ZLord> LOL )))
+<Krozavcheg> wtf kolibrios?
+<[bod]> ХЗ ж)`},
+{id:363,rating:1259,date:"18.07.2025",text:`Админы, блин...
+Принес хард с убитым разделом, попросил наших админов вытащить инфу. К концу дня подхожу, один админ мне говорит: 7,6 Гб... как тебе ее скинуть? говорю, разбей на две болванки, он говорит нет болванок, могу на 40 Гб кассету стриммерную записать (и улыбаясь достает из ящика стола кассету)... я говорю издеваешься? где я стриммер возьму?... тут он достает из ящика стола... правильно - стриммер! сказёвый... я смеюсь, говорю - здорово, тогда давай контроллер тоже... ну вы поняли, да? он достает из ящика КОНТРОЛЛЕР, ШЛЕЙФ И CD С ДРАЙВЕРАМИ... вся комната под столами...`},
+{id:250,rating:1236,date:"18.07.2025",text:`scorp_ua:
+я вчера чистил свой монитор. 
+
+scorp_ua:
+в общем, снимаю я заднюю крышку, а на её обратной стороне написано:"Do not remove this cover!!!"
+
+cryostasis:
+железная логика :D`},
+{id:77,rating:1220,date:"18.07.2025",text:`Lubasha: прикинь только собираюсь тебе писать меня вырубают и вчера тоже. Боюсь за это послание
+
+Lubasha: О! Дошло!!!! Слушай, у меня тут проблема.
+
+Iwan: Минутку... {shutdown -s -m\\\\lubasha.inter.local -f -t 01}
+
+*Lubasha has quit`},
+{id:285,rating:983,date:"18.07.2025",text:`<Haku> знаешь....наш класс дибилы..
+<Haku> сегодня на инфе, у меня на компах консоль открыта...
+<Haku> ПАЧЕМУ блин НЕЛЬЗЯ СПРОСИТЬ, НАДО РЕСЕТ ЖАТЬ????
+<helendile> патамушта ой! страшнаааа
+<Haku> потом на вопрос нах вы это сделали ответ:"ты непонемаешь что когда на экране одни буквы и черный экран это ненормально?"
+<Haku> следущая картина..
+<Haku> все ребутнулись, загружается приглашение в систему..
+<Haku> какой бы ты пароль первым попробовал, на узера усер, в школе?
+<helendile> пустой)
+<Haku> но НАХЕРА РЕСЕТ СНОВА ЖАТЬ???
+<Haku> неужели там после перезагрузки пароль не спросит??`},
+{id:242,rating:937,date:"18.07.2025",text:`[19:37:07] <Надежда> !!тевирп
+[19:37:32] <Лиюшечка> офигеть и!!!`},
+{id:33121,rating:4,date:"16.03.2026",text:`Чичиков, изнывая от безделья, принялся скупать мертвые аккаунты в сети, чтобы раздуть свой инстаграм. Теперь он мечтал прослыть звездой интернета и кормиться с руки столичной администрации, выполняя заказы на "продвижение важных идей".`},
+{id:33119,rating:2,date:"16.03.2026",text:`Самоизоляция: родители на работе, а дома два сорванца. И вот звонок: "Мам, а вот то белое в баночке, его кушать можно?" В голове начинается лихорадочный поиск: "Что это за хрень у меня в холодильнике, которая даже на фото не определяется?!`},
+{id:33117,rating:1,date:"16.03.2026",text:`Короче, надо было в клубе с нуля всю проводку тянуть, а там темнота, как у негра в заднице. Электрики, надо сказать, были профи, реально шарили. Я им так, мол, вот вам фронт работ, нарисуйте цену, сколько скажете – сразу отдам. А они мне такие: "Увольте, тут работы как минимум на год, мы в такое не вписываемся".`},
+{id:33104,rating:1,date:"16.03.2026",text:`xxx: Вот и мои хоромы!
+yyy: Учитывая, что "хоромы" эти на девятом этаже, а лифт сдох, это скорее орлиное гнездо, куда забираться – подвиг.`},
+{id:33088,rating:1,date:"15.03.2026",text:`Открыл я этот трудовой договор, листаю, значит, и натыкаюсь на пункт:
+"2.1. То, что ты делаешь, называется работой."
+Я аж завис.`},
+{id:33018,rating:1,date:"12.03.2026",text:`xxx: Вот это вещь, этот ваш Punto! Прям находка, а не программа!`},
+{id:33010,rating:1,date:"11.03.2026",text:`xxx: Ну и кто же этот светлый ум, который решил, что окно без сетки - это отличная идея?
+yyy: Да понимаешь, было так душно, что мы решили, что даже такая мелочь, как сетка, не должна мешать воздуху гулять.
+xxx: Гениально. А теперь, пожалуй, иди полей ту герань, которую вы заботливо высадили в капот нашему главному бухгалтеру.`},
+{id:32961,rating:1,date:"09.03.2026",text:`Ну, мои сослуживцы — те ещё хитрецы. Месяц назад я с ними из-за чайника бился: захожу на кухню – вечно пустой. Мол, выпил – так и долей, ё-моё. И что вы думаете? Через месяц эти гении нашли золотую середину: оставляют ровно на одну кружку. И опять мне воду греть.`},
+{id:32952,rating:1,date:"09.03.2026",text:`Тоха: Вообще, я бы в армию рванул, но хочется еще и в магистратуру залететь.
+Тоха: Да и работать надо.
+Сульфурчег: Ну и зачем?
+Сульфурчег: Это все какой-то поганый вирус – "люблю Родину".
+Тоха: Да какой к черту "люблю Родину"? Я просто хочу кого-нибудь покрошить!`},
+{id:32938,rating:1,date:"08.03.2026",text:`xxx:
+Заказала как-то суши онлайн, а курьер мне устроил целый ликбез, что мол, я, покупая рыбу, спонсирую насилие над невинными существами, и вообще, я убийца. И всякие проповеди про отказ от мяса и суши, плюс кучу макулатуры мне в руки сунул. :blink: Отделалась от него – звоню оператору, жалуюсь. И тут слышу в трубке: "Минуточку... (где-то на фоне раздается вопль) Какого черта его до сих пор не уволили?!" :D`},
+{id:32860,rating:1,date:"04.03.2026",text:`Обосрался от страха" — это, знаете ли, не совсем элегантно. Правильнее будет сказать: "Объявил о повышении цвета тревоги до шоколадного".`},
+{id:32842,rating:1,date:"03.03.2026",text:`**BigSergo:**
+Не бойтесь, к октябрю биткоин как огурчик в банке, поднимется до 70 тысяч.
+
+**Den_X:**
+Держу пари на сотку зелёных, что к первому октября он ниже 70-ти останется.
+
+**IvanP:**
+С удовольствием оформлю ваши страховки, по трёшнику с каждого.`},
+{id:32835,rating:1,date:"03.03.2026",text:`Коллеги подарили на ДР кактус. У нас в офисе, знаешь ли, не курорт: света мало, сквозняки гуляют. Пришлось мне его домой забирать.
+
+Пятница, вечер. Спускаюсь в метро с двумя девушками и этим колючим счастьем в горшке. Тут подходит к нам один такой, слегка подшофе, и как присмотрится к кактусу, потом ко мне, потом к девчонкам...
+
+И выдает, в полном недоумении: "А кактус у вас, простите, тоже девочка, или он все-таки парень?`},
+{id:32794,rating:1,date:"01.03.2026",text:`Я изо всех сил пытался собрать из этих слов хоть какую-то рифму, но в итоге призвал только самого черта. Он, бедный, развел руками, сказал, что таким матом его тоже не зовут, и растворился обратно в неизвестность, где-то между Омском и преисподней.`},
+{id:32725,rating:1,date:"26.02.2026",text:`xxx:
+Тачку за копейки взять — не проблема.
+Другой вопрос — а тебе оно надо?
+Если ты только учишься рулить, то надо, чтоб она ехала, а не разбиралась по запчастям.
+
+yyy:
+У нас тут пацаны на такие "копейки" заглядываются, чтоб в ней тусоваться, пока электричка не придет. Типа, мобильная "зона ожидания" с крышей. :lol:`},
+{id:32683,rating:1,date:"24.02.2026",text:`xxx: Есть гениальный метод, чтобы понять, врут твои напольные весы или нет! Взвесься, потом опрокинь литр пивка, и снова на платформу!
+yyy: Ну, вообще-то, точнее будет взвесить бутылку с литром воды.
+xxx: А я и не говорил "точный", я говорил "лучший"!`},
+{id:33120,rating:0,date:"16.03.2026",text:`Сижу я, значит, на детской площадке, сынуля мой там с одной девочкой на карусели кружится. Думаю: "Вот молодец, растет у меня настоящий кавалер, можно и похвалиться!" Но не тут-то было. Через пару минут мой рыцарь останавливает эту карусель, девочку ссаживает, сам туда плюхается и таким царским тоном заявляет: "Я тебя покатал, а теперь ты меня покатай!`},
+{id:33118,rating:0,date:"16.03.2026",text:`ххх: Я всё никак не угомонюсь, глядя на этих фанатов старинных картинок, где нарисовали каких-то "динозавров".
+ххх: Ну, вы даете!
+ххх: Серьезно, существа на рисунках больше на динозавров смахивают, чем на верблюдов?
+ххх: Да уж, средневековые книжки с картинками — отдельная песня.
+ххх: Там, порой, такое нарисуют: будто Ктулху на полном отлете из уклейки себе костюм сварганил.
+ххх: А подпись — "Осьминог".`},
+{id:33116,rating:0,date:"16.03.2026",text:`Перевод часов обратно? Знаете, это так напоминает мне наших любимых разработчиков игр. Те, которые вроде как что-то там переделают, а потом, когда все уже привыкли и потратили кучу времени и сил на адаптацию, вдруг такие: 'А давайте всё вернем как было!`},
+{id:33115,rating:0,date:"16.03.2026",text:`Препод: Собственный класс, знаешь, что это такое и когда он нам пригодится?
+Студент: Ну, это такое хитрое множество, которое само по себе — не часть никакого другого множества. Это как бы наш способ избежать путаницы в старых теорийках.
+Препод: Ладно, давай, приведи пару примеров.
+Студент: Эээ... Тут загвоздка. Если я приведу пример, он сразу станет "частью" нашего разговора, то есть элементом. А первый же принцип этого вашего класса — "ни за что не быть элементом"! Так что, никак.`},
+{id:33114,rating:0,date:"16.03.2026",text:`– Ну что, сколько там в жиме лежа давишь?
+– Около двух сотен.
+– Вот это силач! А по виду и не скажешь.
+– Так это за всю неделю, понемногу.`},
+{id:33113,rating:0,date:"16.03.2026",text:`Утренник в садике, на сцене — воспитательницы.
+Естественно, кто бы мог подумать, пора звать Деда Мороза! Выходит он, весь при параде: халат, шапка, борода, посох. И такой, значит, спрашивает:
+— Дети, а кто я такой?
+Дети хором:
+— Ирина Анатольевна!`},
+{id:33112,rating:0,date:"16.03.2026",text:`ххх: Программа – это такой странный зверь:
+в ней старый, проверенный друг уже не водится,
+зато в суете непонятной и суетливой
+орудуют всякие, кто попало...`},
+{id:33111,rating:0,date:"16.03.2026",text:`xxx: Купили самую огромную кровать, 180 на 210. Думали, там полкоманды уместится. И вот почему, мать его, нам сейчас на ней места не хватает?
+yyy: Наверное, у вас есть коты?`},
+{id:33110,rating:0,date:"16.03.2026",text:`ххх: Интересно, а на огонь есть какие-то авторские права?
+ууу: Ага, Прометея уже подвели под статью за пиратство.`},
+{id:33109,rating:0,date:"16.03.2026",text:`xxx: Эти наши ЖКХ, ей-богу, похоже, специально выжидают, когда на улице льет как из ведра и мороз трещит, чтобы тут же вырубить нам горячую воду и батареи. Прям закон подлости какой-то!`},
+{id:33108,rating:0,date:"16.03.2026",text:`Instagram, значит, выдает фото: туманное поле, в центре – лошадь. Подпись, естественно, на английском, полная пафоса и глубокомысленных рассуждений о сущности табунов. И под этим всем – море восторженных комментариев: "Как изящно!", "Какая мудрость!", "Настоящая философия!". И тут, как вишенка на торте, один русский комментарий: "Ой, ёжик!".`},
+{id:33107,rating:0,date:"16.03.2026",text:`xxx:
+Был у меня один кавалер, который заезжал по вечерам, опустошал холодильник, ночевал, утром доедал остатки и сливался. Так и ездил, пару раз в неделю. Я, честно говоря, не парилась, только вот продукты таскать потом становилось влом. И вот как-то в субботу проснулась, говорю ему: "Слушай, дорогой, пойдем вместе на рынок, затариться на неделю, мне одной тяжеловато". Он такой: "Без проблем! Только мне сейчас срочно надо одно дельце провернуть, через пару часов буду, и пойдем". Больше я его, конечно, не видела.`},
+{id:33106,rating:0,date:"16.03.2026",text:`xxx: Слушай, а сколько эта игрушка весит, примерно?
+yyy: Ну, гигов десять, наверное.
+xxx: Ого. А с торрентов долго будет качаться?
+yyy: Ага, долго.
+xxx: Тогда, может, ты мне её на почту закинешь?`},
+{id:33105,rating:0,date:"16.03.2026",text:`xxx: Сегодня в школе какой-то батюшка объявился.
+xxx: Видать, пришли детей в вере укрепить.
+xxx: А тут такое дело – малышня с криками "Дай баф на выносливость!" за ним понеслась.`},
+{id:33103,rating:0,date:"16.03.2026",text:`Гром: Пришла мне тут в голову одна история, как сынок одного очень богатого папаши звонит и верещит: "Папка, срочно на Южный полюс партию белых медведей закинь, я в географии полный ноль!"
+Lynx: И что, это всё из-за новых правил? )
+Гром: Ну да...
+Гром: Похоже, кто-то на экзамене по жизни провалился.`},
+{id:33102,rating:0,date:"16.03.2026",text:`Удивительная картина маслом: бреду по деревне, вижу чудо отечественного автопрома, обутое в летнюю "обувь" (ну, вы понимаете). За рулём – какой-то алконавт, явно собирается покорять просторы. А у распахнутой двери – бабуля, крестит его и бормочет: "Чтоб дорога была гладкая, как ляжка младенца!" Ну, цирк, ё-моё.`},
+{id:33101,rating:0,date:"16.03.2026",text:`Мы, как небо и земля, а всё равно по уши вляпались.`},
+{id:33100,rating:0,date:"16.03.2026",text:`Два заядлых геймера заявились за 22-дюймовым монитором Samsung. Начали, понятное дело, копаться в пикселях. Нашли один битый, прямо по центру. Ну, ради прикола решили проверить, точно ли он там, перезагрузили комп. И тут – вот те на! – стрелка курсора легка и непринужденно указывает точно на эту бяку. Парни чуть с ума не сошли от восторга, мол, теперь в "Контру" и прочую чушь рубиться – одно удовольствие! Готовы были меня на руках носить, честное слово!`},
+{id:33099,rating:0,date:"15.03.2026",text:`Коль, глянь ноут, как время будет.
+
+Фото закинул, видишь, вокруг кнопки развод?
+
+Ок.
+
+Кажется, отдраил.
+На вкус напоминает мыло.
+Или что-то такое.
+
+Во вкусе???
+
+Ага, я ценитель прекрасного.`},
+{id:33098,rating:0,date:"15.03.2026",text:`Катя: Я дрыхла как сурок. Часа три. Тут как заорет звонок, аж в ушах зазвенело. Вышла – бабка какая-то, свою старую приятельницу ищет, которая когда-то тут околачивалась. Только вот адрес у нее в голове – полный бардак. Я ей, конечно, еще подкинула сомнений.
+
+Андрей: Да это ж твоя подруга из будущего! Из 2065-го. Просто в прошлое занесло, бывает.
+
+Катя: Неее, она Ольгу искала.
+
+Андрей: Ну, за столько лет и забыть, как подругу зовут, это уже не прогресс, а регресс.`},
+{id:33097,rating:0,date:"15.03.2026",text:`xxx: Вирус, ливень, гроза.
+xxx: Сегодня наглядная карта погоды
+xxx: Вместо обычного значка
+xxx: Загрузила вопросительный знак.
+xxx: Что-то я очкую.`},
+{id:33096,rating:0,date:"15.03.2026",text:`Z: Да я тут два дня с программистами-саб-лидами ковыряюсь, оцениваю их, так сказать, "первосортность".
+S: Охренеть... Ты даже по-русски разучился изъясняться, небось.`},
+{id:33095,rating:0,date:"15.03.2026",text:`xxx: есть идеи, как по-русски передать "unfuck"?
+xxx: видишь ли, к "ёб" ни одна приставка не прилипает так, чтобы получилось "разёб", а не "ещё более ёб`},
+{id:33094,rating:0,date:"15.03.2026",text:`xxx: В преисподней, знаешь ли, не тела пылают, а души. А душам, знаешь ли, много места не нужно. Теоретически, ад может быть сжат до размеров той самой точки, из которой всё началось.
+yyy: А как же тогда котлы, сковородки, плиты, шампуры? Вся эта атмосфера, этот кулинарный рай с запахом жарящегося мяса, от которого слюнки текут. Неужели это всё просто воображаемое? Нет, я в это не поверю ни за что.`},
+{id:33093,rating:0,date:"15.03.2026",text:`Человек-паук – он типа с суперсилами или с прибабахом?`},
+{id:33092,rating:0,date:"15.03.2026",text:`Мать: - Доча, тут один тип, такой интересный, с голосом, как у соловья, зовет меня на свидание. Я прям в растерянности.
+Дочь: - А чего ты терзаешься?
+Мать: - Ну, знаешь ли, с незнакомцем в его тачку прыгать и в закат укатить – это как-то, прости, несерьезно.
+Посидели, подумали.
+Мать: - Ладно, уговорила. Поедем на моей.
+Дочь: - О, да! А если что, я вас на горячую линию сдам!
+Мать: - И тут мой мозг начал рисовать картины маслом, как я объясняю операм:
+- Здравствуйте, это я. Моя мама похитила незнакомого мужчину и увезла в неизвестном направлении.
+- Да, кстати, он, похоже, из органов.
+Другой: - Это просто уморительно! Я до сих пор ржу.`},
+{id:33091,rating:0,date:"15.03.2026",text:`Наш клан в ММО затеял в реале сходку, 16 душ из одного города. А наш зам, Gulag, припер свою мазню – холст метр на полтора. На нем Архип, наш вечно глючащий парень, в припадке ярости громит клаву головой. Подписано: "Архип и Лаг". Вот такое вот искусство в подарок.`},
+{id:33090,rating:0,date:"15.03.2026",text:`xxx: Дают на "Дембельском альбоме" песню "У меня появился другой".
+xxx: Ну, типа, намёк поняли.`},
+{id:33089,rating:0,date:"15.03.2026",text:`Ну, некоторые особо привередливые клиенты за тараканьи супы даже платить отказываются. А другие, видать, предпочитают их в стиралке "освежать" :D Короче, стирай себе на здоровье, но если что, я тут ни при чем!`},
+{id:33087,rating:0,date:"15.03.2026",text:`А помнится, как-то раз я подшутил и подогнал телефончик одной своей знакомой-свидетельнице Иеговы, причем особо упоротой. До сих пор ломаю голову: кто кого в итоге переплюнул?`},
+{id:33086,rating:0,date:"15.03.2026",text:`Врач: Так-с, выписала вам вот это вот "что-то-от-чего-то", "для-того-чтобы-стало-лучше" и, конечно, активированный уголь! Вы "что-то-от-чего-то" принимаете?
+Я (на автомате): А то! Пью верой и правдой, как доктор прописал...
+В: Это ж уколы были! 😳`},
+{id:33085,rating:0,date:"15.03.2026",text:`xxx: Ага, дети мебельщиков не играют в куклы, они с дерева строгают.`},
+{id:33084,rating:0,date:"15.03.2026",text:`На официальном сайте Российской академии наук, когда речь зашла об Институте белка, англичане как-то по-доброму окрестили его "Институтом Белки".`},
+{id:33083,rating:0,date:"15.03.2026",text:`Мы, группа компаний "Цветочный Рай", официально подтверждаем: Светлана Соколова, в лице ее ИП "Весенний Настроение", получит от нас целый ворох цветов. Ну, чисто от души, без всяких там счетов и предоплат. Мы же друзья, в конце концов, а не налоговая!`},
+{id:33082,rating:0,date:"15.03.2026",text:`У вас там уже осенний озноб, или просто прохладно?`},
+{id:33081,rating:0,date:"15.03.2026",text:`Наша шефиня, она же главбух, рассказала, что в банке с нее потребовали доверенность на саму себя.`},
+{id:33080,rating:0,date:"15.03.2026",text:`Она: А знаешь, сегодня же особенный день!
+Он: И что же за торжество такое?
+Она: Ну, Вальпургиева ночь, сам понимаешь!
+Она: Время, когда все ведьмы слетаются на свою тусовку, чтобы пообщаться с нечистой силой.
+Он: (глаза по пять копеек)
+Он: Так значит, сегодня ждать тебя дома, наверное, не стоит? :))))`},
+{id:33079,rating:0,date:"15.03.2026",text:`Начальник мне звонит: "Иди в переговорку, там хоккей. Отписывайся каждые пять минут, а то я пропустить боюсь".`},
+{id:33078,rating:0,date:"15.03.2026",text:`В МТУСИ, где антенны изучают, на распределительном щитке висел плакат. На нем – тот самый щиток, а рядом – Буратино, которого долбит молнией, словно предупреждая: "Опасно, не трогай!". И какой-то гений мысли, студент, естественно, приписал к деревянному носу: "Дерево – не проводит ток!`},
+{id:33077,rating:0,date:"15.03.2026",text:`Оно: говорят, если на больную мочу пописать, она быстрее пройдет...
+давай, чудак, сделай мне одолжение, брызни на мое сердце.`},
+{id:33076,rating:0,date:"14.03.2026",text:`xxx: Зря я не ринулся в крипто-майнинг, когда все скупали видюхи.
+yyy: Да уже поздняк метаться, это вчерашний день.
+zzz: А что, если продавать NFT, которые сами эти видеокарты и запечатлели?
+yyy: Вот это уже философиеееееееея! Кант бы завидовал.`},
+{id:33075,rating:0,date:"14.03.2026",text:`xxx: Чего ты в "Вов" не зарубаешься? Комп же специально апгрейдил, вроде.
+yyy: Да я тут закупился по полной, железо, обвесы, потом неделю всё это собирал, перед этим три месяца копался в даташитах, подбирал совместимость, изучал обзоры... Собрал – и понял, что "Вов" – это уже прошлый век. Теперь мой новый скилл – собирать компы на заказ, времени на игры вообще нет, да и интерес пропал.
+xxx: Красава! А я вот колечко эпическое выбил!`},
+{id:33074,rating:0,date:"14.03.2026",text:`xxx: Что, ММО-игры совсем скисли?
+yyy: Да уж, такая история:
+yyy: На работе тебе, конечно, нервы потреплют,
+yyy: зато потом кошелек потяжелее.
+yyy: А тут приходишь домой, уже уставший,
+yyy: думаешь, щас расслабишься,
+yyy: а тебе опять голову морочат, да еще и с энтузиазмом.
+ууу: И самое главное – за это еще и деньги отдай!
+ууу: В общем, развлечение для тех, кто любит, чтобы ему по жизни доставалось.`},
+{id:33073,rating:0,date:"14.03.2026",text:`Мама перебралась в новую хату. Начала знакомиться с соседями, видимо, с тем, что под ней находится: Встает она ни свет ни заря, около пяти утра, все еще спят. Пошла в ванную, только голая встала, как вдруг из вентшахты доносится оглушительное "АПЧХИ!". Она, не задумываясь, и говорит: "Будьте здоровы!". В ответ из-под пола грохот и вопль: "Да чтоб тебя, даже по-большому ночью спокойно не сходить!`},
+{id:33072,rating:0,date:"14.03.2026",text:`xxx: Пока у нас есть гомеопаты, микрозаймы и всякие "видящие", ясно, куда направлять госбюджет.
+xxx: Бюджет, кстати, лучше бы в мозги вкладывали.`},
+{id:33071,rating:0,date:"14.03.2026",text:`Короче, это как с тачками. Все носятся с немецкими, японскими... типа, "на века!". А на деле — блок из алюмишки, в движке пластиковые потроха, поршни и шатуны — фигня на постном масле, цепь ГРМ помрёт к 50 тысячам, масла и антифриза в нём — кот наплакал, а вкладыши — будто из фольги. Теперь "миллионник" — это не про пробег, а про ценник.`},
+{id:33070,rating:0,date:"14.03.2026",text:`В общем, операция – это как короткий сон, где ты укололся, моргнул, а очнулся уже в палате, будто и не было времени. А смерть, по сути, – то же самое, только вот обратно уже не проснешься.`},
+{id:33069,rating:0,date:"14.03.2026",text:`Жена на Новый год наготовила целую гору салатов. Я, посчитав, говорю: "Слушай, а нас же всего четверо, зачем столько?" А она мне: "Ну так я же не говорила, что двенадцать делать не буду!`},
+{id:33068,rating:0,date:"14.03.2026",text:`Нам бы с вами, знаете ли, на пару слов перекинуться, чтобы потом не пришлось пальцы гнуть. А то я тут как-то Заказчику выкатила "Проект нехилого такого контракта" – так он аж позеленел!`},
+{id:33067,rating:0,date:"14.03.2026",text:`У меня есть верная информация о питерской погоде по утрам, так что если вам нужно знать, брать ли зонт или ветровку, когда выгуливаете своих питомцев, – стучите в личку.`},
+{id:33066,rating:0,date:"14.03.2026",text:`Подруга рассказывала. Служила она как-то в одной фирме, а там коммерческим директором – дама с характером. За первый месяц работы пересекались они с подругой раза три от силы. И вот, в очередной раз вызвав ее к себе, эта самая коммерша и выдает:
+— Слушай, мы же с тобой уже месяц на ты, получается?
+— Ну, типа того.
+— Ну так что тянем? Переходим на "ты" и обзываемся как хотим!
+— 😳`},
+{id:33065,rating:0,date:"14.03.2026",text:`Захожу в магазин, беру замороженную куриную четверть. Продавщице говорю: "Мне, пожалуйста, только левые окорочка". Она, пытаясь остроумно ответить: "А чем правые-то не угодили?" Я ей в ответ: "Так правая у курицы – коронная! Она ею отталкивается, поэтому и жестковата".
+Мораль: тут не до шуток.`},
+{id:33064,rating:0,date:"14.03.2026",text:`Ох, блин! У меня тут своя Санта-Барбара развернулась: пытаюсь от наших айтишников добиться хоть какой-то оценки. Кажется, вся эта эпопея закончилась полным провалом.
+
+Первый день: разжевал всё, как для младенца. Результат: "Не можем оценить, нужны требования".
+
+Второй день: накатал им подробнейшую спецификацию. Итог: "Спека мутная, оценить не получится".
+
+Третий день: к спеке ещё и эскизы приложил. Вердикт: "Архитектура темная, как ночь, оценить не можем".
+
+Четвертый день: диаграммы, описания, всё как полагается. Ответ: "План работ неясен, оценить не выйдет".
+
+Пятый день: нарисовал детальный график, сам себе оценки проставил. И отправил им: "Разберитесь, пожалуйста, что там вообще непонятно".
+
+Выходные прошли в терзаниях и муках предчувствия...
+
+Понедельник: "Так, а что ты от нас вообще хочешь?"
+
+Короче, есть желание сменить обстановку и поработать на вольных хлебах? У меня тут как раз есть пара заказов на небольшую подработку...`},
+{id:33063,rating:0,date:"14.03.2026",text:`Слушай, Вован, а давай замутим календарик с нашими барнаульскими панк-рокерами, но чтоб с перчинкой!"
+
+"Ага, понял. Виталич голый, типа, членом размахивает – это январь. А в феврале – кто-нибудь из электрички жопой наружу, под утренним ветерком.`},
+{id:33062,rating:0,date:"14.03.2026",text:`Зашли мы с мужем в супермаркет. Я, как знаток сырных дел, зависла у витрины, внимательно разглядывая подозрительно старый кусок, пытаясь выкопать дату производства. Ну, чисто из вредности, подзываю продавщицу.
+Я: "Скажите, пожалуйста, сколько этому сыру уже лет?"
+Продавщица, повертев упаковку и не найдя заветной цифры, решила пошутить: "Ой, знаете, у сыра, как и у дамы, про возраст спрашивать не принято!"
+Муж тут же подхватил: "Ну да, а еще говорят, что время ему к лицу, и плесень придает особый шик!`},
+{id:33061,rating:0,date:"14.03.2026",text:`ххх: Всё хочу тачку с телеком встроить.
+ууу: О, а у моего в "бумере" есть!
+ххх: Офигенно. Приезжаешь за дамой, врубаешь "Тома и Джерри" – и пусть хоть час копается, тебе пофиг.
+ууу: Кажется, я теперь знаю, зачем он моему...`},
+{id:33060,rating:0,date:"14.03.2026",text:`Подруга: Интересно, он меня пропустил, потому что я справа была, или потому что я — девочка?`},
+{id:33059,rating:0,date:"14.03.2026",text:`xxx: Никогда не перестану удивляться, почему некоторые клиенты умудряются заказывать коннекторы для витой пары именно в таком, паршивом, нечетном количестве.`},
+{id:33058,rating:0,date:"14.03.2026",text:`deck: Слушай, а у тебя есть эта штука, которая сама раскладывает буквы по местам?
+Vilent: И что это за зверь?
+deck: Понятно, нету.`},
+{id:33057,rating:0,date:"14.03.2026",text:`Мой научрук, пролистывая мою дипломную работу, едва не отправился в царство Морфея, а потом обозвал меня "занудой".`},
+{id:33056,rating:0,date:"13.03.2026",text:`Короче, психологи из всех космических контор, и наших, и чужих, в один голос твердят: у тех, кто в космос летал, есть такой прикол. Название у него, конечно, закачаешься, я уже и забыла, как его там величают, но суть такая: человек вдруг прозревает, как же наша Земля – крохотная, хрупкая хреновина, и мы, людишки, тоже пылинка пылинки. И тут же, на волне этого озарения, какая-то вселенская дружба народов просыпается. Неудивительно, ведь когда ты месяцами висишь над бездной, пялясь на этот обшарпанный камешек, брошенный в никуда, всякая ерунда в голову лезет гораздо сильнее. И я вот недавно призадумалась: выходит, те чувства, которые, по логике, должен испытывать любой адекватный человек на этой планете, вдруг стали считаться каким-то там "синдромом", а тех, кто им подвержен, смотрят как на чудиков. Хотя, по-моему, всё должно быть с точностью до наоборот.`},
+{id:33055,rating:0,date:"13.03.2026",text:`В общем, тут битва страха с любопытством. Я-то розетки в три года не боялся, а вот в пять — уже да. Но зато в фильмоскоп лазил, пытался понять, как эта плёнка из прямоугольной в круглый объектив картинки превращается. Горячую лампочку обходил стороной, с электроплитой уже был печальный опыт, но вот в другие щели пальчики сунул. И меня так приложило, что я чуть дух не испустил (хотя, вроде, там и трансформатор был, не помню уже), сел, да так и просидел полчаса. Пришёл батя, ну и... в общем, потом ещё пару дней сидеть было проблематично. Впечатление, так сказать, закрепилось намертво.`},
+{id:33054,rating:0,date:"13.03.2026",text:`Ждите, скоро в "Макдоналдсе" бургеры в рассрочку начнут продавать, я чувствую!`},
+{id:33053,rating:0,date:"13.03.2026",text:`Разговорились мы тут с одной дамой, и выяснилось, что её маманька её же и пилит. Причем, как оказалось, самый убойный довод в их семейных батакалиях - это когда мамаша козыряет тем, что дочь уже сама на пенсии за внуками присматривать.`}]
+];
+
+const SPEEDS = [0.25, 0.38, 0.20];
+
+function ratingClass(r) {
+  if (r >= 10000) return 's1';
+  if (r >= 1000)  return 's2';
+  return 's3';
 }
 
-// ── Fetch via CORS proxy ──
-async function fetchYear(year) {
-  const url = `https://bash.im/year/${year}`;
-  const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-  try {
-    const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) throw new Error('not ok');
-    const html = await res.text();
-    const quotes = parseQuotes(html);
-    if (quotes.length > 0) return quotes;
-  } catch {}
-  return null;
-}
+function renderDrum(idx) {
+  const quotes = DATA[idx];
+  const drum = document.getElementById('drum' + idx);
+  const cnt  = document.getElementById('cnt'  + idx);
+  cnt.textContent = quotes.length + ' цитат';
 
-// ── Render quotes ──
-function renderRating(r) {
-  const cls = r >= 1500 ? 'high' : 'mid';
-  return `<span class="quote-rating ${cls}">+${r.toLocaleString('ru-RU')}</span>`;
-}
-
-function renderQuotes(quotes, drumEl, year, countEl) {
-  if (!quotes || quotes.length === 0) quotes = FALLBACK[year] || [];
-  countEl.textContent = `${quotes.length} цитат`;
-
-  // Duplicate for infinite loop (3x)
-  const looped = [...quotes, ...quotes, ...quotes];
-  drumEl.innerHTML = looped.map(q => {
-    const body = q.text
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/&lt;nick&gt;([^<]+)&lt;\/nick&gt;/g, '<span class="quote-nick">$1</span>');
-    return `<div class="quote">
-      <div class="quote-body">${body}</div>
+  const loop = [...quotes, ...quotes, ...quotes];
+  drum.innerHTML = loop.map(q => {
+    const text = q.text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return \`<div class="quote">
+      <div class="quote-body">\${text}</div>
       <div class="quote-footer">
-        ${renderRating(q.rating)}
-        <span class="quote-id">#${q.id}</span>
+        <span class="quote-rating \${ratingClass(q.rating)}">+\${q.rating.toLocaleString('ru-RU')}</span>
+        <span class="quote-date">\${q.date}</span>
+        <span class="quote-id">#\${q.id}</span>
       </div>
-    </div>`;
+    </div>\`;
   }).join('');
 
-  // Start scroll from middle copy
   requestAnimationFrame(() => {
-    const totalH = drumEl.scrollHeight;
-    drumEl.scrollTop = totalH / 3;
+    drum.scrollTop = drum.scrollHeight / 3;
   });
 }
 
-// ── Auto-scroll engine ──
-const SPEEDS = { 2022: 0.28, 2023: 0.38, 2024: 0.22 }; // px/frame
-const paused = { 2022: false, 2023: false, 2024: false };
-let globalPause = false;
+DATA.forEach((_, i) => renderDrum(i));
 
-function initScroll(year) {
-  const drum = document.getElementById(`drum-${year}`);
-  if (!drum) return;
+// Auto-scroll
+const pill = document.getElementById('pill');
+let paused = false;
 
-  let speed = SPEEDS[year];
-  let rafId;
+DATA.forEach((_, i) => {
+  const drum = document.getElementById('drum' + i);
+  const speed = SPEEDS[i];
   let hovered = false;
+  let wheelTimer;
 
   function tick() {
-    if (!globalPause && !hovered) {
+    if (!paused && !hovered) {
       drum.scrollTop += speed;
-
-      // Seamless loop: when past 2/3 → jump to 1/3
       const third = drum.scrollHeight / 3;
-      if (drum.scrollTop >= third * 2) {
-        drum.scrollTop -= third;
-      }
-      if (drum.scrollTop <= 0) {
-        drum.scrollTop += third;
-      }
+      if (drum.scrollTop >= third * 2) drum.scrollTop -= third;
+      if (drum.scrollTop <= 0)         drum.scrollTop += third;
     }
-    rafId = requestAnimationFrame(tick);
+    requestAnimationFrame(tick);
   }
+  requestAnimationFrame(tick);
 
   drum.addEventListener('mouseenter', () => { hovered = true; });
-  drum.addEventListener('mouseleave', () => { hovered = false; });
-
-  // Manual scroll: pause auto for 2s after user scrolls
-  let scrollTimer;
+  drum.addEventListener('mouseleave', () => { hovered = false; clearTimeout(wheelTimer); });
   drum.addEventListener('wheel', () => {
     hovered = true;
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => { hovered = false; }, 2000);
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => { hovered = false; }, 1800);
   }, { passive: true });
-
-  rafId = requestAnimationFrame(tick);
-}
-
-// ── Global pause on any hover ──
-const badge = document.getElementById('pausedBadge');
-document.querySelectorAll('.col').forEach(col => {
-  col.addEventListener('mouseenter', () => {
-    globalPause = true;
-    badge.classList.add('visible');
-  });
-  col.addEventListener('mouseleave', () => {
-    globalPause = false;
-    badge.classList.remove('visible');
-  });
 });
 
-// ── Bootstrap ──
-const years = [2022, 2023, 2024];
-
-years.forEach(year => {
-  const drum = document.getElementById(`drum-${year}`);
-  const cnt  = document.getElementById(`cnt-${year}`);
-  // Show fallback immediately
-  renderQuotes(FALLBACK[year], drum, year, cnt);
-  initScroll(year);
-  // Try to fetch real data
-  fetchYear(year).then(quotes => {
-    if (quotes && quotes.length > 0) {
-      renderQuotes(quotes, drum, year, cnt);
-    }
-  });
+document.querySelectorAll('.col').forEach(col => {
+  col.addEventListener('mouseenter', () => { paused = true;  pill.classList.add('on'); });
+  col.addEventListener('mouseleave', () => { paused = false; pill.classList.remove('on'); });
 });
 </script>
 </body>
