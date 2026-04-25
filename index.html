@@ -37,6 +37,28 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-
 .ftr-d{width:2px;height:2px;border-radius:50%;background:#b8d6c0}
 .pill{position:fixed;bottom:42px;left:50%;transform:translateX(-50%);background:rgba(11,61,31,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;font-size:11px;font-weight:500;letter-spacing:.03em;padding:5px 14px;border-radius:20px;opacity:0;transition:opacity .18s;pointer-events:none}
 .pill.on{opacity:1}
+.tabs{display:none}
+.ftr-hint-touch{display:none}
+@media (max-width:720px){
+  .hdr{padding:14px 18px 12px;gap:10px}
+  .hdr-t{font-size:14px}
+  .hdr-s{font-size:11px}
+  .stage{display:flex;grid-template-columns:none;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none}
+  .stage::-webkit-scrollbar{display:none}
+  .col{flex:0 0 100%;min-width:100%;border-right:none;scroll-snap-align:start;scroll-snap-stop:always}
+  .col-head{padding:11px 20px 9px}
+  .quote{padding:14px 20px 12px}
+  .qbody{font-size:13px;line-height:1.7}
+  .drum{overscroll-behavior-y:contain}
+  .tabs{display:flex;flex-shrink:0;border-bottom:1px solid var(--border);padding:8px 12px;gap:6px;background:var(--bg);z-index:6}
+  .tab{flex:1 1 0;text-align:center;font-size:12px;font-weight:600;letter-spacing:-.01em;color:var(--fg-muted);padding:8px 6px;border-radius:8px;background:transparent;border:1px solid transparent;font-family:inherit;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+  .tab.act{background:var(--bg-h);color:var(--fg);border-color:var(--border)}
+  .ftr{padding:9px 18px}
+  .ftr span{font-size:10px}
+  .ftr-hint-hover{display:none}
+  .ftr-hint-touch{display:inline}
+  .pill{bottom:32px}
+}
 </style>
 </head>
 <body>
@@ -47,6 +69,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-
     <span class="hdr-sep"></span>
     <span class="hdr-s">ibash.org.ru</span>
   </header>
+  <nav class="tabs" id="tabs">
+    <button class="tab act" type="button" data-i="0">2007 – 2010</button>
+    <button class="tab" type="button" data-i="1">2014 – 2021</button>
+    <button class="tab" type="button" data-i="2">2025 – 2026</button>
+  </nav>
   <div class="stage">
     <div class="col">
       <div class="col-head"><span class="col-yr">2007 – 2010</span><span class="col-ct" id="ct0"></span></div>
@@ -62,7 +89,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-
     </div>
   </div>
   <footer class="ftr">
-    <span>ibash.org.ru</span><span class="ftr-d"></span><span>наведи чтобы остановить</span>
+    <span>ibash.org.ru</span><span class="ftr-d"></span><span class="ftr-hint-hover">наведи чтобы остановить</span><span class="ftr-hint-touch">коснись чтобы остановить</span>
   </footer>
 </div>
 <div class="pill" id="pill">пауза</div>
@@ -113,12 +140,38 @@ for(var i=0;i<3;i++){
     drum.addEventListener('mouseenter',function(){hov=true;});
     drum.addEventListener('mouseleave',function(){hov=false;clearTimeout(tmr);});
     drum.addEventListener('wheel',function(){hov=true;clearTimeout(tmr);tmr=setTimeout(function(){hov=false;},1800);},{passive:true});
+    drum.addEventListener('touchstart',function(){hov=true;clearTimeout(tmr);},{passive:true});
+    function tEnd(){clearTimeout(tmr);tmr=setTimeout(function(){hov=false;},1800);}
+    drum.addEventListener('touchend',tEnd);
+    drum.addEventListener('touchcancel',tEnd);
   })(i);
 }
 
 document.querySelectorAll('.col').forEach(function(c){
   c.addEventListener('mouseenter',function(){paused=true;pill.classList.add('on');});
   c.addEventListener('mouseleave',function(){paused=false;pill.classList.remove('on');});
+});
+
+var stage=document.querySelector('.stage');
+var tabs=document.querySelectorAll('#tabs .tab');
+function setActiveTab(i){tabs.forEach(function(t,idx){t.classList.toggle('act',idx===i);});}
+tabs.forEach(function(t){
+  t.addEventListener('click',function(){
+    var i=parseInt(t.dataset.i,10);
+    var cols=document.querySelectorAll('.stage .col');
+    if(cols[i])cols[i].scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'});
+    setActiveTab(i);
+  });
+});
+var stTmr;
+stage.addEventListener('scroll',function(){
+  clearTimeout(stTmr);
+  stTmr=setTimeout(function(){
+    var w=stage.clientWidth;
+    if(!w)return;
+    var i=Math.round(stage.scrollLeft/w);
+    if(i>=0&&i<=2)setActiveTab(i);
+  },80);
 });
 </script>
 </body>
