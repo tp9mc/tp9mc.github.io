@@ -200,7 +200,7 @@ function load(){
     }
     state.commits = commits;
     state.metaSha = metaRes.sha || null;
-    try { state.meta = JSON.parse(atob(metaRes.content.replace(/\n/g,''))); } catch(e){ state.meta = {}; }
+    try { state.meta = JSON.parse(b64dec(metaRes.content.replace(/\n/g,''))); } catch(e){ state.meta = {}; }
     render();
   }).catch(function(e){
     document.getElementById('vlist').innerHTML = '<div class="err">'+esc(e.message)+'</div>';
@@ -312,20 +312,30 @@ function confirmDelete(sha, name){
   );
 }
 function doDelete(sha){
+  closeModal();
   if(!state.meta[sha]) state.meta[sha] = {};
   state.meta[sha].hidden = true;
   saveMeta(function(){ toast('Версия скрыта'); render(); });
 }
 function undeleteVersion(sha){
+  closeModal();
   if(state.meta[sha]) delete state.meta[sha].hidden;
   saveMeta(function(){ toast('Версия восстановлена'); render(); });
+}
+
+// ── Base64 UTF-8 safe ──
+function b64enc(str){
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,function(_,p){return String.fromCharCode('0x'+p);}));
+}
+function b64dec(str){
+  return decodeURIComponent(atob(str).split('').map(function(c){return '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));
 }
 
 // ── Save meta ──
 function saveMeta(cb){
   if(state.savingMeta) return;
   state.savingMeta = true;
-  var content = btoa(unescape(encodeURIComponent(JSON.stringify(state.meta, null, 2))));
+  var content = b64enc(JSON.stringify(state.meta, null, 2));
   var body = {message:'meta: обновлены названия/видимость версий', content:content};
   if(state.metaSha) body.sha = state.metaSha;
   gh('/repos/'+REPO+'/contents/'+META_FILE, {
