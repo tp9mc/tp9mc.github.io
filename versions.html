@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Версии сайта</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -433,6 +434,15 @@ function esc2(s){ return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;').su
 
 // ── Init ──
 if(tok()){ showTokOk(); load(); }
+</script>
+<script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg) return;
+  tg.ready();
+  tg.BackButton.show();
+  tg.BackButton.onClick(function(){ window.location.href = '/'; });
+})();
 </script>
 </body>
 </html>

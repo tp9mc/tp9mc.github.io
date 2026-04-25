@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Башорг</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -125,5 +126,13 @@ document.querySelectorAll('.col').forEach(function(c){
 });
 </script>
 
+<script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg) return;
+  tg.ready();
+  tg.BackButton.hide();
+})();
+</script>
 </body>
 </html>
