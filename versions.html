@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Версии сайта</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--fg:#1d1d1f;--fg-muted:#6e6e73;--fg-faint:#aeaeb2;--border:#e8e8ed;--bg:#fff;--bg-h:#f5f5f7;--font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
+html,body{min-height:100%;background:var(--bg);color:var(--fg);font-family:var(--font);-webkit-font-smoothing:antialiased}
+
+.hdr{display:flex;align-items:center;gap:14px;padding:20px 32px 18px;border-bottom:1px solid var(--border)}
+.hdr-back{font-size:12px;color:#0071e3;text-decoration:none;display:flex;align-items:center;gap:4px}
+.hdr-back:hover{text-decoration:underline}
+.hdr-sep{width:1px;height:13px;background:var(--border)}
+.hdr-t{font-size:15px;font-weight:600;letter-spacing:-.015em}
+.hdr-sub{font-size:12px;color:var(--fg-muted);margin-left:auto}
+
+.wrap{max-width:560px;margin:0 auto;padding:28px 24px 60px}
+
+.token-card{background:var(--bg-h);border-radius:14px;padding:18px 20px;margin-bottom:24px}
+.token-label{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.token-link{font-size:10px;color:#0071e3;text-decoration:none;font-weight:500;text-transform:none;letter-spacing:0}
+.token-link:hover{text-decoration:underline}
+.token-row{display:flex;gap:8px}
+.token-input{flex:1;font-size:13px;font-family:var(--font);border:1px solid var(--border);border-radius:9px;padding:8px 12px;outline:none;background:#fff;color:var(--fg)}
+.token-input:focus{border-color:#aeaeb2}
+.token-save{font-size:12px;font-weight:600;font-family:var(--font);background:var(--fg);color:#fff;border:none;border-radius:9px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+.token-save:hover{background:#3a3a3c}
+.token-ok{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--fg-muted)}
+.token-ok-dot{width:7px;height:7px;border-radius:50%;background:#30d158;flex-shrink:0}
+.token-clear{font-size:11px;font-family:var(--font);background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--fg-faint);margin-left:auto}
+.token-clear:hover{border-color:#aeaeb2;color:var(--fg-muted)}
+
+.section-title{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:12px}
+
+.vlist{border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.vitem{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid #f2f2f7;transition:background .1s}
+.vitem:last-child{border-bottom:none}
+.vitem:hover{background:var(--bg-h)}
+.vitem.current{background:#f0fdf4}
+.vitem-num{font-size:10px;color:var(--fg-faint);flex-shrink:0;padding-top:2px;width:18px;text-align:right}
+.vitem-body{flex:1;min-width:0}
+.vitem-msg{font-size:13px;color:var(--fg);line-height:1.4;margin-bottom:4px;word-break:break-word}
+.vitem-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vitem-date{font-size:11px;color:var(--fg-faint)}
+.vitem-sha{font-family:ui-monospace,"SF Mono",monospace;font-size:10px;color:#aeaeb2}
+.vitem-badge{font-size:9px;background:#30d158;color:#fff;padding:2px 7px;border-radius:10px;font-weight:600;letter-spacing:.03em}
+.vitem-actions{flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.vbtn{font-size:11px;font-weight:600;font-family:var(--font);padding:6px 13px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--fg-muted);transition:all .12s;white-space:nowrap}
+.vbtn:hover{border-color:var(--fg);color:var(--fg)}
+.vbtn.primary{background:var(--fg);color:#fff;border-color:var(--fg)}
+.vbtn.primary:hover{background:#3a3a3c}
+.vbtn:disabled{opacity:.35;cursor:not-allowed}
+
+.status{font-size:12px;color:var(--fg-muted);padding:24px;text-align:center}
+.status.err{color:#ff3b30;background:#fff5f5;border-radius:10px;padding:14px}
+
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.confirm-box{background:#fff;border-radius:18px;padding:26px;width:300px;box-shadow:0 24px 64px rgba(0,0,0,.18)}
+.confirm-title{font-size:15px;font-weight:600;margin-bottom:8px}
+.confirm-msg{font-size:12px;color:var(--fg-muted);line-height:1.6;margin-bottom:20px}
+.confirm-btns{display:flex;gap:8px}
+.confirm-cancel{flex:1;font-size:13px;font-weight:500;font-family:var(--font);padding:10px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--fg-muted)}
+.confirm-cancel:hover{background:var(--bg-h)}
+.confirm-ok{flex:1;font-size:13px;font-weight:600;font-family:var(--font);padding:10px;border-radius:10px;border:none;background:#ff3b30;color:#fff;cursor:pointer}
+.confirm-ok:hover{background:#d70015}
+.confirm-ok.green{background:#30d158}
+.confirm-ok.green:hover{background:#25a244}
+.confirm-ok:disabled{opacity:.5;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a class="hdr-back" href="/">← На сайт</a>
+  <span class="hdr-sep"></span>
+  <span class="hdr-t">Версии сайта</span>
+  <span class="hdr-sub" id="repo-label">tp9mc.github.io</span>
+</header>
+
+<div class="wrap">
+
+  <div class="token-card">
+    <div class="token-label">
+      GitHub токен
+      <a class="token-link" href="https://github.com/settings/tokens/new?description=tp9mc-site-versions&scopes=repo" target="_blank">создать токен →</a>
+    </div>
+    <div id="token-set">
+      <div class="token-row">
+        <input class="token-input" id="tok-input" type="password" placeholder="ghp_..." autocomplete="off"/>
+        <button class="token-save" onclick="saveToken()">Сохранить</button>
+      </div>
+    </div>
+    <div id="token-ok" style="display:none">
+      <div class="token-row" style="align-items:center">
+        <div class="token-ok">
+          <span class="token-ok-dot"></span>
+          Токен сохранён — хранится только в этом браузере
+        </div>
+        <button class="token-clear" onclick="clearToken()">Сбросить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">История коммитов · index.html</div>
+  <div id="vlist"><div class="status">Введи токен чтобы загрузить историю</div></div>
+
+</div>
+
+<script>
+var REPO = 'tp9mc/tp9mc.github.io';
+var FILE = 'index.html';
+
+function token(){ return localStorage.getItem('gh_v_token') || ''; }
+
+function saveToken(){
+  var v = document.getElementById('tok-input').value.trim();
+  if(!v) return;
+  localStorage.setItem('gh_v_token', v);
+  document.getElementById('tok-input').value = '';
+  showTokenOk();
+  load();
+}
+
+function clearToken(){
+  localStorage.removeItem('gh_v_token');
+  document.getElementById('token-set').style.display = '';
+  document.getElementById('token-ok').style.display = 'none';
+  document.getElementById('vlist').innerHTML = '<div class="status">Введи токен чтобы загрузить историю</div>';
+}
+
+function showTokenOk(){
+  document.getElementById('token-set').style.display = 'none';
+  document.getElementById('token-ok').style.display = '';
+}
+
+function gh(path, opts){
+  return fetch('https://api.github.com' + path, Object.assign({
+    headers: {
+      'Authorization': 'token ' + token(),
+      'Accept': 'application/vnd.github.v3+json'
+    }
+  }, opts || {}));
+}
+
+function fmtDate(iso){
+  var d = new Date(iso);
+  return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'short',year:'numeric'})
+    + ', ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+}
+
+var currentCommitSha = null;
+
+function load(){
+  var list = document.getElementById('vlist');
+  list.innerHTML = '<div class="status">Загружаю историю…</div>';
+
+  gh('/repos/'+REPO+'/commits?path='+FILE+'&per_page=50')
+    .then(function(r){ return r.json(); })
+    .then(function(commits){
+      if(!Array.isArray(commits)){
+        list.innerHTML = '<div class="status err">Ошибка: ' + (commits.message || 'проверь токен') + '</div>';
+        return;
+      }
+      if(!commits.length){
+        list.innerHTML = '<div class="status">История пуста</div>';
+        return;
+      }
+      currentCommitSha = commits[0].sha;
+      var html = '<div class="vlist">';
+      for(var i = 0; i < commits.length; i++){
+        var c = commits[i];
+        var sha = c.sha;
+        var msg = (c.commit.message || 'без описания').split('\n')[0];
+        var date = fmtDate(c.commit.committer.date);
+        var isCur = (i === 0);
+        html += '<div class="vitem' + (isCur?' current':'') + '">';
+        html += '<div class="vitem-num">' + (i === 0 ? '●' : (i+1)) + '</div>';
+        html += '<div class="vitem-body">';
+        html += '<div class="vitem-msg">' + esc(msg) + '</div>';
+        html += '<div class="vitem-meta"><span class="vitem-date">' + date + '</span>';
+        html += '<span class="vitem-sha">' + sha.substring(0,7) + '</span>';
+        if(isCur) html += '<span class="vitem-badge">текущая</span>';
+        html += '</div></div>';
+        html += '<div class="vitem-actions">';
+        if(isCur){
+          html += '<button class="vbtn" disabled>Текущая</button>';
+        } else {
+          html += '<button class="vbtn primary" onclick="confirmRestore(\''+sha+'\',\''+esc2(msg)+'\')">Откатить</button>';
+        }
+        html += '<a href="https://github.com/'+REPO+'/blob/'+sha+'/'+FILE+'" target="_blank" style="font-size:10px;color:#aeaeb2;text-decoration:none;text-align:center" title="Посмотреть файл на GitHub">просмотр</a>';
+        html += '</div></div>';
+      }
+      html += '</div>';
+      list.innerHTML = html;
+    })
+    .catch(function(e){
+      list.innerHTML = '<div class="status err">' + e.message + '</div>';
+    });
+}
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc2(s){ return s.replace(/'/g,"\\'").replace(/"/g,'&quot;').substring(0,60); }
+
+function confirmRestore(sha, msg){
+  var overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = '<div class="confirm-box">'
+    + '<div class="confirm-title">Откатить версию?</div>'
+    + '<div class="confirm-msg">Сайт вернётся к состоянию:<br><br><b>' + esc(msg) + '</b><br><br>'
+    + 'Текущая версия сохранится в истории — можно вернуться обратно.</div>'
+    + '<div class="confirm-btns">'
+    + '<button class="confirm-cancel" onclick="this.closest(\'.confirm-overlay\').remove()">Отмена</button>'
+    + '<button class="confirm-ok" id="cok" onclick="doRestore(\''+sha+'\',\''+esc2(msg)+'\')">Откатить</button>'
+    + '</div></div>';
+  document.body.appendChild(overlay);
+}
+
+function doRestore(sha, msg){
+  var btn = document.getElementById('cok');
+  if(btn){ btn.textContent = '…'; btn.disabled = true; }
+
+  gh('/repos/'+REPO+'/contents/'+FILE+'?ref='+sha)
+    .then(function(r){ return r.json(); })
+    .then(function(target){
+      return gh('/repos/'+REPO+'/contents/'+FILE)
+        .then(function(r){ return r.json(); })
+        .then(function(cur){
+          return gh('/repos/'+REPO+'/contents/'+FILE, {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'token '+token(),
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: 'Откат к: ' + msg,
+              content: target.content.replace(/\n/g,''),
+              sha: cur.sha
+            })
+          });
+        });
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(result){
+      document.querySelectorAll('.confirm-overlay').forEach(function(el){el.remove();});
+      if(result.commit){
+        showSuccess();
+        setTimeout(function(){ load(); }, 3000);
+      } else {
+        showErr(result.message || JSON.stringify(result));
+      }
+    })
+    .catch(function(e){
+      document.querySelectorAll('.confirm-overlay').forEach(function(el){el.remove();});
+      showErr(e.message);
+    });
+}
+
+function showSuccess(){
+  var overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = '<div class="confirm-box">'
+    + '<div class="confirm-title">Готово ✓</div>'
+    + '<div class="confirm-msg">Откат выполнен. GitHub Pages пересобирает сайт — займёт ~30 секунд.</div>'
+    + '<div class="confirm-btns">'
+    + '<button class="confirm-ok green" onclick="this.closest(\'.confirm-overlay\').remove();load()">OK</button>'
+    + '</div></div>';
+  document.body.appendChild(overlay);
+}
+
+function showErr(msg){
+  var overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = '<div class="confirm-box">'
+    + '<div class="confirm-title">Ошибка</div>'
+    + '<div class="confirm-msg">' + esc(msg) + '</div>'
+    + '<div class="confirm-btns">'
+    + '<button class="confirm-ok" onclick="this.closest(\'.confirm-overlay\').remove()">OK</button>'
+    + '</div></div>';
+  document.body.appendChild(overlay);
+}
+
+// Init
+if(token()){
+  showTokenOk();
+  load();
+}
+</script>
+</body>
+</html>
