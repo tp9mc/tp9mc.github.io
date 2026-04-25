@@ -40,7 +40,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-
 .pill.on{opacity:1}
 
 
-</style>
+@media(max-width:700px){.shell{height:100dvh}.hdr{padding:14px 20px 12px}.mob-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}.mob-tab{flex:1;padding:9px 4px;text-align:center;font-size:11px;font-weight:600;cursor:pointer;color:var(--fg-muted);border-bottom:2px solid transparent;letter-spacing:-.01em;transition:color .15s,border-color .15s}.mob-tab.on{color:var(--fg);border-bottom-color:var(--fg)}.stage{grid-template-columns:1fr}.col{display:none;border-right:none}.col.mob-on{display:flex}}@media(min-width:701px){.mob-tabs{display:none}}</style>
 </head>
 <body>
 
@@ -50,8 +50,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-
     <span class="hdr-sep"></span>
     <span class="hdr-s">ibash.org.ru</span>
   </header>
-  <div class="stage">
-    <div class="col">
+  <div class="mob-tabs"><div class="mob-tab on" onclick="mobTab(0)">2007–2010</div><div class="mob-tab" onclick="mobTab(1)">2014–2021</div><div class="mob-tab" onclick="mobTab(2)">2025–2026</div></div><div class="stage">
+    <div class="col mob-on">
       <div class="col-head"><span class="col-yr">2007 – 2010</span><span class="col-ct" id="ct0"></span></div>
       <div class="drum" id="d0"></div>
     </div>
@@ -131,8 +131,8 @@ document.querySelectorAll('.col').forEach(function(c){
   var tg = window.Telegram && window.Telegram.WebApp;
   if (!tg) return;
   tg.ready();
-  tg.BackButton.hide();
+  tg.expand();tg.BackButton.hide();
 })();
 </script>
-</body>
+<script>function mobTab(i){document.querySelectorAll(".mob-tab").forEach(function(t,j){t.classList.toggle("on",i===j)});document.querySelectorAll(".col").forEach(function(c,j){c.classList.toggle("mob-on",i===j)});}</script></body>
 </html>
