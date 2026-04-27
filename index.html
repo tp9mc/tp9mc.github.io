@@ -19,7 +19,7 @@ html{height:100%}
 body{
   font-family:var(--font);background:var(--bg);color:var(--tp);
   -webkit-font-smoothing:antialiased;height:100%;
-  overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;
+  overflow-y:auto;scroll-snap-type:y proximity;scroll-behavior:smooth;
 }
 body::-webkit-scrollbar{display:none}
 
@@ -418,13 +418,7 @@ function advanceAfterPick(slotEl, catId) {
   var order = ['furniture', 'lighting', 'materials'];
   var ni = order.indexOf(catId) + 1;
   function doScroll(el) {
-    document.body.style.scrollSnapType = 'none';
-    document.documentElement.style.scrollSnapType = 'none';
     el.scrollIntoView({behavior: 'smooth', block: 'start'});
-    setTimeout(function() {
-      document.body.style.scrollSnapType = '';
-      document.documentElement.style.scrollSnapType = '';
-    }, 700);
   }
   if (nextSlot) { doScroll(nextSlot); return; }
   if (ni < order.length) {
