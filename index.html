@@ -10,7 +10,7 @@
   --bg:#FFFFFF;--sf1:#FAFAF7;--sf2:#F2EFEA;
   --acc:#1A1A1A;--acc-s:#E8E2D5;
   --tp:#1A1A1A;--ts:#6B6B6B;
-  --br:#EBE8E2;
+  --br:#EBE8E2;--state-off:#C9C5BD;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;
   --vh:100dvh;
 }
@@ -55,7 +55,23 @@ body::-webkit-scrollbar{display:none}
 .room-card.sel{border-color:var(--acc);background:var(--acc-s)}
 .room-card__img{width:90px;height:82px;flex-shrink:0;overflow:hidden;position:relative}
 .room-card__img img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
-.room-card__name{flex:1;font-size:17px;font-weight:600;padding:0 14px}
+.room-card__info{flex:1;padding:0 14px}
+.room-card__name{font-size:17px;font-weight:600}
+.room-card__cap{font-size:12px;color:var(--ts);margin-top:2px}
+
+/* kit-toggle */
+.kit-card{background:var(--sf1);border:1.5px solid var(--br);border-radius:16px;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;cursor:pointer;transition:transform 120ms cubic-bezier(.2,0,0,1),opacity 200ms,filter 200ms,border-color 200ms}
+.kit-card:active{transform:scale(.98)}
+.kit-card.off{opacity:.45;filter:grayscale(.4)}
+.kit-card.off .kit-toggle{background:var(--state-off)}
+.kit-card__icon{width:80px;height:80px;flex-shrink:0;border-radius:10px;overflow:hidden;position:relative}
+.kit-card__icon img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+.kit-card__info{flex:1;min-width:0}
+.kit-card__name{font-size:14px;font-weight:600;line-height:1.3}
+.kit-toggle{width:44px;height:26px;border-radius:13px;background:var(--acc);flex-shrink:0;position:relative;transition:background 200ms}
+.kit-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 200ms cubic-bezier(.2,0,0,1);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.kit-card.off .kit-toggle::after{transform:translateX(0)}
+.kit-card:not(.off) .kit-toggle::after{transform:translateX(18px)}
 
 /* setup */
 #sec-setup{min-height:auto;padding:0;scroll-snap-align:start;scroll-snap-stop:always}
@@ -158,6 +174,7 @@ var STYLES = [
 var ROOMS = [
   { id:'living',   name:'Гостиная' },
   { id:'bedroom',  name:'Спальня' },
+  { id:'kitchen',  name:'Кухня',   caption:'Готовый набор элементов' },
   { id:'bathroom', name:'Ванная' },
 ];
 var CATS = [
@@ -170,82 +187,41 @@ var LABELS = {
   lighting:  ['Торшер','Подвесной','Настольная лампа','Бра','Споты','Потолочный','Лента','Декор','Ночник'],
   materials: ['Пол','Стены','Потолок','Текстиль','Шторы','Ковёр','Подушки','Камень','Стекло'],
 };
+var KITCHEN_LABELS = {
+  furniture: ['Кухонный остров','Барный стул','Обеденный стол','Навесная полка','Шкаф-пенал','Тележка','Мойка','Смеситель','Разделочная доска'],
+  lighting:  ['Подвес над островом','Бра рабочей зоны','Встроенная подсветка','Потолочный спот','Трековый светильник','Лампа на подоконник','Безрамный светильник','Умный выключатель','Подсветка цоколя'],
+  materials: ['Фартук','Столешница','Фасад кухни','Текстиль','Посуда','Декор','Фурнитура','Пол','Окно'],
+};
+var STYLE_FNAME = { japandi:'japandi', modern_classic:'modern-classic', scandi:'scandi' };
 var OPTS = {
   furniture: [['Классический','Бионический'],['Круглый','Прямоугольный'],['С подлокотниками','Безрамный'],['Открытый','Закрытый'],['Деревянный','Мраморный'],['Мягкий','Металлический'],['Высокий','Низкий'],['Угловой','Островной'],['Круглый','Квадратный']],
   lighting:  [['Напольный','Дуговой'],['Одиночный','Гроздь'],['Классическая','Арт'],['Одинарное','Двойное'],['Врезные','Накладные'],['Плафон','Хрусталь'],['Тёплая','Холодная'],['Лаконичный','Декоративный'],['Хрустальный','Минималистичный']],
   materials: [['Светлый дуб','Тёмный дуб'],['Штукатурка','Обои'],['Белый','Бетон'],['Лён','Бархат'],['Льняные','Бархатные'],['Натуральный','Геом.'],['Однотонные','Орнамент'],['Сланец','Мрамор'],['Прозрачное','Матовое']],
 };
 
-/* ── Pollinations.ai image URLs ── */
-var STYLE_DNA = {
-  japandi:        'japandi interior style, warm oak wood, natural linen, wabi-sabi, earth tones, zen minimalism',
-  modern_classic: 'modern classic interior style, Carrara marble, deep velvet, polished brass, grand symmetry',
-  scandi:         'scandinavian interior style, light birch, crisp white, soft wool textiles, hygge coziness',
-};
-var ROOM_DNA = { living:'living room', bedroom:'bedroom', bathroom:'bathroom' };
-
-var SLOT_ITEMS = {
-  furniture: [
-    ['low modular sofa light linen upholstery', 'biomorphic curved sofa sculptural silhouette'],
-    ['round solid wood coffee table', 'rectangular travertine coffee table'],
-    ['wide armchair generous armrests soft fabric', 'frameless floating lounge chair minimal'],
-    ['open slatted bookshelf light wood', 'closed lacquer storage cabinet sleek'],
-    ['solid wood dining table four legs', 'marble top dining table brass base'],
-    ['padded upholstered side chair', 'slender metal dining chair geometric'],
-    ['tall narrow chest of drawers', 'long low sideboard horizontal form'],
-    ['angled corner storage unit', 'oval console table island minimal'],
-    ['round tufted pouf ottoman linen', 'square low pouf ottoman minimalist'],
-  ],
-  lighting: [
-    ['slender floor lamp fabric drum shade', 'long arc floor lamp arched arm'],
-    ['single globe pendant lamp ceiling', 'cluster of small globe pendant lights'],
-    ['classic linen table lamp warm tone', 'sculptural ceramic art table lamp'],
-    ['single cone wall sconce minimal', 'double swing-arm wall sconce brass'],
-    ['flush recessed ceiling downlights', 'surface mounted track spotlights rail'],
-    ['woven wicker ceiling pendant shade', 'tiered crystal chandelier ornate'],
-    ['warm amber LED strip diffused glow', 'cool white LED strip crisp line'],
-    ['flat geometric wall light minimal', 'layered decorative wall light ornate'],
-    ['faceted geometric pendant light', 'matte cone minimal pendant lamp'],
-  ],
-  materials: [
-    ['light oak herringbone hardwood floor close-up', 'dark smoked walnut plank floor close-up'],
-    ['smooth limewash plaster wall texture', 'botanical textured wallpaper pattern'],
-    ['matte white painted ceiling', 'raw exposed concrete ceiling surface'],
-    ['natural linen fabric drape soft folds', 'plush velvet fabric sheen folds'],
-    ['sheer linen curtain panel light breeze', 'heavy velvet curtain dramatic drape'],
-    ['organic shaped natural jute area rug', 'bold geometric modern area rug flat lay'],
-    ['set of solid monochrome scatter cushions', 'embroidered ornament pattern cushion covers'],
-    ['rough textured slate stone tile swatch', 'polished white marble slab veining'],
-    ['clear float glass panel transparent', 'sandblasted frosted glass panel translucent'],
-  ],
-};
-
-var STYLE_IDX  = { japandi:0, modern_classic:1, scandi:2 };
-var ROOM_IDX   = { living:0, bedroom:1, bathroom:2 };
-var CAT_IDX    = { furniture:0, lighting:1, materials:2 };
-var BASE_URL   = 'https://image.pollinations.ai/prompt/';
-
-function purl(prompt, w, h, seed, model) {
-  return BASE_URL + encodeURIComponent(prompt) +
-    '?width=' + w + '&height=' + h + '&seed=' + seed + '&nologo=true&model=' + (model || 'flux');
-}
-
 function stylePreviewUrl(styleId) {
-  return '/assets/styles/' + styleId + '.webp';
+  return '/assets/styles/' + STYLE_FNAME[styleId] + '.webp';
 }
-
 function roomPreviewUrl(styleId, roomId) {
-  return '/assets/rooms/' + styleId + '__' + roomId + '.webp';
+  return '/assets/rooms/' + STYLE_FNAME[styleId] + '__' + roomId + '.webp';
 }
-
 function iconUrl(styleId, roomId, catId, slotId, variant) {
-  if (!styleId) return null;
-  return '/assets/icons/' + styleId + '__' + catId + '__' + slotId + '__' + variant + '.webp';
+  if (!styleId || !roomId) return null;
+  var sf = STYLE_FNAME[styleId];
+  if (roomId === 'kitchen') {
+    return '/assets/icons/kit_toggle/' + sf + '__kitchen__' + catId + '__' + slotId + '.webp';
+  }
+  return '/assets/icons/pair_picker/' + sf + '__' + roomId + '__' + catId + '__' + slotId + '__' + variant + '.webp';
 }
 
 /* ── State ── */
-var S = { style:null, room:null, setup:{furniture:{},lighting:{},materials:{}} };
-CATS.forEach(function(c) { for (var i=1;i<=9;i++) S.setup[c.id][c.px+'_'+i]='main'; });
+function defaultSetup(roomId) {
+  var v = roomId === 'kitchen' ? 'on' : 'main';
+  var s = { furniture:{}, lighting:{}, materials:{} };
+  CATS.forEach(function(c) { for (var i=1;i<=9;i++) s[c.id][c.px+'_'+i]=v; });
+  return s;
+}
+var S = { style:null, room:null, setup: defaultSetup(null) };
 (function() {
   try {
     var sv = JSON.parse(sessionStorage.getItem('int_state') || 'null');
@@ -307,14 +283,19 @@ function renderRooms() {
     var d = document.createElement('div');
     d.className = 'room-card' + (S.room === r.id ? ' sel' : '');
     d.appendChild(imgBox('room-card__img', S.style ? roomPreviewUrl(S.style, r.id) : null));
-    var name = document.createElement('div');
-    name.className = 'room-card__name'; name.textContent = r.name;
+    var info = document.createElement('div');
+    info.className = 'room-card__info';
+    info.innerHTML = '<div class="room-card__name">' + r.name + '</div>' +
+      (r.caption ? '<div class="room-card__cap">' + r.caption + '</div>' : '');
     var chk = document.createElement('div');
     chk.className = 'chk'; chk.style.marginRight = '14px'; chk.innerHTML = CHK;
-    d.appendChild(name); d.appendChild(chk);
+    d.appendChild(info); d.appendChild(chk);
     d.addEventListener('click', function() {
       haptic('impact','medium');
-      S.room = r.id; save();
+      var prevRoom = S.room;
+      S.room = r.id;
+      if (prevRoom !== r.id) { S.setup = defaultSetup(r.id); }
+      save();
       renderRooms(); renderSetup();
       setTimeout(function() { scrollTo('sec-setup'); }, 250);
     });
@@ -324,37 +305,74 @@ function renderRooms() {
 
 /* ── Render setup ── */
 function renderSetup() {
+  var isKitchen = S.room === 'kitchen';
   CATS.forEach(function(cat) {
     var pane = document.getElementById('pane-' + cat.id);
     pane.innerHTML = '';
-    LABELS[cat.id].forEach(function(lbl, idx) {
+    var labels = isKitchen ? KITCHEN_LABELS[cat.id] : LABELS[cat.id];
+    labels.forEach(function(lbl, idx) {
       var slotId = cat.px + '_' + (idx + 1);
-      var chosen = S.setup[cat.id][slotId] || 'main';
-      var slotEl = document.createElement('div');
-      var lblEl = document.createElement('div');
-      lblEl.className = 'slot-lbl'; lblEl.textContent = lbl;
-      slotEl.appendChild(lblEl);
-      var optsEl = document.createElement('div');
-      optsEl.className = 'slot-opts';
-      ['main','alt'].forEach(function(v, vi) {
+      if (isKitchen) {
+        /* kit-toggle */
         var card = document.createElement('div');
-        card.className = 'opt' + (chosen === v ? ' on' : '');
-        var url = iconUrl(S.style, S.room, cat.id, slotId, v);
-        card.appendChild(imgBox('opt__icon', url));
-        var lbl2 = document.createElement('div');
-        lbl2.className = 'opt__lbl';
-        lbl2.textContent = (OPTS[cat.id][idx] || [])[vi] || (v === 'main' ? 'A' : 'Б');
-        card.appendChild(lbl2);
+        var val = S.setup[cat.id][slotId];
+        var isOn = val !== 'off';
+        card.className = 'kit-card' + (isOn ? '' : ' off');
+        var url = iconUrl(S.style, 'kitchen', cat.id, slotId, null);
+        card.appendChild(imgBox('kit-card__icon shimmer', url));
+        var info = document.createElement('div');
+        info.className = 'kit-card__info';
+        info.innerHTML = '<div class="kit-card__name">' + lbl + '</div>';
+        card.appendChild(info);
+        var tog = document.createElement('div');
+        tog.className = 'kit-toggle';
+        card.appendChild(tog);
         card.addEventListener('click', function() {
+          var cur = S.setup[cat.id][slotId];
+          var goOff = cur !== 'off';
+          if (goOff) {
+            var onCount = Object.values(S.setup[cat.id]).filter(function(v){return v==='on';}).length;
+            if (onCount <= 1) {
+              card.animate([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:200});
+              return;
+            }
+          }
           haptic('impact','light');
-          S.setup[cat.id][slotId] = v; save();
-          optsEl.querySelectorAll('.opt').forEach(function(c,ci) { c.classList.toggle('on', ci === vi); });
+          S.setup[cat.id][slotId] = goOff ? 'off' : 'on';
+          save();
+          card.classList.toggle('off', goOff);
           updateProg(); updateSum();
         });
-        optsEl.appendChild(card);
-      });
-      slotEl.appendChild(optsEl);
-      pane.appendChild(slotEl);
+        pane.appendChild(card);
+      } else {
+        /* pair-picker */
+        var chosen = S.setup[cat.id][slotId] || 'main';
+        var slotEl = document.createElement('div');
+        var lblEl = document.createElement('div');
+        lblEl.className = 'slot-lbl'; lblEl.textContent = lbl;
+        slotEl.appendChild(lblEl);
+        var optsEl = document.createElement('div');
+        optsEl.className = 'slot-opts';
+        ['main','alt'].forEach(function(v, vi) {
+          var optCard = document.createElement('div');
+          optCard.className = 'opt' + (chosen === v ? ' on' : '');
+          var url2 = iconUrl(S.style, S.room, cat.id, slotId, v);
+          optCard.appendChild(imgBox('opt__icon', url2));
+          var lbl2 = document.createElement('div');
+          lbl2.className = 'opt__lbl';
+          lbl2.textContent = (OPTS[cat.id][idx] || [])[vi] || (v === 'main' ? 'A' : 'Б');
+          optCard.appendChild(lbl2);
+          optCard.addEventListener('click', function() {
+            haptic('impact','light');
+            S.setup[cat.id][slotId] = v; save();
+            optsEl.querySelectorAll('.opt').forEach(function(c,ci){ c.classList.toggle('on', ci===vi); });
+            updateProg(); updateSum();
+          });
+          optsEl.appendChild(optCard);
+        });
+        slotEl.appendChild(optsEl);
+        pane.appendChild(slotEl);
+      }
     });
   });
   updateProg(); updateSum();
@@ -363,13 +381,18 @@ function renderSetup() {
 /* ── Progress ── */
 function countPicked() {
   var n = 0;
-  CATS.forEach(function(c) { Object.keys(S.setup[c.id]).forEach(function(k) { if (S.setup[c.id][k]) n++; }); });
+  var isKitchen = S.room === 'kitchen';
+  CATS.forEach(function(c) {
+    Object.values(S.setup[c.id]).forEach(function(v) {
+      if (isKitchen ? v === 'on' : !!v) n++;
+    });
+  });
   return n;
 }
 function updateProg() {
   var n = countPicked();
   var el = document.getElementById('prog');
-  el.textContent = n + ' / 27';
+  el.textContent = (S.room === 'kitchen' ? n + ' вкл' : n) + ' / 27';
   el.className = 'prog' + (n === 27 ? ' done' : '');
 }
 function updateSum() {
@@ -412,7 +435,7 @@ document.getElementById('btn-gen').addEventListener('click', function() {
   if (locked) return; locked = true;
   haptic('notify','success');
   var btn = this; btn.disabled = true; btn.textContent = '...';
-  var payload = { v:1, style:S.style, room:S.room, setup:S.setup, ts:Math.floor(Date.now()/1000) };
+  var payload = { v:2, style:S.style, room:S.room, mode: S.room==='kitchen' ? 'kit_toggle' : 'pair_picker', setup:S.setup, ts:Math.floor(Date.now()/1000) };
   setTimeout(function() {
     if (tg) {
       try {
