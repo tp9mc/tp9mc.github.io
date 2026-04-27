@@ -80,6 +80,7 @@ body::-webkit-scrollbar{display:none}
 .cat-tab.on{background:var(--acc);color:#fff}
 .cat-pane{display:none;flex-direction:column;gap:16px;padding:18px 16px 90px}
 .cat-pane.on{display:flex}
+.cat-pane>div{scroll-margin-top:58px}
 
 /* slot */
 .slot-lbl{font-size:13px;font-weight:500;color:var(--ts);margin-bottom:8px}
@@ -414,28 +415,26 @@ document.getElementById('cat-tabs').addEventListener('click', function(e) {
 /* ── Scroll after slot pick ── */
 function advanceAfterPick(slotEl, catId) {
   var nextSlot = slotEl.nextElementSibling;
-  var tabsH = (document.getElementById('cat-tabs') || {}).offsetHeight || 48;
-  function smoothScroll(el) {
-    document.body.style.scrollSnapType = 'none';
-    var y = el.getBoundingClientRect().top +
-      (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop) - tabsH - 10;
-    window.scrollTo({top: y, behavior: 'smooth'});
-    setTimeout(function() { document.body.style.scrollSnapType = ''; }, 600);
-  }
-  if (nextSlot) { smoothScroll(nextSlot); return; }
   var order = ['furniture', 'lighting', 'materials'];
   var ni = order.indexOf(catId) + 1;
+  function doScroll(el) {
+    document.body.style.scrollSnapType = 'none';
+    document.documentElement.style.scrollSnapType = 'none';
+    el.scrollIntoView({behavior: 'smooth', block: 'start'});
+    setTimeout(function() {
+      document.body.style.scrollSnapType = '';
+      document.documentElement.style.scrollSnapType = '';
+    }, 700);
+  }
+  if (nextSlot) { doScroll(nextSlot); return; }
   if (ni < order.length) {
     switchCat(order[ni]);
     setTimeout(function() {
       var first = document.querySelector('#pane-' + order[ni] + ' > div:first-child');
-      if (first) smoothScroll(first);
-    }, 50);
+      if (first) doScroll(first);
+    }, 80);
   } else {
-    document.body.style.scrollSnapType = 'none';
-    var cta = document.getElementById('sec-cta');
-    if (cta) cta.scrollIntoView({behavior: 'smooth', block: 'start'});
-    setTimeout(function() { document.body.style.scrollSnapType = ''; }, 600);
+    doScroll(document.getElementById('sec-cta'));
   }
 }
 
