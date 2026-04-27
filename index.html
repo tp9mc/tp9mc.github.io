@@ -231,30 +231,16 @@ function purl(prompt, w, h, seed, model) {
 }
 
 function stylePreviewUrl(styleId) {
-  var p = {
-    japandi:        'japandi living room interior design, warm wood furniture, linen sofa, Japanese zen atmosphere, afternoon natural light, professional interior photography, high quality',
-    modern_classic: 'modern classic living room interior design, marble floors, tufted velvet sofa, brass chandelier, grand symmetrical space, soft lighting, professional photography',
-    scandi:         'scandinavian minimalist living room interior design, light oak floor, white walls, cozy wool throws, hygge candles, bright natural daylight, professional photography',
-  };
-  return purl(p[styleId], 720, 400, STYLE_IDX[styleId] * 7 + 42, 'flux');
+  return '/assets/styles/' + styleId + '.webp';
 }
 
 function roomPreviewUrl(styleId, roomId) {
-  var dna = STYLE_DNA[styleId] || '';
-  var room = ROOM_DNA[roomId] || 'room';
-  var prompt = dna + ', ' + room + ' interior design, professional architectural photography, natural light, beautiful composition, high quality';
-  var seed = STYLE_IDX[styleId] * 100 + ROOM_IDX[roomId] * 13 + 200;
-  return purl(prompt, 400, 280, seed, 'flux');
+  return '/assets/rooms/' + styleId + '__' + roomId + '.webp';
 }
 
 function iconUrl(styleId, roomId, catId, slotId, variant) {
-  if (!styleId || !roomId) return null;
-  var slotNum = parseInt(slotId.split('_')[1], 10) - 1;
-  var items = (SLOT_ITEMS[catId] || [])[slotNum] || [];
-  var item = items[variant === 'main' ? 0 : 1] || 'interior design object';
-  var prompt = item + ', ' + STYLE_DNA[styleId] + ', product photography, isolated on pure white background, studio lighting, sharp detail, high quality';
-  var seed = STYLE_IDX[styleId] * 1000 + ROOM_IDX[roomId] * 100 + CAT_IDX[catId] * 20 + slotNum * 2 + (variant === 'alt' ? 1 : 0);
-  return purl(prompt, 400, 400, seed, 'flux-realism');
+  if (!styleId) return null;
+  return '/assets/icons/' + styleId + '__' + catId + '__' + slotId + '__' + variant + '.webp';
 }
 
 /* ── State ── */
