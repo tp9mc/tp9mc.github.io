@@ -10,7 +10,7 @@
   --bg:#FFFFFF;--sf1:#FAFAF7;--sf2:#F2EFEA;
   --acc:#1A1A1A;--acc-s:#E8E2D5;
   --tp:#1A1A1A;--ts:#6B6B6B;
-  --br:#EBE8E2;--sh:rgba(26,26,26,0.06);
+  --br:#EBE8E2;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;
   --vh:100dvh;
 }
@@ -18,152 +18,77 @@
 html{height:100%}
 body{
   font-family:var(--font);background:var(--bg);color:var(--tp);
-  -webkit-font-smoothing:antialiased;
-  height:100%;overflow-y:auto;
-  scroll-snap-type:y mandatory;scroll-behavior:smooth;
+  -webkit-font-smoothing:antialiased;height:100%;
+  overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;
 }
 body::-webkit-scrollbar{display:none}
 
-/* ── Sections ── */
-.sec{
-  min-height:var(--vh);scroll-snap-align:start;scroll-snap-stop:always;
-  padding:0 16px 24px;display:flex;flex-direction:column;
-}
+.sec{min-height:var(--vh);scroll-snap-align:start;scroll-snap-stop:always;padding:0 16px 24px;display:flex;flex-direction:column}
 .sec-head{padding-top:max(env(safe-area-inset-top,0px),28px)}
 .sec-h1{font-size:28px;font-weight:600;line-height:1.2;letter-spacing:-.5px;margin-bottom:6px}
 .sec-sub{font-size:15px;color:var(--ts);line-height:1.47;margin-bottom:24px}
 .cards{display:flex;flex-direction:column;gap:10px}
 
-/* ── Check mark ── */
-.chk{
-  width:22px;height:22px;border-radius:50%;
-  border:1.5px solid var(--br);background:var(--bg);flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  transition:background 200ms,border-color 200ms;
-}
+/* shimmer */
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.shimmer{background:linear-gradient(90deg,var(--sf2) 25%,var(--sf1) 50%,var(--sf2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+
+/* check */
+.chk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--br);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 200ms,border-color 200ms}
 .sel .chk{background:var(--acc);border-color:var(--acc)}
 .chk svg{opacity:0;transition:opacity 150ms}
 .sel .chk svg{opacity:1}
 
-/* ── Style card ── */
-.style-card{
-  background:var(--sf1);border:1.5px solid var(--br);border-radius:20px;
-  overflow:hidden;cursor:pointer;
-  transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms;
-}
+/* style card */
+.style-card{background:var(--sf1);border:1.5px solid var(--br);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms}
 .style-card:active{transform:scale(.97)}
 .style-card.sel{border-color:var(--acc);background:var(--acc-s)}
-.style-card__img{height:156px;width:100%}
+.style-card__img{height:160px;width:100%;overflow:hidden;position:relative}
+.style-card__img img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
 .style-card__row{padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .style-card__name{font-size:17px;font-weight:600;margin-bottom:3px}
 .style-card__desc{font-size:13px;color:var(--ts);line-height:1.38}
 
-/* ── Room card ── */
-.room-card{
-  background:var(--sf1);border:1.5px solid var(--br);border-radius:18px;
-  overflow:hidden;cursor:pointer;display:flex;align-items:center;
-  transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms;
-}
+/* room card */
+.room-card{background:var(--sf1);border:1.5px solid var(--br);border-radius:18px;overflow:hidden;cursor:pointer;display:flex;align-items:center;transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms}
 .room-card:active{transform:scale(.97)}
 .room-card.sel{border-color:var(--acc);background:var(--acc-s)}
-.room-card__img{width:86px;height:78px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:36px}
+.room-card__img{width:90px;height:82px;flex-shrink:0;overflow:hidden;position:relative}
+.room-card__img img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
 .room-card__name{flex:1;font-size:17px;font-weight:600;padding:0 14px}
 
-/* ── Setup section ── */
+/* setup */
 #sec-setup{min-height:auto;padding:0;scroll-snap-align:start;scroll-snap-stop:always}
-.cat-tabs{
-  display:flex;gap:6px;padding:10px 14px;
-  background:rgba(255,255,255,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--br);position:sticky;top:0;z-index:10;
-}
-.cat-tab{
-  flex:1;padding:9px 4px;font-size:13px;font-weight:600;font-family:inherit;
-  text-align:center;border-radius:10px;border:1.5px solid transparent;
-  background:transparent;color:var(--ts);cursor:pointer;
-  transition:background 200ms,color 200ms;-webkit-appearance:none;
-}
+.cat-tabs{display:flex;gap:6px;padding:10px 14px;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:10}
+.cat-tab{flex:1;padding:9px 4px;font-size:13px;font-weight:600;font-family:inherit;text-align:center;border-radius:10px;border:1.5px solid transparent;background:transparent;color:var(--ts);cursor:pointer;transition:background 200ms,color 200ms;-webkit-appearance:none}
 .cat-tab.on{background:var(--acc);color:#fff}
-
 .cat-pane{display:none;flex-direction:column;gap:16px;padding:18px 16px 90px}
 .cat-pane.on{display:flex}
 
-/* ── Slot pair ── */
+/* slot */
 .slot-lbl{font-size:13px;font-weight:500;color:var(--ts);margin-bottom:8px}
 .slot-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.opt{
-  background:var(--sf1);border:1.5px solid var(--br);border-radius:20px;
-  padding:10px 8px;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms,box-shadow 200ms;
-}
+.opt{background:var(--sf1);border:1.5px solid var(--br);border-radius:20px;padding:10px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms,box-shadow 200ms}
 .opt:active{transform:scale(.96)}
-.opt.on{
-  border-color:var(--acc);background:var(--acc-s);
-  box-shadow:0 2px 8px rgba(184,168,142,.14);transform:translateY(-2px);
-}
-.opt__icon{width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--sf2)}
-.opt__icon img{width:100%;height:100%;object-fit:cover;display:block}
+.opt.on{border-color:var(--acc);background:var(--acc-s);box-shadow:0 2px 8px rgba(184,168,142,.14);transform:translateY(-2px)}
+.opt__icon{width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative}
+.opt__icon img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
 .opt__lbl{font-size:11px;font-weight:500;color:var(--ts);text-align:center;line-height:1.3}
 .opt.on .opt__lbl{color:var(--acc)}
 
-/* ── Progress chip ── */
-.prog-wrap{
-  position:sticky;bottom:calc(14px + env(safe-area-inset-bottom,0px));
-  padding:0 16px;display:flex;justify-content:flex-end;
-  pointer-events:none;z-index:20;
-}
-.prog{
-  background:var(--acc);color:#fff;font-size:12px;font-weight:600;
-  padding:7px 14px;border-radius:20px;pointer-events:auto;cursor:pointer;
-  box-shadow:0 4px 14px rgba(26,26,26,.2);transition:background 300ms;
-}
+/* progress */
+.prog-wrap{position:sticky;bottom:calc(14px + env(safe-area-inset-bottom,0px));padding:0 16px;display:flex;justify-content:flex-end;pointer-events:none;z-index:20}
+.prog{background:var(--acc);color:#fff;font-size:12px;font-weight:600;padding:7px 14px;border-radius:20px;pointer-events:auto;cursor:pointer;box-shadow:0 4px 14px rgba(26,26,26,.2);transition:background 300ms}
 .prog.done{background:#2D7A4F}
 
-/* ── CTA zone ── */
-#sec-cta{
-  scroll-snap-align:start;scroll-snap-stop:always;
-  padding:32px 16px calc(32px + env(safe-area-inset-bottom,0px));
-  display:flex;flex-direction:column;gap:12px;
-  min-height:220px;justify-content:center;
-}
+/* cta */
+#sec-cta{scroll-snap-align:start;scroll-snap-stop:always;padding:32px 16px calc(32px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;min-height:220px;justify-content:center}
 .cta-sum{font-size:14px;font-weight:500;color:var(--ts);text-align:center;min-height:20px;margin-bottom:4px}
-.btn-p{
-  display:flex;align-items:center;justify-content:center;
-  padding:17px 24px;background:var(--acc);color:#fff;
-  font-size:17px;font-weight:600;font-family:inherit;
-  border-radius:16px;border:none;cursor:pointer;width:100%;
-  transition:opacity 200ms,transform 120ms;-webkit-appearance:none;
-}
+.btn-p{display:flex;align-items:center;justify-content:center;padding:17px 24px;background:var(--acc);color:#fff;font-size:17px;font-weight:600;font-family:inherit;border-radius:16px;border:none;cursor:pointer;width:100%;transition:opacity 200ms,transform 120ms;-webkit-appearance:none}
 .btn-p:active{transform:scale(.97)}
 .btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.btn-s{
-  display:flex;align-items:center;justify-content:center;
-  padding:15px 24px;background:transparent;color:var(--tp);
-  font-size:15px;font-weight:500;font-family:inherit;
-  border-radius:16px;border:1.5px solid var(--br);cursor:pointer;width:100%;
-  transition:background 200ms,transform 120ms;-webkit-appearance:none;
-}
+.btn-s{display:flex;align-items:center;justify-content:center;padding:15px 24px;background:transparent;color:var(--tp);font-size:15px;font-weight:500;font-family:inherit;border-radius:16px;border:1.5px solid var(--br);cursor:pointer;width:100%;transition:background 200ms,transform 120ms;-webkit-appearance:none}
 .btn-s:active{transform:scale(.97);background:var(--sf2)}
-
-/* ── Placeholder preview gradients ── */
-.prev-japandi{background:linear-gradient(135deg,#C9B89A,#E8DBC8,#D4C4A8)}
-.prev-modern_classic{background:linear-gradient(135deg,#D4CFC8,#EDEAE4,#C8C3BC)}
-.prev-scandi{background:linear-gradient(135deg,#E0D5C5,#F3F0E8,#D6CAB6)}
-.prev-living{background:linear-gradient(135deg,#DDD5C4,#F5F0E4)}
-.prev-bedroom{background:linear-gradient(135deg,#D5D0C8,#EDEAE3)}
-.prev-bathroom{background:linear-gradient(135deg,#C8D4D4,#E3EAEA)}
-.ic-f-main{background:linear-gradient(135deg,#D8CAB2,#C4B49E)}
-.ic-f-alt{background:linear-gradient(135deg,#B8AA92,#A8987C)}
-.ic-l-main{background:linear-gradient(135deg,#E4D8A4,#D4C890)}
-.ic-l-alt{background:linear-gradient(135deg,#CCBE88,#BCB078)}
-.ic-m-main{background:linear-gradient(135deg,#C4D4C0,#B0C4AC)}
-.ic-m-alt{background:linear-gradient(135deg,#A8B8A4,#98A890)}
-
-@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-.shimmer{
-  background:linear-gradient(90deg,var(--sf2) 25%,var(--sf1) 50%,var(--sf2) 75%);
-  background-size:200% 100%;animation:shimmer 1.5s infinite;
-}
 
 @media(max-height:600px){.sec-h1{font-size:22px}.style-card__img{height:110px}}
 @media(max-width:320px){.slot-opts{gap:6px}.sec-h1{font-size:22px}}
@@ -171,7 +96,6 @@ body::-webkit-scrollbar{display:none}
 </head>
 <body>
 
-<!-- §1 Выбор стиля -->
 <section class="sec" id="sec-style">
   <div class="sec-head">
     <div class="sec-h1">Выберите стиль</div>
@@ -180,7 +104,6 @@ body::-webkit-scrollbar{display:none}
   <div class="cards" id="style-cards"></div>
 </section>
 
-<!-- §2 Выбор комнаты -->
 <section class="sec" id="sec-room">
   <div class="sec-head">
     <div class="sec-h1">Какую комнату<br>оформляем?</div>
@@ -189,7 +112,6 @@ body::-webkit-scrollbar{display:none}
   <div class="cards" id="room-cards"></div>
 </section>
 
-<!-- §3 Настройка -->
 <section id="sec-setup">
   <div class="cat-tabs" id="cat-tabs">
     <button class="cat-tab on" type="button" data-cat="furniture">Мебель</button>
@@ -199,10 +121,9 @@ body::-webkit-scrollbar{display:none}
   <div class="cat-pane on" id="pane-furniture" data-cat="furniture"></div>
   <div class="cat-pane"    id="pane-lighting"  data-cat="lighting"></div>
   <div class="cat-pane"    id="pane-materials" data-cat="materials"></div>
-  <div class="prog-wrap"><div class="prog" id="prog">0 / 27</div></div>
+  <div class="prog-wrap"><div class="prog" id="prog">27 / 27</div></div>
 </section>
 
-<!-- Развилка -->
 <div id="sec-cta">
   <div class="cta-sum" id="cta-sum"></div>
   <button class="btn-s" id="btn-back" type="button">↑ Изменить настройки</button>
@@ -210,7 +131,7 @@ body::-webkit-scrollbar{display:none}
 </div>
 
 <script>
-/* ── Telegram init ── */
+/* ── Telegram ── */
 var tg = (window.Telegram || {}).WebApp || null;
 if (tg) {
   tg.ready(); tg.expand();
@@ -218,34 +139,31 @@ if (tg) {
   tg.setHeaderColor('#FFFFFF'); tg.setBackgroundColor('#FFFFFF');
   if (tg.setBottomBarColor) tg.setBottomBarColor('#FFFFFF');
   tg.enableClosingConfirmation();
-  function setVH() {
-    document.documentElement.style.setProperty('--vh', (tg.viewportStableHeight || window.innerHeight) + 'px');
-  }
+  function setVH() { document.documentElement.style.setProperty('--vh', (tg.viewportStableHeight || window.innerHeight) + 'px'); }
   setVH();
   tg.onEvent('viewportChanged', setVH);
 }
-
-function haptic(type, strength) {
+function haptic(t, s) {
   if (!tg || !tg.HapticFeedback) return;
-  if (type === 'impact') tg.HapticFeedback.impactOccurred(strength || 'light');
-  if (type === 'notify') tg.HapticFeedback.notificationOccurred(strength || 'success');
+  if (t === 'impact') tg.HapticFeedback.impactOccurred(s || 'light');
+  if (t === 'notify') tg.HapticFeedback.notificationOccurred(s || 'success');
 }
 
 /* ── Data ── */
 var STYLES = [
-  { id:'japandi',        name:'Japandi',           desc:'Тёплое дерево, лён, низкие силуэты',             pc:'prev-japandi' },
-  { id:'modern_classic', name:'Modern Classic',    desc:'Мрамор, бархат, симметрия и латунь',             pc:'prev-modern_classic' },
-  { id:'scandi',         name:'Scandi-минимализм', desc:'Светлое дерево, мягкий текстиль, тихая палитра', pc:'prev-scandi' },
+  { id:'japandi',        name:'Japandi',           desc:'Тёплое дерево, лён, низкие силуэты' },
+  { id:'modern_classic', name:'Modern Classic',    desc:'Мрамор, бархат, симметрия и латунь' },
+  { id:'scandi',         name:'Scandi-минимализм', desc:'Светлое дерево, мягкий текстиль, тихая палитра' },
 ];
 var ROOMS = [
-  { id:'living',   name:'Гостиная', em:'🛋',  pc:'prev-living' },
-  { id:'bedroom',  name:'Спальня',  em:'🛏',  pc:'prev-bedroom' },
-  { id:'bathroom', name:'Ванная',   em:'🛁', pc:'prev-bathroom' },
+  { id:'living',   name:'Гостиная' },
+  { id:'bedroom',  name:'Спальня' },
+  { id:'bathroom', name:'Ванная' },
 ];
 var CATS = [
-  { id:'furniture', px:'f', ic:'ic-f' },
-  { id:'lighting',  px:'l', ic:'ic-l' },
-  { id:'materials', px:'m', ic:'ic-m' },
+  { id:'furniture', px:'f' },
+  { id:'lighting',  px:'l' },
+  { id:'materials', px:'m' },
 ];
 var LABELS = {
   furniture: ['Диван','Кофейный стол','Кресло','Стеллаж','Обеденный стол','Стул','Комод','Тумба','Пуф'],
@@ -258,29 +176,114 @@ var OPTS = {
   materials: [['Светлый дуб','Тёмный дуб'],['Штукатурка','Обои'],['Белый','Бетон'],['Лён','Бархат'],['Льняные','Бархатные'],['Натуральный','Геом.'],['Однотонные','Орнамент'],['Сланец','Мрамор'],['Прозрачное','Матовое']],
 };
 
+/* ── Pollinations.ai image URLs ── */
+var STYLE_DNA = {
+  japandi:        'japandi interior style, warm oak wood, natural linen, wabi-sabi, earth tones, zen minimalism',
+  modern_classic: 'modern classic interior style, Carrara marble, deep velvet, polished brass, grand symmetry',
+  scandi:         'scandinavian interior style, light birch, crisp white, soft wool textiles, hygge coziness',
+};
+var ROOM_DNA = { living:'living room', bedroom:'bedroom', bathroom:'bathroom' };
+
+var SLOT_ITEMS = {
+  furniture: [
+    ['low modular sofa light linen upholstery', 'biomorphic curved sofa sculptural silhouette'],
+    ['round solid wood coffee table', 'rectangular travertine coffee table'],
+    ['wide armchair generous armrests soft fabric', 'frameless floating lounge chair minimal'],
+    ['open slatted bookshelf light wood', 'closed lacquer storage cabinet sleek'],
+    ['solid wood dining table four legs', 'marble top dining table brass base'],
+    ['padded upholstered side chair', 'slender metal dining chair geometric'],
+    ['tall narrow chest of drawers', 'long low sideboard horizontal form'],
+    ['angled corner storage unit', 'oval console table island minimal'],
+    ['round tufted pouf ottoman linen', 'square low pouf ottoman minimalist'],
+  ],
+  lighting: [
+    ['slender floor lamp fabric drum shade', 'long arc floor lamp arched arm'],
+    ['single globe pendant lamp ceiling', 'cluster of small globe pendant lights'],
+    ['classic linen table lamp warm tone', 'sculptural ceramic art table lamp'],
+    ['single cone wall sconce minimal', 'double swing-arm wall sconce brass'],
+    ['flush recessed ceiling downlights', 'surface mounted track spotlights rail'],
+    ['woven wicker ceiling pendant shade', 'tiered crystal chandelier ornate'],
+    ['warm amber LED strip diffused glow', 'cool white LED strip crisp line'],
+    ['flat geometric wall light minimal', 'layered decorative wall light ornate'],
+    ['faceted geometric pendant light', 'matte cone minimal pendant lamp'],
+  ],
+  materials: [
+    ['light oak herringbone hardwood floor close-up', 'dark smoked walnut plank floor close-up'],
+    ['smooth limewash plaster wall texture', 'botanical textured wallpaper pattern'],
+    ['matte white painted ceiling', 'raw exposed concrete ceiling surface'],
+    ['natural linen fabric drape soft folds', 'plush velvet fabric sheen folds'],
+    ['sheer linen curtain panel light breeze', 'heavy velvet curtain dramatic drape'],
+    ['organic shaped natural jute area rug', 'bold geometric modern area rug flat lay'],
+    ['set of solid monochrome scatter cushions', 'embroidered ornament pattern cushion covers'],
+    ['rough textured slate stone tile swatch', 'polished white marble slab veining'],
+    ['clear float glass panel transparent', 'sandblasted frosted glass panel translucent'],
+  ],
+};
+
+var STYLE_IDX  = { japandi:0, modern_classic:1, scandi:2 };
+var ROOM_IDX   = { living:0, bedroom:1, bathroom:2 };
+var CAT_IDX    = { furniture:0, lighting:1, materials:2 };
+var BASE_URL   = 'https://image.pollinations.ai/prompt/';
+
+function purl(prompt, w, h, seed, model) {
+  return BASE_URL + encodeURIComponent(prompt) +
+    '?width=' + w + '&height=' + h + '&seed=' + seed + '&nologo=true&model=' + (model || 'flux');
+}
+
+function stylePreviewUrl(styleId) {
+  var p = {
+    japandi:        'japandi living room interior design, warm wood furniture, linen sofa, Japanese zen atmosphere, afternoon natural light, professional interior photography, high quality',
+    modern_classic: 'modern classic living room interior design, marble floors, tufted velvet sofa, brass chandelier, grand symmetrical space, soft lighting, professional photography',
+    scandi:         'scandinavian minimalist living room interior design, light oak floor, white walls, cozy wool throws, hygge candles, bright natural daylight, professional photography',
+  };
+  return purl(p[styleId], 720, 400, STYLE_IDX[styleId] * 7 + 42, 'flux');
+}
+
+function roomPreviewUrl(styleId, roomId) {
+  var dna = STYLE_DNA[styleId] || '';
+  var room = ROOM_DNA[roomId] || 'room';
+  var prompt = dna + ', ' + room + ' interior design, professional architectural photography, natural light, beautiful composition, high quality';
+  var seed = STYLE_IDX[styleId] * 100 + ROOM_IDX[roomId] * 13 + 200;
+  return purl(prompt, 400, 280, seed, 'flux');
+}
+
+function iconUrl(styleId, roomId, catId, slotId, variant) {
+  if (!styleId || !roomId) return null;
+  var slotNum = parseInt(slotId.split('_')[1], 10) - 1;
+  var items = (SLOT_ITEMS[catId] || [])[slotNum] || [];
+  var item = items[variant === 'main' ? 0 : 1] || 'interior design object';
+  var prompt = item + ', ' + STYLE_DNA[styleId] + ', product photography, isolated on pure white background, studio lighting, sharp detail, high quality';
+  var seed = STYLE_IDX[styleId] * 1000 + ROOM_IDX[roomId] * 100 + CAT_IDX[catId] * 20 + slotNum * 2 + (variant === 'alt' ? 1 : 0);
+  return purl(prompt, 400, 400, seed, 'flux-realism');
+}
+
 /* ── State ── */
 var S = { style:null, room:null, setup:{furniture:{},lighting:{},materials:{}} };
 CATS.forEach(function(c) { for (var i=1;i<=9;i++) S.setup[c.id][c.px+'_'+i]='main'; });
-
 (function() {
   try {
-    var saved = JSON.parse(sessionStorage.getItem('int_state') || 'null');
-    if (saved && saved.style) S.style = saved.style;
-    if (saved && saved.room)  S.room  = saved.room;
-    if (saved && saved.setup) S.setup = saved.setup;
+    var sv = JSON.parse(sessionStorage.getItem('int_state') || 'null');
+    if (sv && sv.style) S.style = sv.style;
+    if (sv && sv.room)  S.room  = sv.room;
+    if (sv && sv.setup) S.setup = sv.setup;
   } catch(e) {}
 })();
+function save() { try { sessionStorage.setItem('int_state', JSON.stringify({style:S.style,room:S.room,setup:S.setup})); } catch(e) {} }
 
-function save() {
-  try { sessionStorage.setItem('int_state', JSON.stringify({style:S.style,room:S.room,setup:S.setup})); } catch(e) {}
-}
-
-/* ── Helpers ── */
+/* ── DOM helpers ── */
 var CHK = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5l3 3 5-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-function iconUrl(style, room, cat, slotId, variant) {
-  // return '/assets/icons/'+style+'__'+room+'__'+cat+'__'+slotId+'__'+variant+'.webp';
-  return null;
+function imgBox(className, src) {
+  var wrap = document.createElement('div');
+  wrap.className = className + ' shimmer';
+  if (src) {
+    var img = document.createElement('img');
+    img.src = src; img.loading = 'lazy'; img.decoding = 'async'; img.alt = '';
+    img.addEventListener('load',  function() { wrap.classList.remove('shimmer'); });
+    img.addEventListener('error', function() { wrap.classList.remove('shimmer'); });
+    wrap.appendChild(img);
+  }
+  return wrap;
 }
 
 function scrollTo(id) { document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'}); }
@@ -292,13 +295,14 @@ function renderStyles() {
   STYLES.forEach(function(s) {
     var d = document.createElement('div');
     d.className = 'style-card' + (S.style === s.id ? ' sel' : '');
-    d.innerHTML =
-      '<div class="style-card__img ' + s.pc + '"></div>' +
-      '<div class="style-card__row">' +
-        '<div><div class="style-card__name">' + s.name + '</div>' +
-        '<div class="style-card__desc">' + s.desc + '</div></div>' +
-        '<div class="chk">' + CHK + '</div>' +
-      '</div>';
+    d.appendChild(imgBox('style-card__img', stylePreviewUrl(s.id)));
+    var row = document.createElement('div');
+    row.className = 'style-card__row';
+    row.innerHTML =
+      '<div><div class="style-card__name">' + s.name + '</div>' +
+      '<div class="style-card__desc">' + s.desc + '</div></div>' +
+      '<div class="chk">' + CHK + '</div>';
+    d.appendChild(row);
     d.addEventListener('click', function() {
       haptic('impact','medium');
       S.style = s.id; save();
@@ -316,10 +320,12 @@ function renderRooms() {
   ROOMS.forEach(function(r) {
     var d = document.createElement('div');
     d.className = 'room-card' + (S.room === r.id ? ' sel' : '');
-    d.innerHTML =
-      '<div class="room-card__img ' + r.pc + '">' + r.em + '</div>' +
-      '<div class="room-card__name">' + r.name + '</div>' +
-      '<div class="chk" style="margin-right:14px">' + CHK + '</div>';
+    d.appendChild(imgBox('room-card__img', S.style ? roomPreviewUrl(S.style, r.id) : null));
+    var name = document.createElement('div');
+    name.className = 'room-card__name'; name.textContent = r.name;
+    var chk = document.createElement('div');
+    chk.className = 'chk'; chk.style.marginRight = '14px'; chk.innerHTML = CHK;
+    d.appendChild(name); d.appendChild(chk);
     d.addEventListener('click', function() {
       haptic('impact','medium');
       S.room = r.id; save();
@@ -339,22 +345,24 @@ function renderSetup() {
       var slotId = cat.px + '_' + (idx + 1);
       var chosen = S.setup[cat.id][slotId] || 'main';
       var slotEl = document.createElement('div');
-      slotEl.innerHTML = '<div class="slot-lbl">' + lbl + '</div>';
+      var lblEl = document.createElement('div');
+      lblEl.className = 'slot-lbl'; lblEl.textContent = lbl;
+      slotEl.appendChild(lblEl);
       var optsEl = document.createElement('div');
       optsEl.className = 'slot-opts';
       ['main','alt'].forEach(function(v, vi) {
         var card = document.createElement('div');
         card.className = 'opt' + (chosen === v ? ' on' : '');
         var url = iconUrl(S.style, S.room, cat.id, slotId, v);
-        var iconHtml = url
-          ? '<div class="opt__icon"><img src="' + url + '" loading="lazy" decoding="async" alt=""></div>'
-          : '<div class="opt__icon ' + cat.ic + '-' + (v==='main'?'main':'alt') + '"></div>';
-        var optLbl = (OPTS[cat.id][idx] || [])[vi] || (v==='main'?'A':'Б');
-        card.innerHTML = iconHtml + '<div class="opt__lbl">' + optLbl + '</div>';
+        card.appendChild(imgBox('opt__icon', url));
+        var lbl2 = document.createElement('div');
+        lbl2.className = 'opt__lbl';
+        lbl2.textContent = (OPTS[cat.id][idx] || [])[vi] || (v === 'main' ? 'A' : 'Б');
+        card.appendChild(lbl2);
         card.addEventListener('click', function() {
           haptic('impact','light');
           S.setup[cat.id][slotId] = v; save();
-          optsEl.querySelectorAll('.opt').forEach(function(c,ci) { c.classList.toggle('on', ci===vi); });
+          optsEl.querySelectorAll('.opt').forEach(function(c,ci) { c.classList.toggle('on', ci === vi); });
           updateProg(); updateSum();
         });
         optsEl.appendChild(card);
@@ -387,22 +395,21 @@ function updateSum() {
 
 /* ── Category tabs ── */
 document.getElementById('cat-tabs').addEventListener('click', function(e) {
-  var btn = e.target.closest('.cat-tab');
-  if (!btn) return;
+  var btn = e.target.closest('.cat-tab'); if (!btn) return;
   haptic('impact','light');
   var cat = btn.dataset.cat;
-  document.querySelectorAll('.cat-tab').forEach(function(t) { t.classList.toggle('on', t.dataset.cat===cat); });
-  document.querySelectorAll('.cat-pane').forEach(function(p) { p.classList.toggle('on', p.dataset.cat===cat); });
+  document.querySelectorAll('.cat-tab').forEach(function(t){ t.classList.toggle('on', t.dataset.cat===cat); });
+  document.querySelectorAll('.cat-pane').forEach(function(p){ p.classList.toggle('on', p.dataset.cat===cat); });
 });
 
-/* ── Progress chip click ── */
+/* ── Progress chip: jump to first incomplete ── */
 document.getElementById('prog').addEventListener('click', function() {
-  for (var ci=0;ci<CATS.length;ci++) {
+  for (var ci=0; ci<CATS.length; ci++) {
     var cat = CATS[ci];
-    for (var i=1;i<=9;i++) {
+    for (var i=1; i<=9; i++) {
       if (!S.setup[cat.id][cat.px+'_'+i]) {
-        document.querySelectorAll('.cat-tab').forEach(function(t){t.classList.toggle('on',t.dataset.cat===cat.id);});
-        document.querySelectorAll('.cat-pane').forEach(function(p){p.classList.toggle('on',p.dataset.cat===cat.id);});
+        document.querySelectorAll('.cat-tab').forEach(function(t){ t.classList.toggle('on', t.dataset.cat===cat.id); });
+        document.querySelectorAll('.cat-pane').forEach(function(p){ p.classList.toggle('on', p.dataset.cat===cat.id); });
         return;
       }
     }
@@ -416,8 +423,7 @@ document.getElementById('btn-back').addEventListener('click', function() {
 
 var locked = false;
 document.getElementById('btn-gen').addEventListener('click', function() {
-  if (locked) return;
-  locked = true;
+  if (locked) return; locked = true;
   haptic('notify','success');
   var btn = this; btn.disabled = true; btn.textContent = '...';
   var payload = { v:1, style:S.style, room:S.room, setup:S.setup, ts:Math.floor(Date.now()/1000) };
@@ -427,13 +433,13 @@ document.getElementById('btn-gen').addEventListener('click', function() {
         if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
         tg.sendData(JSON.stringify(payload));
       } catch(e) {
-        btn.disabled = false; btn.textContent = 'Сгенерировать ▶'; locked = false;
+        btn.disabled=false; btn.textContent='Сгенерировать ▶'; locked=false;
         if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
       }
     } else {
       console.log('payload:', JSON.stringify(payload, null, 2));
-      alert('Демо-режим.\nСтиль: ' + payload.style + '\nКомната: ' + payload.room + '\n\nПолный payload в консоли.');
-      btn.disabled = false; btn.textContent = 'Сгенерировать ▶'; locked = false;
+      alert('Демо-режим\n\nСтиль: '+payload.style+'\nКомната: '+payload.room+'\n\nПолный payload в консоли.');
+      btn.disabled=false; btn.textContent='Сгенерировать ▶'; locked=false;
     }
   }, 300);
 });
@@ -447,13 +453,9 @@ if (tg && tg.BackButton) {
     if (document.body.scrollTop < 100) {
       if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
       tg.close();
-    } else {
-      scrollTo('sec-style');
-    }
+    } else { scrollTo('sec-style'); }
   });
 }
-
-/* ── Telegram MainButton ── */
 if (tg && tg.MainButton) {
   tg.MainButton.setParams({text:'Сгенерировать', color:'#1A1A1A', text_color:'#FFFFFF'});
 }
