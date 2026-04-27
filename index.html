@@ -365,13 +365,7 @@ function renderSetup() {
           S.setup[cat.id][slotId] = v; save();
           optsEl.querySelectorAll('.opt').forEach(function(c,ci){ c.classList.toggle('on', ci===vi); });
           updateProg(); updateSum();
-          var next = slotEl.nextElementSibling;
-          var target = next || document.getElementById('prog');
-          if (target) {
-            var tabsH = (document.getElementById('cat-tabs') || {}).offsetHeight || 48;
-            var top = target.getBoundingClientRect().top + window.pageYOffset - tabsH - 10;
-            window.scrollTo({top: top, behavior: 'smooth'});
-          }
+          advanceAfterPick(slotEl, cat.id);
         });
         optsEl.appendChild(optCard);
       });
@@ -407,13 +401,41 @@ function updateSum() {
 }
 
 /* ── Category tabs ── */
+function switchCat(cat) {
+  document.querySelectorAll('.cat-tab').forEach(function(t){ t.classList.toggle('on', t.dataset.cat===cat); });
+  document.querySelectorAll('.cat-pane').forEach(function(p){ p.classList.toggle('on', p.dataset.cat===cat); });
+}
 document.getElementById('cat-tabs').addEventListener('click', function(e) {
   var btn = e.target.closest('.cat-tab'); if (!btn) return;
   haptic('impact','light');
-  var cat = btn.dataset.cat;
-  document.querySelectorAll('.cat-tab').forEach(function(t){ t.classList.toggle('on', t.dataset.cat===cat); });
-  document.querySelectorAll('.cat-pane').forEach(function(p){ p.classList.toggle('on', p.dataset.cat===cat); });
+  switchCat(btn.dataset.cat);
 });
+
+/* ── Scroll after slot pick ── */
+function advanceAfterPick(slotEl, catId) {
+  var nextSlot = slotEl.nextElementSibling;
+  var tabsH = (document.getElementById('cat-tabs') || {}).offsetHeight || 48;
+  function smoothScroll(el) {
+    var y = el.getBoundingClientRect().top +
+      (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop) - tabsH - 10;
+    window.scrollTo({top: y, behavior: 'smooth'});
+  }
+  if (nextSlot) { smoothScroll(nextSlot); return; }
+  // Last slot in category — switch to next category
+  var order = ['furniture', 'lighting', 'materials'];
+  var ni = order.indexOf(catId) + 1;
+  if (ni < order.length) {
+    switchCat(order[ni]);
+    setTimeout(function() {
+      var first = document.querySelector('#pane-' + order[ni] + ' > div:first-child');
+      if (first) smoothScroll(first);
+    }, 50);
+  } else {
+    // All done — scroll to generate button
+    var cta = document.getElementById('sec-cta');
+    if (cta) cta.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+}
 
 /* ── Progress chip: jump to first incomplete ── */
 document.getElementById('prog').addEventListener('click', function() {
