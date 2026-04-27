@@ -398,6 +398,13 @@ function renderSetup() {
             S.setup[cat.id][slotId] = v; save();
             optsEl.querySelectorAll('.opt').forEach(function(c,ci){ c.classList.toggle('on', ci===vi); });
             updateProg(); updateSum();
+            var next = slotEl.nextElementSibling;
+            var target = next || document.getElementById('prog');
+            if (target) {
+              var tabsH = (document.getElementById('cat-tabs') || {}).offsetHeight || 48;
+              var top = target.getBoundingClientRect().top + window.pageYOffset - tabsH - 10;
+              window.scrollTo({top: top, behavior: 'smooth'});
+            }
           });
           optsEl.appendChild(optCard);
         });
