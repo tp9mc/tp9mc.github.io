@@ -1,10 +1,9 @@
 """
-Generates 582 interior-constructor assets via SD WebUI (Juggernaut XL v9).
+Generates 663 interior-constructor assets via SD WebUI (Juggernaut XL v9).
 
   3  style previews   1152×640 → 720×400  WebP
  12  room previews    1152×512 → 720×320  WebP
-486  pair-picker icons 1024×1024 → 400×400 WebP
- 81  kit-toggle icons  1024×1024 → 400×400 WebP
+648  pair-picker icons 1024×1024 → 400×400 WebP  (4 rooms × 3 styles)
 
 Euler / Simple / CFG 8 / 20 steps. Skips existing files.
 """
@@ -44,8 +43,46 @@ STYLE_PREVIEW_PROMPTS = {
     'modern_classic': 'modern classic living room interior, marble floors, tufted velvet sofa, brass chandelier, grand symmetrical space, professional interior photography, luxurious',
     'scandi':         'scandinavian minimalist living room interior, light oak floor, white walls, cozy wool throws, natural daylight, professional interior photography, hygge',
 }
-DEFAULT_NEG = 'people, person, ugly, deformed, noisy, blurry, low resolution, flat lighting, text, watermark, logo, background clutter'
-SCENE_NEG   = 'people, person, ugly, blurry, low quality, text, watermark, oversaturated, dark'
+DEFAULT_NEG  = 'people, person, ugly, deformed, noisy, blurry, low resolution, flat lighting, text, watermark, logo, background clutter'
+KITCHEN_NEG  = 'background, room environment, floor, floor tiles, people, person, ugly, deformed, noisy, blurry, low resolution, flat lighting, text, watermark, logo'
+SCENE_NEG    = 'people, person, ugly, blurry, low quality, text, watermark, oversaturated, dark'
+
+# Alt variants for kitchen slots (same 9 slots, different design direction)
+KITCHEN_ALTS = {
+    'furniture': [
+        'minimalist 3D render of a kitchen island, dark smoked oak base, thick white quartz countertop, built-in cooktop, integrated drawers, isolated on pure white background, soft studio lighting, high quality',
+        'minimalist 3D render of a bar stool, matte black steel frame, round solid oak seat, footrest ring, isolated on pure white background, soft studio lighting, high quality',
+        'minimalist 3D render of a round dining table, white lacquer top, tapered wooden legs, isolated on pure white background, soft studio lighting, high quality',
+        'minimalist 3D render of a wall-mounted kitchen cabinet, frosted glass door fronts, white matte frame, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of a tall kitchen pantry cabinet, smooth matte white fronts, push-to-open, thin shadow gap, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of a two-tier kitchen rolling cart, stainless steel frame, solid wood top shelf, wire bottom shelf, swivel casters, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of an undermount single-basin stainless steel kitchen sink, brushed finish, seamless countertop edge, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of a single-lever kitchen faucet, brushed nickel, high arc spout, pull-down spray, isolated on pure white background, soft studio lighting, product photography',
+        'minimalist 3D render of a rectangular white marble cutting board, grey veining, isolated on pure white background, soft studio lighting, product photography',
+    ],
+    'lighting': [
+        'minimalist 3D render of an industrial matte black metal pendant lamp, exposed bulb, over kitchen island, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of under-cabinet LED strip lighting bar, slim aluminum profile, warm white glow, isolated on pure white background, product photography',
+        'minimalist 3D render of flush-mount recessed ceiling spotlights, white trim ring, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of a matte black adjustable ceiling spotlight, GU10 lamp, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of a magnetic LED track system, slim rail with three adjustable spots, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of a minimalist gooseneck wall-mounted lamp, matte white, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of a square flush LED ceiling panel, warm white, matte white frame, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of a capacitive touch smart light switch, minimalist white glass panel, isolated on pure white background, product photography',
+        'minimalist 3D render of a recessed LED plinth light strip, floor-level, soft warm glow line, isolated on pure white background, soft studio lighting',
+    ],
+    'materials': [
+        'minimalist 3D render of a kitchen backsplash tile swatch, white zellige ceramic handmade tiles, irregular texture, isolated on pure white background, product photography',
+        'minimalist 3D render of a kitchen countertop slab, polished Calacatta marble, gold grey veining, isolated on pure white background, product photography',
+        'minimalist 3D render of kitchen cabinet door fronts, flat matte sage green lacquer, isolated on pure white background, product photography',
+        'minimalist 3D render of folded kitchen textiles, cotton waffle-weave dish towels, muted clay color, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of ceramic dinnerware, matte white plates and bowls stacked, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of kitchen counter decor, small terracotta herb pot with rosemary and wooden spoon, isolated on pure white background, soft studio lighting',
+        'minimalist 3D render of modern kitchen cabinet bar handles, brushed brass, set of three, isolated on pure white background, product photography',
+        'minimalist 3D render of kitchen floor tile swatch, large format matte concrete-look porcelain, isolated on pure white background, product photography',
+        'minimalist 3D render of a linen roller blind, light-filtering, natural ecru, isolated on pure white background, soft studio lighting',
+    ],
+}
 
 
 def seed_for(key: str) -> int:
@@ -117,7 +154,7 @@ def build_tasks(catalog):
                 'seed': seed_for(f'room_{s}_{r}'),
             })
 
-    # Pair-picker icons (living / bedroom / bathroom)
+    # Pair-picker icons — all 4 rooms (living / bedroom / bathroom / kitchen)
     for s in STYLES:
         for room in ['living', 'bedroom', 'bathroom']:
             for cat_id, prefix in CATS:
@@ -139,26 +176,31 @@ def build_tasks(catalog):
                             'seed': seed_for(f'icon_{s}_{room}_{cat_id}_{slot}_{variant}'),
                         })
 
-    # Kit-toggle icons (kitchen)
-    for s in STYLES:
+        # Kitchen pair-picker icons
         for cat_id, prefix in CATS:
             for slot in range(1, 10):
-                key = str(slot)
-                item = catalog[s]['kitchen'][cat_id].get(key, {})
-                if not item:
-                    continue
-                fname = f'{STYLE_FNAME[s]}__kitchen__{cat_id}__{prefix}_{slot}.webp'
-                path = os.path.join(ASSETS, 'icons', 'kit_toggle', fname)
-                neg = item.get('negative') or DEFAULT_NEG
-                tasks.append({
-                    'desc': f'icon/kt/{s}/kitchen/{cat_id}/{prefix}_{slot}',
-                    'prompt': item['positive'],
-                    'neg': neg,
-                    'gen_w': 1024, 'gen_h': 1024,
-                    'out_w': 400,  'out_h': 400,
-                    'path': path,
-                    'seed': seed_for(f'icon_{s}_kitchen_{cat_id}_{slot}'),
-                })
+                # main — from catalog
+                item = catalog[s]['kitchen'][cat_id].get(str(slot), {})
+                main_prompt = item.get('positive', '') if item else ''
+                main_neg    = item.get('negative') or KITCHEN_NEG
+                # alt — from KITCHEN_ALTS
+                cat_idx = [c[0] for c in CATS].index(cat_id)
+                alt_prompt = KITCHEN_ALTS[cat_id][slot - 1]
+                for variant, prompt, neg in [('main', main_prompt, main_neg),
+                                             ('alt',  alt_prompt,  KITCHEN_NEG)]:
+                    if not prompt:
+                        continue
+                    fname = f'{STYLE_FNAME[s]}__kitchen__{cat_id}__{prefix}_{slot}__{variant}.webp'
+                    path  = os.path.join(ASSETS, 'icons', 'pair_picker', fname)
+                    tasks.append({
+                        'desc':  f'icon/pp/{s}/kitchen/{cat_id}/{prefix}_{slot}/{variant}',
+                        'prompt': prompt,
+                        'neg':   neg,
+                        'gen_w': 1024, 'gen_h': 1024,
+                        'out_w': 400,  'out_h': 400,
+                        'path':  path,
+                        'seed':  seed_for(f'icon_{s}_kitchen_{cat_id}_{slot}_{variant}'),
+                    })
 
     return tasks
 
