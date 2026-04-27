@@ -89,8 +89,30 @@ def seed_for(key: str) -> int:
     return int(hashlib.md5(key.encode()).hexdigest()[:8], 16)
 
 
+def write_companion(path, prompt, neg, gen_w, gen_h, out_w, out_h, seed):
+    txt_path = os.path.splitext(path)[0] + '.txt'
+    if os.path.exists(txt_path):
+        return
+    content = (
+        f"Model:     Juggernaut XL v9 (juggernautXL_v9Rdphoto2Lightning.safetensors)\n"
+        f"Sampler:   Euler\n"
+        f"Scheduler: Simple\n"
+        f"Steps:     20\n"
+        f"CFG Scale: 8\n"
+        f"Seed:      {seed}\n"
+        f"Gen size:  {gen_w}x{gen_h}\n"
+        f"Out size:  {out_w}x{out_h} WebP q85\n"
+        f"File:      {os.path.basename(path)}\n"
+        f"\nPrompt:\n{prompt}\n"
+        f"\nNegative:\n{neg}\n"
+    )
+    with open(txt_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+
+
 def generate(prompt, neg, gen_w, gen_h, out_w, out_h, path, seed):
     if os.path.exists(path) and os.path.getsize(path) > 500:
+        write_companion(path, prompt, neg, gen_w, gen_h, out_w, out_h, seed)
         return 'skip'
     payload = {
         'prompt': prompt,
@@ -113,6 +135,7 @@ def generate(prompt, neg, gen_w, gen_h, out_w, out_h, path, seed):
             img = Image.open(BytesIO(img_data)).convert('RGB').resize((out_w, out_h), Image.LANCZOS)
             os.makedirs(os.path.dirname(path), exist_ok=True)
             img.save(path, 'WEBP', quality=85, method=4)
+            write_companion(path, prompt, neg, gen_w, gen_h, out_w, out_h, seed)
             return f'{os.path.getsize(path) // 1024}KB'
         except Exception as e:
             if attempt < 3:
