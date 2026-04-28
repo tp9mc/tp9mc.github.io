@@ -153,10 +153,15 @@ def build_prompt_and_report(style, room, setup, catalog):
             selections.append((cat_id, n, variant, name_ru, phrase))
             if phrase:
                 scene_parts.append(phrase)
-            # Collect item-level negative prompt (English only)
-            item_neg = item.get('negative', '')
-            if item_neg and not re.search(r'[а-яёА-ЯЁ]', item_neg):
-                neg_parts.append(item_neg.strip())
+            # Collect item-level negative prompt — strip prefix label, filter per-term
+            item_neg = item.get('negative') or ''
+            if item_neg:
+                item_neg = re.sub(r'^[Nn]egative\s*[Pp]rompt\s*\)?\s*:?\s*', '', item_neg)
+                item_neg = re.sub(r'^[Nn]egative\s*:?\s*', '', item_neg)
+                clean_terms = [t.strip() for t in item_neg.split(',')
+                               if t.strip() and not re.search(r'[а-яёА-ЯЁ]', t)]
+                if clean_terms:
+                    neg_parts.append(', '.join(clean_terms))
 
     scene_parts += [
         'professional interior photography', 'natural daylight',
