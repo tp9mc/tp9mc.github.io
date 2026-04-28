@@ -473,6 +473,12 @@ def main():
         buf.name = f'stats_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
         bot.send_document(message.chat.id, buf, caption='📊 Статистика бота')
 
+    bot.set_my_commands([
+        telebot.types.BotCommand('/start',   '👋 Приветствие и кнопка открытия'),
+        telebot.types.BotCommand('/restart', '🔄 Перезапустить бота'),
+        telebot.types.BotCommand('/stats',   '📊 Статистика пользователей'),
+    ])
+
     print('Bot started, polling…')
     bot.infinity_polling(timeout=30, long_polling_timeout=20)
 
