@@ -105,32 +105,38 @@ body::-webkit-scrollbar{display:none}
 
 @media(max-height:600px){.sec-h1{font-size:22px}.style-card__img{height:110px}}
 @media(max-width:320px){.slot-opts{gap:6px}.sec-h1{font-size:22px}}
+
+/* edit mode */
+.edit-dot{position:fixed;top:max(env(safe-area-inset-top,0px),10px);right:14px;width:8px;height:8px;border-radius:50%;background:#C8C3BB;z-index:200;cursor:pointer;transition:background 200ms,transform 200ms}
+.edit-dot.on{background:var(--acc);transform:scale(1.6)}
+body.editing [data-eid]{outline:1.5px dashed rgba(26,26,26,.22);border-radius:3px;cursor:text;min-width:8px}
+body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,26,26,.04);border-radius:3px}
 </style>
 </head>
 <body>
-
+<div id="edit-dot" class="edit-dot"></div>
 
 <section class="sec" id="sec-style">
   <div class="sec-head">
-    <div class="sec-h1">Стиль интерьера</div>
-    <div class="sec-sub">Выберите эстетику, которая вам близка</div>
+    <div class="sec-h1" data-eid="h-style">Стиль интерьера</div>
+    <div class="sec-sub" data-eid="sub-style">Выберите эстетику, которая вам близка</div>
   </div>
   <div class="cards" id="style-cards"></div>
 </section>
 
 <section class="sec" id="sec-room">
   <div class="sec-head">
-    <div class="sec-h1">Комната</div>
-    <div class="sec-sub">Выберите пространство для работы</div>
+    <div class="sec-h1" data-eid="h-room">Комната</div>
+    <div class="sec-sub" data-eid="sub-room">Выберите пространство для работы</div>
   </div>
   <div class="cards" id="room-cards"></div>
 </section>
 
 <section id="sec-setup">
   <div class="cat-tabs" id="cat-tabs">
-    <button class="cat-tab on" type="button" data-cat="furniture">Мебель</button>
-    <button class="cat-tab"    type="button" data-cat="lighting">Освещение</button>
-    <button class="cat-tab"    type="button" data-cat="materials">Материалы</button>
+    <button class="cat-tab on" type="button" data-cat="furniture" data-eid="tab-furniture">Мебель</button>
+    <button class="cat-tab"    type="button" data-cat="lighting"  data-eid="tab-lighting">Освещение</button>
+    <button class="cat-tab"    type="button" data-cat="materials" data-eid="tab-materials">Материалы</button>
   </div>
   <div class="cat-pane on" id="pane-furniture" data-cat="furniture"></div>
   <div class="cat-pane"    id="pane-lighting"  data-cat="lighting"></div>
@@ -140,8 +146,8 @@ body::-webkit-scrollbar{display:none}
 
 <div id="sec-cta">
   <div class="cta-sum" id="cta-sum"></div>
-  <button class="btn-s" id="btn-back" type="button">Изменить выбор</button>
-  <button class="btn-p" id="btn-gen"  type="button">Создать интерьер</button>
+  <button class="btn-s" id="btn-back" type="button"><span data-eid="btn-back">Изменить выбор</span></button>
+  <button class="btn-p" id="btn-gen"  type="button"><span data-eid="btn-gen">Создать интерьер</span></button>
 </div>
 
 <script>
@@ -389,6 +395,8 @@ function renderStyles() {
       '<div class="style-card__desc">' + s.desc + '</div></div>' +
       '<div class="chk">' + CHK + '</div>';
     d.appendChild(row);
+    row.querySelector('.style-card__name').dataset.eid = 'style-' + s.id + '-name';
+    row.querySelector('.style-card__desc').dataset.eid = 'style-' + s.id + '-desc';
     d.addEventListener('click', function() {
       haptic('impact','medium');
       S.style = s.id; save();
@@ -397,6 +405,7 @@ function renderStyles() {
     });
     wrap.appendChild(d);
   });
+  applyEdits();
 }
 
 /* ── Render rooms ── */
@@ -413,6 +422,7 @@ function renderRooms() {
       (r.caption ? '<div class="room-card__cap">' + r.caption + '</div>' : '');
     var chk = document.createElement('div');
     chk.className = 'chk'; chk.style.marginRight = '14px'; chk.innerHTML = CHK;
+    info.querySelector('.room-card__name').dataset.eid = 'room-' + r.id + '-name';
     d.appendChild(info); d.appendChild(chk);
     d.addEventListener('click', function() {
       haptic('impact','medium');
@@ -425,6 +435,7 @@ function renderRooms() {
     });
     wrap.appendChild(d);
   });
+  applyEdits();
 }
 
 /* ── Render setup ── */
@@ -441,6 +452,7 @@ function renderSetup() {
       var slotEl = document.createElement('div');
       var lblEl = document.createElement('div');
       lblEl.className = 'slot-lbl'; lblEl.textContent = lbl;
+      lblEl.dataset.eid = 'lbl-' + (S.style||'j') + '-' + (S.room||'l') + '-' + cat.id + '-' + idx;
       slotEl.appendChild(lblEl);
       var optsEl = document.createElement('div');
       optsEl.className = 'slot-opts';
@@ -454,6 +466,7 @@ function renderSetup() {
         var _styleOpts = ROOM_OPTS[S.style] || ROOM_OPTS.japandi;
         var roomOpts = (_styleOpts[S.room] || _styleOpts.living || {})[cat.id];
         lbl2.textContent = (roomOpts && roomOpts[idx] || [])[vi] || (v === 'main' ? 'A' : 'Б');
+        lbl2.dataset.eid = 'opt-' + (S.style||'j') + '-' + (S.room||'l') + '-' + cat.id + '-' + idx + '-' + v;
         optCard.appendChild(lbl2);
         optCard.addEventListener('click', function() {
           haptic('impact','light');
@@ -470,6 +483,7 @@ function renderSetup() {
     });
   });
   updateProg(); updateSum();
+  applyEdits();
 }
 
 /* ── Progress ── */
@@ -589,6 +603,45 @@ if (tg && tg.BackButton) {
 if (tg && tg.MainButton) {
   tg.MainButton.setParams({text:'Создать интерьер', color:'#1C1917', text_color:'#FFFFFF'});
 }
+
+/* ── Edit mode ── */
+var EDITS = {};
+try { EDITS = JSON.parse(localStorage.getItem('ie_edits') || '{}'); } catch(e) {}
+var _editOn = false;
+
+function applyEdits() {
+  document.querySelectorAll('[data-eid]').forEach(function(el) {
+    var v = EDITS[el.dataset.eid];
+    if (v !== undefined) el.textContent = v;
+  });
+  if (_editOn) _attachEditable();
+}
+
+function _attachEditable() {
+  document.querySelectorAll('[data-eid]').forEach(function(el) {
+    el.contentEditable = 'true';
+    el.oninput = function(e) {
+      e.stopPropagation();
+      EDITS[el.dataset.eid] = el.textContent;
+      try { localStorage.setItem('ie_edits', JSON.stringify(EDITS)); } catch(e2) {}
+    };
+    el.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } };
+  });
+}
+
+function _detachEditable() {
+  document.querySelectorAll('[data-eid]').forEach(function(el) {
+    el.contentEditable = 'false';
+    el.oninput = null; el.onkeydown = null;
+  });
+}
+
+document.getElementById('edit-dot').addEventListener('click', function() {
+  _editOn = !_editOn;
+  this.classList.toggle('on', _editOn);
+  document.body.classList.toggle('editing', _editOn);
+  if (_editOn) _attachEditable(); else _detachEditable();
+});
 
 /* ── Init ── */
 renderStyles();
