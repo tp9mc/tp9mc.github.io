@@ -148,12 +148,20 @@ def _start_tunnel(notify_chat_id: int | None = None, bot_ref=None):
                 print(f'[tunnel] {_tunnel_url}')
                 if notify_chat_id and bot_ref:
                     try:
+                        markup = telebot.types.InlineKeyboardMarkup([[
+                            telebot.types.InlineKeyboardButton(
+                                '🏠 Открыть редактор',
+                                web_app=telebot.types.WebAppInfo(
+                                    url=f'https://tp9mc.github.io?proxy={_tunnel_url}'
+                                ),
+                            )
+                        ]])
                         bot_ref.send_message(
                             notify_chat_id,
-                            f'🌐 Прокси-сервер запущен:\n`{_tunnel_url}`\n\n'
-                            'Открой редактор → точка → любая картинка → '
-                            'введи этот URL при первой генерации с другого устройства.',
+                            f'🌐 Прокси запущен: `{_tunnel_url}`\n\n'
+                            'Нажми кнопку — Mini App откроется и запомнит прокси автоматически.',
                             parse_mode='Markdown',
+                            reply_markup=markup,
                         )
                     except Exception:
                         pass

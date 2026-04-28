@@ -203,6 +203,14 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
 </div>
 
 <script>
+/* ── Proxy URL from ?proxy= param (set by bot on tunnel start) ── */
+(function() {
+  try {
+    var p = new URLSearchParams(window.location.search).get('proxy');
+    if (p) localStorage.setItem('gen_proxy_url', p.replace(/\/$/, ''));
+  } catch(e) {}
+})();
+
 /* ── Telegram ── */
 var tg = (window.Telegram || {}).WebApp || null;
 
@@ -910,15 +918,8 @@ document.getElementById('iem-gen').addEventListener('click', function() {
   }
 
   _doFetch(_getProxyUrl()).catch(function(err) {
-    // localhost failed — ask for tunnel URL once
     if (_getProxyUrl() === GEN_PROXY_DEFAULT) {
-      var url = window.prompt(
-        'Бот недоступен на localhost.\nВведи публичный URL прокси из Telegram (бот отправил его при старте):',
-      );
-      if (!url || !url.trim()) throw err;
-      url = url.trim().replace(/\/$/, '');
-      localStorage.setItem('gen_proxy_url', url);
-      return _doFetch(url);
+      throw new Error('Бот недоступен. Открой Mini App по кнопке из сообщения бота — URL прокси сохранится автоматически.');
     }
     throw err;
   }).then(function(blob) {
