@@ -334,7 +334,7 @@ def main():
             daemon=True,
         ).start()
 
-    @bot.message_handler(commands=['start'])
+    @bot.message_handler(commands=['start', 'restart'])
     def on_start(message):
         bot.send_message(
             message.chat.id,
