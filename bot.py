@@ -175,16 +175,12 @@ SLOT_OPTS = {
 NEG = ('people, person, human figure, ugly, deformed, noisy, blurry, low resolution, '
        'oversaturated, flat lighting, text, watermark, logo, clutter, dark')
 
-def main_keyboard():
+def app_keyboard():
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(telebot.types.KeyboardButton(
         text='🏠 Открыть конструктор',
         web_app=telebot.types.WebAppInfo(url='https://tp9mc.github.io'),
     ))
-    markup.row(
-        telebot.types.KeyboardButton(text='🔄 Перезапустить'),
-        telebot.types.KeyboardButton(text='📊 Статистика'),
-    )
     return markup
 
 
@@ -347,7 +343,7 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot, username: s
         f'🏠 Генерирую *{STYLE_RU[style]}* · *{ROOM_RU[room]}*\n'
         f'Это займёт 1–3 минуты, буду присылать обновления.',
         parse_mode='Markdown',
-        reply_markup=main_keyboard(),
+        reply_markup=telebot.types.ReplyKeyboardRemove(),
     )
 
     stop_event = threading.Event()
@@ -438,33 +434,34 @@ def main():
         except Exception:
             bot.send_message(message.chat.id, '❌ Не удалось разобрать данные из Mini App.')
             return
-        threading.Thread(
-            target=generate_room,
-            args=(message.chat.id, payload, bot, un),
-            daemon=True,
-        ).start()
 
-    APP_URL = 'https://tp9mc.github.io'
+        action = payload.get('action')
+
+        if action == 'stats':
+            on_stats(message)
+        elif action == 'restart':
+            on_start(message)
+        else:
+            threading.Thread(
+                target=generate_room,
+                args=(message.chat.id, payload, bot, un),
+                daemon=True,
+            ).start()
+
+    APP_URL  = 'https://tp9mc.github.io'
+    MENU_URL = 'https://tp9mc.github.io/menu.html'
 
     def set_menu_button(chat_id):
         try:
             bot.set_chat_menu_button(
                 chat_id=chat_id,
                 menu_button=telebot.types.MenuButtonWebApp(
-                    text='🏠 Конструктор',
-                    web_app=telebot.types.WebAppInfo(url=APP_URL),
+                    text='Меню',
+                    web_app=telebot.types.WebAppInfo(url=MENU_URL),
                 ),
             )
         except Exception:
-            pass  # older clients may not support it
-
-    @bot.message_handler(func=lambda m: m.text == '🔄 Перезапустить')
-    def on_btn_restart(message):
-        on_start(message)
-
-    @bot.message_handler(func=lambda m: m.text == '📊 Статистика')
-    def on_btn_stats(message):
-        on_stats(message)
+            pass
 
     @bot.message_handler(commands=['start', 'restart'])
     def on_start(message):
@@ -472,9 +469,8 @@ def main():
         set_menu_button(message.chat.id)
         bot.send_message(
             message.chat.id,
-            '👋 Привет! Выбери стиль и комнату, нажми «Сгенерировать» — '
-            'я создам рендер и пришлю сюда.',
-            reply_markup=main_keyboard(),
+            '👋 Привет! Открой меню кнопкой слева от поля ввода.',
+            reply_markup=telebot.types.ReplyKeyboardRemove(),
         )
 
     @bot.message_handler(commands=['stats'])
@@ -486,9 +482,9 @@ def main():
         bot.send_document(message.chat.id, buf, caption='📊 Статистика бота')
 
     bot.set_my_commands([
-        telebot.types.BotCommand('/start',   '👋 Приветствие и кнопка открытия'),
-        telebot.types.BotCommand('/restart', '🔄 Перезапустить бота'),
+        telebot.types.BotCommand('/start',   '🏠 Открыть меню'),
         telebot.types.BotCommand('/stats',   '📊 Статистика пользователей'),
+        telebot.types.BotCommand('/restart', '🔄 Перезапустить бота'),
     ])
 
     print('Bot started, polling…')

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Меню</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:#FFFFFF;--sf1:#FAFAF7;--sf2:#F2EFEA;
+  --acc:#1A1A1A;--br:#EBE8E2;--ts:#6B6B6B;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--acc);-webkit-font-smoothing:antialiased}
+.wrap{
+  min-height:100dvh;
+  padding:max(env(safe-area-inset-top,0px),36px) 20px calc(max(env(safe-area-inset-bottom,0px),24px) + 24px);
+  display:flex;flex-direction:column;gap:12px;
+}
+.title{font-size:26px;font-weight:700;letter-spacing:-.4px;margin-bottom:8px}
+.card{
+  background:var(--sf1);border:1.5px solid var(--br);border-radius:20px;
+  padding:20px 20px;display:flex;align-items:center;gap:16px;
+  cursor:pointer;transition:transform 120ms cubic-bezier(.2,0,0,1),background 180ms;
+  -webkit-appearance:none;width:100%;font-family:inherit;text-align:left;
+}
+.card:active{transform:scale(.97);background:var(--sf2)}
+.card__ico{font-size:32px;line-height:1;flex-shrink:0;width:44px;text-align:center}
+.card__text{}
+.card__name{font-size:17px;font-weight:600;line-height:1.2}
+.card__desc{font-size:13px;color:var(--ts);margin-top:3px;line-height:1.35}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">Меню</div>
+
+  <button class="card" id="btn-constructor">
+    <div class="card__ico">🏠</div>
+    <div class="card__text">
+      <div class="card__name">Конструктор интерьера</div>
+      <div class="card__desc">Выбери стиль, комнату и получи рендер</div>
+    </div>
+  </button>
+
+  <button class="card" id="btn-stats">
+    <div class="card__ico">📊</div>
+    <div class="card__text">
+      <div class="card__name">Статистика</div>
+      <div class="card__desc">Сводка по пользователям и генерациям</div>
+    </div>
+  </button>
+
+  <button class="card" id="btn-restart">
+    <div class="card__ico">🔄</div>
+    <div class="card__text">
+      <div class="card__name">Перезапустить</div>
+      <div class="card__desc">Сбросить состояние бота</div>
+    </div>
+  </button>
+</div>
+
+<script>
+var tg = (window.Telegram || {}).WebApp || null;
+if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#FFFFFF'); tg.setBackgroundColor('#FFFFFF'); }
+
+document.getElementById('btn-constructor').addEventListener('click', function() {
+  window.location.href = '/';
+});
+
+document.getElementById('btn-stats').addEventListener('click', function() {
+  if (tg) tg.sendData(JSON.stringify({action: 'stats'}));
+});
+
+document.getElementById('btn-restart').addEventListener('click', function() {
+  if (tg) tg.sendData(JSON.stringify({action: 'restart'}));
+});
+</script>
+</body>
+</html>
