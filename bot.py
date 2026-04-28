@@ -122,15 +122,18 @@ def get_item(catalog, style, room, cat_id, slot_num, variant):
 
 
 def item_phrase(item: dict) -> str:
-    """Short English-only keyword phrase for use in scene prompt."""
-    pos = item.get('positive', '')
+    """English-only keyword phrase from positive prompt for scene prompt."""
+    pos = item.get('positive') or ''
     if not pos:
         return ''
+    # Strip prefix labels
+    pos = re.sub(r'^[Pp]ositive\s*[Pp]rompt\s*\)?\s*:?\s*', '', pos)
+    pos = re.sub(r'^[Pp]ositive\s*:?\s*', '', pos)
     clean = strip_boilerplate(pos)
-    # Drop any segment that contains Cyrillic
+    # Filter per-term: drop any segment containing Cyrillic
     segs = [s.strip() for s in clean.split(',')
             if s.strip() and not re.search(r'[а-яёА-ЯЁ]', s)]
-    return ', '.join(segs[:2])[:100]
+    return ', '.join(segs[:3])[:120]
 
 
 def build_prompt_and_report(style, room, setup, catalog):
