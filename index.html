@@ -40,7 +40,7 @@ body::-webkit-scrollbar{display:none}
 .style-card{background:var(--sf1);border:1.5px solid var(--br);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms}
 .style-card:active{transform:scale(.97)}
 .style-card.sel{border-color:var(--acc);background:var(--acc-s)}
-.style-card__img{height:160px;width:100%;overflow:hidden;position:relative}
+.style-card__img{height:160px;width:100%;overflow:hidden;position:relative;background:var(--sf2)}
 .style-card__img img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
 .style-card__row{padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .style-card__name{font-size:17px;font-weight:600;margin-bottom:3px}
@@ -50,7 +50,7 @@ body::-webkit-scrollbar{display:none}
 .room-card{background:var(--sf1);border:1.5px solid var(--br);border-radius:18px;overflow:hidden;cursor:pointer;display:flex;align-items:center;transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms}
 .room-card:active{transform:scale(.97)}
 .room-card.sel{border-color:var(--acc);background:var(--acc-s)}
-.room-card__img{width:90px;height:82px;flex-shrink:0;overflow:hidden;position:relative}
+.room-card__img{width:90px;height:82px;flex-shrink:0;overflow:hidden;position:relative;background:var(--sf2)}
 .room-card__img img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
 .room-card__info{flex:1;padding:0 14px}
 .room-card__name{font-size:17px;font-weight:600}
@@ -61,7 +61,7 @@ body::-webkit-scrollbar{display:none}
 .kit-card:active{transform:scale(.98)}
 .kit-card.off{opacity:.45;filter:grayscale(.4)}
 .kit-card.off .kit-toggle{background:var(--state-off)}
-.kit-card__icon{width:80px;height:80px;flex-shrink:0;border-radius:10px;overflow:hidden;position:relative}
+.kit-card__icon{width:80px;height:80px;flex-shrink:0;border-radius:10px;overflow:hidden;position:relative;background:var(--sf2)}
 .kit-card__icon img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
 .kit-card__info{flex:1;min-width:0}
 .kit-card__name{font-size:14px;font-weight:600;line-height:1.3}
@@ -85,7 +85,7 @@ body::-webkit-scrollbar{display:none}
 .opt{background:var(--sf1);border:1.5px solid var(--br);border-radius:20px;padding:10px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms,box-shadow 200ms}
 .opt:active{transform:scale(.96)}
 .opt.on{border-color:var(--acc);background:var(--acc-s);box-shadow:0 2px 8px rgba(184,168,142,.14);transform:translateY(-2px)}
-.opt__icon{width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative}
+.opt__icon{width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;background:var(--sf2)}
 .opt__icon img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
 .opt__lbl{font-size:11px;font-weight:500;color:var(--ts);text-align:center;line-height:1.3}
 .opt.on .opt__lbl{color:var(--acc)}
@@ -311,7 +311,7 @@ function renderRooms() {
   ROOMS.forEach(function(r) {
     var d = document.createElement('div');
     d.className = 'room-card' + (S.room === r.id ? ' sel' : '');
-    d.appendChild(imgBox('room-card__img', S.style ? roomPreviewUrl(S.style, r.id) : null));
+    d.appendChild(imgBox('room-card__img', roomPreviewUrl(S.style || 'japandi', r.id)));
     var info = document.createElement('div');
     info.className = 'room-card__info';
     info.innerHTML = '<div class="room-card__name">' + r.name + '</div>' +
@@ -351,7 +351,7 @@ function renderSetup() {
       ['main','alt'].forEach(function(v, vi) {
         var optCard = document.createElement('div');
         optCard.className = 'opt' + (chosen === v ? ' on' : '');
-        var url = iconUrl(S.style, S.room, cat.id, slotId, v);
+        var url = iconUrl(S.style || 'japandi', S.room || 'living', cat.id, slotId, v);
         optCard.appendChild(imgBox('opt__icon', url));
         var lbl2 = document.createElement('div');
         lbl2.className = 'opt__lbl';
