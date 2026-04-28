@@ -335,7 +335,8 @@ function roomPreviewUrl(styleId, roomId) {
 function iconUrl(styleId, roomId, catId, slotId, variant) {
   if (!styleId || !roomId) return null;
   var sf = STYLE_FNAME[styleId];
-  return '/assets/items/' + sf + '/' + roomId + '/' + slotId + '__' + variant + '.webp';
+  var num = slotId.split('_')[1];
+  return '/assets/items/' + sf + '/' + roomId + '/' + catId + '/' + num + '__' + variant + '.webp';
 }
 
 /* ── State ── */
