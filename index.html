@@ -246,13 +246,12 @@ function iconUrl(styleId, roomId, catId, slotId, variant) {
 }
 
 /* ── State ── */
-function defaultSetup(roomId) {
-  var v = roomId === 'kitchen' ? 'on' : 'main';
+function defaultSetup() {
   var s = { furniture:{}, lighting:{}, materials:{} };
-  CATS.forEach(function(c) { for (var i=1;i<=9;i++) s[c.id][c.px+'_'+i]=v; });
+  CATS.forEach(function(c) { for (var i=1;i<=9;i++) s[c.id][c.px+'_'+i]=null; });
   return s;
 }
-var S = { style:null, room:null, setup: defaultSetup(null) };
+var S = { style:null, room:null, setup: defaultSetup() };
 (function() {
   try {
     var sv = JSON.parse(sessionStorage.getItem('int_state') || 'null');
@@ -323,7 +322,7 @@ function renderRooms() {
       haptic('impact','medium');
       var prevRoom = S.room;
       S.room = r.id;
-      if (prevRoom !== r.id) { S.setup = defaultSetup(r.id); }
+      if (prevRoom !== r.id) { S.setup = defaultSetup(); }
       save();
       renderRooms(); renderSetup();
       setTimeout(function() { scrollTo('sec-setup'); }, 250);
@@ -341,7 +340,7 @@ function renderSetup() {
     var labels = roomLabels[cat.id];
     labels.forEach(function(lbl, idx) {
       var slotId = cat.px + '_' + (idx + 1);
-      var chosen = S.setup[cat.id][slotId] || 'main';
+      var chosen = S.setup[cat.id][slotId];
       var slotEl = document.createElement('div');
       var lblEl = document.createElement('div');
       lblEl.className = 'slot-lbl'; lblEl.textContent = lbl;
@@ -360,10 +359,11 @@ function renderSetup() {
         optCard.appendChild(lbl2);
         optCard.addEventListener('click', function() {
           haptic('impact','light');
-          S.setup[cat.id][slotId] = v; save();
-          optsEl.querySelectorAll('.opt').forEach(function(c,ci){ c.classList.toggle('on', ci===vi); });
+          var newVal = S.setup[cat.id][slotId] === v ? null : v;
+          S.setup[cat.id][slotId] = newVal; save();
+          optsEl.querySelectorAll('.opt').forEach(function(c,ci){ c.classList.toggle('on', newVal !== null && ci === vi); });
           updateProg(); updateSum();
-          advanceAfterPick(slotEl, cat.id);
+          if (newVal !== null) advanceAfterPick(slotEl, cat.id);
         });
         optsEl.appendChild(optCard);
       });
@@ -377,18 +377,15 @@ function renderSetup() {
 /* ── Progress ── */
 function countPicked() {
   var n = 0;
-  var isKitchen = S.room === 'kitchen';
   CATS.forEach(function(c) {
-    Object.values(S.setup[c.id]).forEach(function(v) {
-      if (isKitchen ? v === 'on' : !!v) n++;
-    });
+    Object.values(S.setup[c.id]).forEach(function(v) { if (v) n++; });
   });
   return n;
 }
 function updateProg() {
   var n = countPicked();
   var el = document.getElementById('prog');
-  el.textContent = (S.room === 'kitchen' ? n + ' вкл' : n) + ' / 27';
+  el.textContent = n + ' / 27';
   el.className = 'prog' + (n === 27 ? ' done' : '');
 }
 function updateSum() {
