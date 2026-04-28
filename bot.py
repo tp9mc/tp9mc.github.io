@@ -10,7 +10,7 @@ from PIL import Image
 from datetime import datetime
 from collections import defaultdict
 
-from bot_secrets import BOT_TOKEN, HF_TOKEN  # not committed to git
+from bot_secrets import BOT_TOKEN, HF_TOKEN, OWNER_CHAT_ID  # not committed to git
 HF_URL        = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
 HF_TIMEOUT    = 120
 HF_COST_PER_IMAGE = 0.0017  # $1.40 / 802 requests (Apr 2026)
@@ -125,6 +125,44 @@ def _start_gen_proxy():
 
 
 threading.Thread(target=_start_gen_proxy, daemon=True).start()
+
+
+# ── Cloudflare quick tunnel (public HTTPS URL for the proxy) ──────────────
+_tunnel_url: str | None = None
+
+
+def _start_tunnel(notify_chat_id: int | None = None, bot_ref=None):
+    """Start cloudflared quick tunnel, parse URL, optionally notify via Telegram."""
+    global _tunnel_url
+    try:
+        proc = subprocess.Popen(
+            ['cloudflared', 'tunnel', '--url', f'http://localhost:{GEN_PROXY_PORT}',
+             '--no-autoupdate'],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True,
+        )
+        for line in proc.stdout:
+            m = re.search(r'https://[a-z0-9\-]+\.trycloudflare\.com', line)
+            if m:
+                _tunnel_url = m.group(0)
+                print(f'[tunnel] {_tunnel_url}')
+                if notify_chat_id and bot_ref:
+                    try:
+                        bot_ref.send_message(
+                            notify_chat_id,
+                            f'🌐 Прокси-сервер запущен:\n`{_tunnel_url}`\n\n'
+                            'Открой редактор → точка → любая картинка → '
+                            'введи этот URL при первой генерации с другого устройства.',
+                            parse_mode='Markdown',
+                        )
+                    except Exception:
+                        pass
+                break
+        proc.wait()
+    except FileNotFoundError:
+        print('[tunnel] cloudflared not found, skipping tunnel')
+    except Exception as e:
+        print(f'[tunnel] error: {e}')
 
 def log_event(user_id: int, username: str, action: str, details: dict = None):
     entry = {
@@ -650,6 +688,11 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot, username: s
 
 def main():
     bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
+
+    threading.Thread(
+        target=_start_tunnel, kwargs={'notify_chat_id': OWNER_CHAT_ID, 'bot_ref': bot},
+        daemon=True,
+    ).start()
 
     def uname(message):
         return message.from_user.username or message.from_user.first_name or str(message.chat.id)
