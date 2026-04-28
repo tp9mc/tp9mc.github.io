@@ -29,9 +29,6 @@ body::-webkit-scrollbar{display:none}
 .sec-sub{font-size:15px;color:var(--ts);line-height:1.47;margin-bottom:24px}
 .cards{display:flex;flex-direction:column;gap:10px}
 
-/* shimmer */
-@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-.shimmer{background:linear-gradient(90deg,var(--sf2) 25%,var(--sf1) 50%,var(--sf2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
 
 /* check */
 .chk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--br);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 200ms,border-color 200ms}
@@ -271,12 +268,10 @@ var CHK = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="
 
 function imgBox(className, src) {
   var wrap = document.createElement('div');
-  wrap.className = className + ' shimmer';
+  wrap.className = className;
   if (src) {
     var img = document.createElement('img');
-    img.src = src; img.loading = 'lazy'; img.decoding = 'async'; img.alt = '';
-    img.addEventListener('load',  function() { wrap.classList.remove('shimmer'); });
-    img.addEventListener('error', function() { wrap.classList.remove('shimmer'); });
+    img.src = src; img.loading = 'eager'; img.decoding = 'async'; img.alt = '';
     wrap.appendChild(img);
   }
   return wrap;
