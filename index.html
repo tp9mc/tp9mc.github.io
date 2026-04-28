@@ -109,7 +109,6 @@ body::-webkit-scrollbar{display:none}
 /* edit mode */
 .edit-dot{position:fixed;top:max(env(safe-area-inset-top,0px),10px);right:14px;width:8px;height:8px;border-radius:50%;background:#C8C3BB;z-index:200;cursor:pointer;transition:background 200ms,transform 200ms}
 .edit-dot.on{background:var(--acc);transform:scale(1.6)}
-.export-prompts-btn{position:fixed;top:max(env(safe-area-inset-top,0px),6px);right:28px;font-size:11px;font-weight:600;font-family:var(--font);color:var(--ts);background:rgba(255,255,255,.9);border:1px solid var(--br);border-radius:10px;padding:4px 8px;cursor:pointer;z-index:200;-webkit-appearance:none;backdrop-filter:blur(8px)}
 body.editing [data-eid]{outline:1.5px dashed rgba(26,26,26,.22);border-radius:3px;cursor:text;min-width:8px}
 body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,26,26,.04);border-radius:3px}
 /* img edit dot */
@@ -141,7 +140,6 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
 </head>
 <body>
 <div id="edit-dot" class="edit-dot"></div>
-<button id="export-prompts-btn" class="export-prompts-btn" style="display:none">↓ промты</button>
 
 <section class="sec" id="sec-style">
   <div class="sec-head">
@@ -734,7 +732,6 @@ document.getElementById('edit-dot').addEventListener('click', function() {
   _editOn = !_editOn;
   this.classList.toggle('on', _editOn);
   document.body.classList.toggle('editing', _editOn);
-  document.getElementById('export-prompts-btn').style.display = _editOn ? 'block' : 'none';
   if (_editOn) { _loadPrompts(function() { _attachEditable(); _attachImgDots(); }); }
   else          { _detachEditable(); _detachImgDots(); }
 });
@@ -840,24 +837,6 @@ function _downloadTxt(fname, content) {
   document.body.removeChild(a);
 }
 
-document.getElementById('export-prompts-btn').addEventListener('click', function() {
-  var out = {};
-  Object.keys(IMG_STORE).forEach(function(eid) {
-    var d = IMG_STORE[eid];
-    if (d && (d.prompt || d.neg)) {
-      out[eid] = { prompt: d.prompt || '', neg: d.neg || '' };
-    }
-  });
-  if (!Object.keys(out).length) { alert('Нет сохранённых промтов.'); return; }
-  var lines = ['# Сохранённые промты — ' + new Date().toISOString().slice(0,10), ''];
-  Object.keys(out).sort().forEach(function(eid) {
-    lines.push('## ' + eid);
-    lines.push('Промт: ' + out[eid].prompt);
-    if (out[eid].neg) lines.push('Негативный: ' + out[eid].neg);
-    lines.push('');
-  });
-  _downloadTxt('prompts_export.txt', lines.join('\n'));
-});
 
 document.getElementById('iem-reset').addEventListener('click', function() {
   if (!_iemTarget) return;
