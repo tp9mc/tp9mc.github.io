@@ -875,9 +875,28 @@ document.getElementById('img-edit-modal').addEventListener('click', function(e) 
   if (e.target === this) closeImgModal();
 });
 
+var HF_HOUR_LIMIT = 100;
+
+function _hfCheckLimit() {
+  var now = Date.now();
+  var hour = 60 * 60 * 1000;
+  var ts = [];
+  try { ts = JSON.parse(localStorage.getItem('hf_gen_ts') || '[]'); } catch(e) {}
+  ts = ts.filter(function(t) { return now - t < hour; });
+  if (ts.length >= HF_HOUR_LIMIT) {
+    var oldestExpiry = Math.ceil((hour - (now - ts[0])) / 60000);
+    alert('Лимит ' + HF_HOUR_LIMIT + ' HF-генераций/час достигнут.\nСледующая доступна через ~' + oldestExpiry + ' мин.');
+    return false;
+  }
+  ts.push(now);
+  try { localStorage.setItem('hf_gen_ts', JSON.stringify(ts)); } catch(e) {}
+  return true;
+}
+
 document.getElementById('iem-gen').addEventListener('click', function() {
   var prompt = document.getElementById('iem-prompt').value.trim();
   if (!prompt) { alert('Укажите промт для генерации'); return; }
+  if (!_hfCheckLimit()) return;
 
   var tok = localStorage.getItem('hf_tok');
   if (!tok) {
