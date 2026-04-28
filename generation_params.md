@@ -121,6 +121,6 @@ Endpoint: `https://router.huggingface.co/hf-inference/models/black-forest-labs/F
 |-----|--------|--------|------|
 | Style previews | 3 | 720×400 | assets/styles/ |
 | Room previews | 12 | 720×320 | assets/rooms/ |
-| Pair-picker icons (living/bedroom/bathroom) | ~540 | 400×400 | assets/items/ |
-| Pair-picker icons (kitchen) | ~108 | 400×400 | assets/items/ |
-| **Итого** | **~663** | | |
+| Pair-picker icons (living/bedroom/bathroom) | 486 (3×3×3×9×2) | 400×400 | assets/items/ |
+| Pair-picker icons (kitchen) | 162 (3×1×3×9×2) | 400×400 | assets/items/ |
+| **Итого** | **663** | | |
