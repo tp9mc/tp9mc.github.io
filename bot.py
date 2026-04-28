@@ -191,10 +191,16 @@ def main():
 
     @bot.message_handler(commands=['start'])
     def on_start(message):
+        markup = telebot.types.InlineKeyboardMarkup()
+        markup.add(telebot.types.InlineKeyboardButton(
+            text='🏠 Открыть конструктор',
+            web_app=telebot.types.WebAppInfo(url='https://tp9mc.github.io'),
+        ))
         bot.send_message(
             message.chat.id,
-            '👋 Привет! Открой конструктор интерьера, выбери стиль и комнату, '
-            'нажми «Сгенерировать» — я создам рендер и пришлю сюда.',
+            '👋 Привет! Выбери стиль и комнату, нажми «Сгенерировать» — '
+            'я создам рендер и пришлю сюда.',
+            reply_markup=markup,
         )
 
     print('Bot started, polling…')
