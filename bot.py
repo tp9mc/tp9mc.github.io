@@ -7,11 +7,106 @@ import json, re, threading, time, base64, requests, telebot
 from io import BytesIO
 from PIL import Image
 from datetime import datetime
+from collections import defaultdict
 
 from bot_secrets import BOT_TOKEN  # not committed to git
 SD_URL     = 'http://localhost:7860/sdapi/v1/txt2img'
 CATALOG    = '/tmp/catalog.json'
 SD_TIMEOUT = 600
+STATS_LOG  = '/tmp/bot_stats.jsonl'   # one JSON object per line, local only
+
+_log_lock = threading.Lock()
+
+def log_event(user_id: int, username: str, action: str, details: dict = None):
+    entry = {
+        'ts':       datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'user_id':  user_id,
+        'username': username or str(user_id),
+        'action':   action,
+    }
+    if details:
+        entry.update(details)
+    with _log_lock:
+        with open(STATS_LOG, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+
+
+def build_stats_report() -> str:
+    try:
+        with open(STATS_LOG, encoding='utf-8') as f:
+            events = [json.loads(l) for l in f if l.strip()]
+    except FileNotFoundError:
+        return 'Событий пока нет.'
+
+    users        = {}   # user_id → {username, actions}
+    style_count  = defaultdict(int)
+    room_count   = defaultdict(int)
+    gen_times    = []
+    gen_ok       = 0
+    gen_fail     = 0
+
+    for e in events:
+        uid  = e['user_id']
+        uname = e.get('username', str(uid))
+        if uid not in users:
+            users[uid] = {'username': uname, 'actions': defaultdict(int), 'first': e['ts']}
+        users[uid]['actions'][e['action']] += 1
+        users[uid]['last'] = e['ts']
+
+        if e['action'] == 'gen_ok':
+            gen_ok += 1
+            style_count[e.get('style', '?')] += 1
+            room_count[e.get('room', '?')]   += 1
+            if 'elapsed' in e:
+                gen_times.append(e['elapsed'])
+        elif e['action'] == 'gen_fail':
+            gen_fail += 1
+
+    W = 62
+    lines = []
+    lines += ['═' * W, '  СТАТИСТИКА БОТА', '═' * W, '']
+    lines.append(f'  Дата отчёта:   {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+    lines.append(f'  Всего событий: {len(events)}')
+    lines.append(f'  Уникальных пользователей: {len(users)}')
+    lines.append(f'  Генераций успешных: {gen_ok}')
+    lines.append(f'  Генераций с ошибкой: {gen_fail}')
+    if gen_times:
+        avg = sum(gen_times) / len(gen_times)
+        lines.append(f'  Среднее время генерации: {int(avg)//60}м {int(avg)%60:02d}с')
+    lines.append('')
+
+    if style_count:
+        lines += ['─' * W, '  СТИЛИ (по числу генераций)', '─' * W]
+        for s, n in sorted(style_count.items(), key=lambda x: -x[1]):
+            lines.append(f'  {STYLE_RU.get(s, s):<22} {n}')
+        lines.append('')
+
+    if room_count:
+        lines += ['─' * W, '  КОМНАТЫ (по числу генераций)', '─' * W]
+        for r, n in sorted(room_count.items(), key=lambda x: -x[1]):
+            lines.append(f'  {ROOM_RU.get(r, r):<22} {n}')
+        lines.append('')
+
+    lines += ['─' * W, '  ПОЛЬЗОВАТЕЛИ', '─' * W]
+    for uid, u in sorted(users.items(), key=lambda x: -sum(x[1]['actions'].values())):
+        acts = u['actions']
+        total_acts = sum(acts.values())
+        gens  = acts.get('gen_ok', 0)
+        lines.append(f'  @{u["username"]} (id {uid})')
+        lines.append(f'    Всего действий: {total_acts}  |  Генераций: {gens}')
+        lines.append(f'    Первое: {u["first"]}  |  Последнее: {u.get("last","")}')
+        details = ', '.join(f'{k}={v}' for k, v in sorted(acts.items()))
+        lines.append(f'    Действия: {details}')
+        lines.append('')
+
+    lines += ['─' * W, '  ПОЛНЫЙ ЛОГ СОБЫТИЙ', '─' * W]
+    for e in events:
+        detail = {k: v for k, v in e.items() if k not in ('ts', 'user_id', 'username', 'action')}
+        detail_str = ('  ' + ', '.join(f'{k}={v}' for k, v in detail.items())) if detail else ''
+        lines.append(f'  {e["ts"]}  @{e["username"]}  {e["action"]}{detail_str}')
+
+    lines += ['', '═' * W]
+    return '\n'.join(lines)
 
 STYLE_DNA = {
     'japandi':        'japandi interior design, warm oak wood, natural linen fabric, wabi-sabi minimalism, earth tones, zen atmosphere',
@@ -229,7 +324,7 @@ def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec)
     return '\n'.join(lines)
 
 
-def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot):
+def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot, username: str = ''):
     style = payload.get('style', '')
     room  = payload.get('room', '')
     setup = payload.get('setup', {})
@@ -237,6 +332,8 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot):
     if style not in STYLE_DNA or room not in ROOM_DNA:
         bot.send_message(chat_id, '❌ Неизвестный стиль или комната.')
         return
+
+    log_event(chat_id, username, 'gen_start', {'style': style, 'room': room})
 
     catalog    = load_catalog()
     prompt, neg, selections = build_prompt_and_report(style, room, setup, catalog)
@@ -297,6 +394,8 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot):
         img.save(img_buf, 'JPEG', quality=92)
         img_buf.seek(0)
 
+        log_event(chat_id, username, 'gen_ok', {'style': style, 'room': room, 'elapsed': elapsed, 'seed': seed})
+
         bot.send_photo(
             chat_id, img_buf,
             caption=f'✅ Готово за {elapsed // 60}м {elapsed % 60:02d}с\n'
@@ -312,17 +411,24 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot):
 
     except requests.Timeout:
         stop_event.set()
+        log_event(chat_id, username, 'gen_fail', {'reason': 'timeout'})
         bot.send_message(chat_id, '❌ SD WebUI не ответил за 10 минут — попробуй ещё раз.')
     except Exception as e:
         stop_event.set()
+        log_event(chat_id, username, 'gen_fail', {'reason': str(e)[:80]})
         bot.send_message(chat_id, f'❌ Ошибка: {str(e)[:200]}')
 
 
 def main():
     bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
 
+    def uname(message):
+        return message.from_user.username or message.from_user.first_name or str(message.chat.id)
+
     @bot.message_handler(content_types=['web_app_data'])
     def on_web_app_data(message):
+        un = uname(message)
+        log_event(message.chat.id, un, 'webapp_data')
         try:
             payload = json.loads(message.web_app_data.data)
         except Exception:
@@ -330,18 +436,27 @@ def main():
             return
         threading.Thread(
             target=generate_room,
-            args=(message.chat.id, payload, bot),
+            args=(message.chat.id, payload, bot, un),
             daemon=True,
         ).start()
 
     @bot.message_handler(commands=['start', 'restart'])
     def on_start(message):
+        log_event(message.chat.id, uname(message), message.text.split()[0].lstrip('/'))
         bot.send_message(
             message.chat.id,
             '👋 Привет! Выбери стиль и комнату, нажми «Сгенерировать» — '
             'я создам рендер и пришлю сюда.',
             reply_markup=main_keyboard(),
         )
+
+    @bot.message_handler(commands=['stats'])
+    def on_stats(message):
+        log_event(message.chat.id, uname(message), 'stats')
+        report = build_stats_report()
+        buf = BytesIO(report.encode('utf-8'))
+        buf.name = f'stats_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
+        bot.send_document(message.chat.id, buf, caption='📊 Статистика бота')
 
     print('Bot started, polling…')
     bot.infinity_polling(timeout=30, long_polling_timeout=20)
