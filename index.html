@@ -648,6 +648,29 @@ if (tg && tg.MainButton) {
   tg.MainButton.setParams({text:'Создать интерьер', color:'#1C1917', text_color:'#FFFFFF'});
 }
 
+/* ── Original generation prompts (for pre-fill in img modal) ── */
+var _SD = {
+  japandi:        'japandi style, warm oak wood, natural linen, zen minimalism, earth tones, wabi-sabi',
+  modern_classic: 'modern classic style, Carrara marble, deep velvet, polished brass, grand symmetry',
+  scandi:         'scandinavian style, light birch wood, crisp white walls, soft wool textiles, hygge',
+};
+var _RD = {
+  living:   'living room, comfortable seating, coffee table, ambient lighting',
+  bedroom:  'bedroom, bed with pillows, bedside tables, soft warm lighting',
+  bathroom: 'bathroom, clean white fixtures, natural stone, elegant vanity',
+  kitchen:  'kitchen, functional workspace, clean countertops, organized storage',
+};
+var ORIG_PROMPTS = {
+  'style-japandi':        'japandi living room interior, low oak coffee table, linen sofa, rice paper pendant lamp, zen atmosphere, natural light, professional interior photography, architectural digest',
+  'style-modern_classic': 'modern classic living room interior, marble floors, tufted velvet sofa, brass chandelier, grand symmetrical space, professional interior photography, luxurious',
+  'style-scandi':         'scandinavian minimalist living room interior, light oak floor, white walls, cozy wool throws, natural daylight, professional interior photography, hygge',
+};
+['japandi','modern_classic','scandi'].forEach(function(s) {
+  ['living','bedroom','bathroom','kitchen'].forEach(function(r) {
+    ORIG_PROMPTS['room-' + s + '-' + r] = _SD[s] + ', ' + _RD[r] + ', professional interior photography, natural light, high quality, wide angle';
+  });
+});
+
 /* ── Edit mode ── */
 var EDITS = {};
 try { EDITS = JSON.parse(localStorage.getItem('ie_edits') || '{}'); } catch(e) {}
@@ -730,13 +753,14 @@ var _iemPending = null;
 function openImgModal(wrap) {
   _iemTarget  = wrap;
   _iemPending = null;
-  var eid = wrap.dataset.imgEid;
+  var eid  = wrap.dataset.imgEid;
   var saved = IMG_STORE[eid] || {};
-  var img = wrap.querySelector('img');
-  document.getElementById('iem-preview').src = saved.url || (img && img.src) || '';
-  document.getElementById('iem-prompt').value  = saved.prompt || '';
-  document.getElementById('iem-neg').value     = saved.neg    || '';
-  document.getElementById('iem-file').value    = '';
+  var orig  = ORIG_PROMPTS[eid] || {};
+  var img   = wrap.querySelector('img');
+  document.getElementById('iem-preview').src    = saved.url || (img && img.src) || '';
+  document.getElementById('iem-prompt').value   = saved.prompt != null ? saved.prompt : (typeof orig === 'string' ? orig : (orig.prompt || ''));
+  document.getElementById('iem-neg').value      = saved.neg    != null ? saved.neg    : (orig.neg || '');
+  document.getElementById('iem-file').value     = '';
   document.getElementById('img-edit-modal').style.display = 'flex';
 }
 
