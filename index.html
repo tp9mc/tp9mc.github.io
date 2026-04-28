@@ -877,14 +877,6 @@ document.getElementById('iem-gen').addEventListener('click', function() {
   if (!prompt) { alert('Укажите промт для генерации'); return; }
   if (!_hfCheckLimit()) return;
 
-  var tok = localStorage.getItem('hf_tok');
-  if (!tok) {
-    tok = window.prompt('HuggingFace API Token\n(сохранится в браузере, не передаётся никуда):');
-    if (!tok || !tok.trim()) return;
-    tok = tok.trim();
-    localStorage.setItem('hf_tok', tok);
-  }
-
   var eid = _iemTarget && _iemTarget.dataset.imgEid || '';
   var isOpt = eid.startsWith('opt-');
   var w = isOpt ? 1024 : 1344, h = isOpt ? 1024 : 768;
@@ -900,13 +892,12 @@ document.getElementById('iem-gen').addEventListener('click', function() {
     overSub.textContent = 'FLUX.1-schnell · ' + s + ' с';
   }, 1000);
 
-  fetch('https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell', {
+  fetch('http://localhost:8765', {
     method: 'POST',
-    headers: {'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json'},
-    body: JSON.stringify({inputs: prompt, parameters: {width: w, height: h}})
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({prompt: prompt, width: w, height: h})
   }).then(function(r) {
-    if (r.status === 401) { localStorage.removeItem('hf_tok'); }
-    if (!r.ok) return r.text().then(function(t) { throw new Error(r.status + ': ' + t.slice(0, 120)); });
+    if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || ('HTTP ' + r.status)); });
     return r.blob();
   }).then(function(blob) {
     var reader = new FileReader();

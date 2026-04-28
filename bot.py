@@ -4,6 +4,7 @@ Receives web_app_data from Mini App, generates a room render via SD WebUI,
 sends status updates every 30s, delivers image + full report to user.
 """
 import json, re, threading, time, base64, requests, telebot, subprocess, signal, os
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from io import BytesIO
 from PIL import Image
 from datetime import datetime
@@ -71,6 +72,59 @@ def _idle_watchdog():
 
 
 threading.Thread(target=_idle_watchdog, daemon=True).start()
+
+
+# ── Local generation proxy (Mini App → bot → HF) ──────────────────────────
+GEN_PROXY_PORT = 8765
+
+class _GenHandler(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors(); self.end_headers()
+
+    def do_POST(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            body   = json.loads(self.rfile.read(length))
+            prompt = str(body.get('prompt', '')).strip()
+            w = min(int(body.get('width',  1024)), 1344)
+            h = min(int(body.get('height', 1024)), 1344)
+            if not prompt:
+                return self._respond(400, b'{"error":"no prompt"}', 'application/json')
+            r = requests.post(
+                HF_URL,
+                headers={'Authorization': f'Bearer {HF_TOKEN}'},
+                json={'inputs': prompt, 'parameters': {'width': w, 'height': h}},
+                timeout=HF_TIMEOUT,
+            )
+            if r.status_code != 200:
+                raise RuntimeError(f'HF {r.status_code}: {r.text[:80]}')
+            self._respond(200, r.content, 'image/jpeg')
+        except Exception as e:
+            self._respond(500, json.dumps({'error': str(e)[:120]}).encode(), 'application/json')
+
+    def _cors(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+
+    def _respond(self, code, body, ctype):
+        self.send_response(code)
+        self._cors()
+        self.send_header('Content-Type', ctype)
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass  # suppress HTTP access logs
+
+
+def _start_gen_proxy():
+    HTTPServer(('127.0.0.1', GEN_PROXY_PORT), _GenHandler).serve_forever()
+
+
+threading.Thread(target=_start_gen_proxy, daemon=True).start()
 
 def log_event(user_id: int, username: str, action: str, details: dict = None):
     entry = {
