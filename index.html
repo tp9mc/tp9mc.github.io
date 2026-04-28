@@ -111,6 +111,24 @@ body::-webkit-scrollbar{display:none}
 .edit-dot.on{background:var(--acc);transform:scale(1.6)}
 body.editing [data-eid]{outline:1.5px dashed rgba(26,26,26,.22);border-radius:3px;cursor:text;min-width:8px}
 body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,26,26,.04);border-radius:3px}
+/* img edit dot */
+.img-dot{position:absolute;top:7px;right:7px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.88);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(0,0,0,.08);cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 1px 5px rgba(0,0,0,.18);transition:transform 140ms}
+.img-dot:active{transform:scale(.88)}
+.img-dot.has-custom{background:var(--acc);color:#fff;border-color:var(--acc)}
+/* img edit modal */
+#img-edit-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:flex-end;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#iem-sheet{background:#fff;border-radius:24px 24px 0 0;padding:14px 18px calc(28px + env(safe-area-inset-bottom,0px));width:100%;display:flex;flex-direction:column;gap:10px;max-height:84vh;overflow-y:auto}
+#iem-handle{width:36px;height:4px;border-radius:2px;background:#E0DAD3;margin:0 auto 2px;flex-shrink:0}
+#iem-preview{width:100%;height:130px;object-fit:cover;border-radius:14px;background:var(--sf2);flex-shrink:0}
+#iem-upload-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;background:var(--sf1);border:1.5px dashed var(--br);border-radius:12px;font-size:14px;font-weight:500;color:var(--ts);cursor:pointer;font-family:var(--font);transition:border-color 150ms}
+#iem-upload-btn:active{border-color:var(--acc)}
+.iem-lbl{font-size:11px;font-weight:600;color:var(--ts);letter-spacing:.3px;text-transform:uppercase;margin-bottom:-4px}
+#iem-prompt,#iem-neg{border:1.5px solid var(--br);border-radius:12px;padding:10px 12px;font-size:13px;font-family:var(--font);color:var(--tp);background:var(--sf1);resize:none;min-height:68px;line-height:1.5;outline:none;transition:border-color 150ms}
+#iem-prompt:focus,#iem-neg:focus{border-color:var(--acc)}
+.iem-btns{display:flex;gap:8px;margin-top:2px}
+#iem-save{flex:1;background:var(--acc);color:#fff;font-size:15px;font-weight:600;font-family:var(--font);padding:15px;border-radius:14px;border:none;cursor:pointer;-webkit-appearance:none}
+#iem-cancel{flex:0 0 auto;background:transparent;color:var(--ts);font-size:14px;font-weight:500;font-family:var(--font);padding:15px 18px;border-radius:14px;border:1.5px solid var(--br);cursor:pointer;-webkit-appearance:none}
+#iem-reset{background:none;border:none;color:#B94040;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;padding:2px 0;text-align:left;align-self:flex-start}
 </style>
 </head>
 <body>
@@ -148,6 +166,26 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
   <div class="cta-sum" id="cta-sum"></div>
   <button class="btn-s" id="btn-back" type="button"><span data-eid="btn-back">Изменить выбор</span></button>
   <button class="btn-p" id="btn-gen"  type="button"><span data-eid="btn-gen">Создать интерьер</span></button>
+</div>
+
+<div id="img-edit-modal" style="display:none">
+  <div id="iem-sheet">
+    <div id="iem-handle"></div>
+    <img id="iem-preview" alt="">
+    <label id="iem-upload-btn">
+      ＋ Загрузить новую картинку
+      <input type="file" id="iem-file" accept="image/*" style="display:none">
+    </label>
+    <button id="iem-reset">Сбросить к оригиналу</button>
+    <div class="iem-lbl">Промт</div>
+    <textarea id="iem-prompt" placeholder="Промт для генерации..."></textarea>
+    <div class="iem-lbl">Негативный промт</div>
+    <textarea id="iem-neg" placeholder="Что исключить из картинки..."></textarea>
+    <div class="iem-btns">
+      <button id="iem-cancel">Отмена</button>
+      <button id="iem-save">Сохранить</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -387,7 +425,9 @@ function renderStyles() {
   STYLES.forEach(function(s) {
     var d = document.createElement('div');
     d.className = 'style-card' + (S.style === s.id ? ' sel' : '');
-    d.appendChild(imgBox('style-card__img', stylePreviewUrl(s.id)));
+    var _si = imgBox('style-card__img', stylePreviewUrl(s.id));
+    _si.dataset.imgEid = 'style-' + s.id;
+    d.appendChild(_si);
     var row = document.createElement('div');
     row.className = 'style-card__row';
     row.innerHTML =
@@ -415,7 +455,9 @@ function renderRooms() {
   ROOMS.forEach(function(r) {
     var d = document.createElement('div');
     d.className = 'room-card' + (S.room === r.id ? ' sel' : '');
-    d.appendChild(imgBox('room-card__img', roomPreviewUrl(S.style || 'japandi', r.id)));
+    var _ri = imgBox('room-card__img', roomPreviewUrl(S.style || 'japandi', r.id));
+    _ri.dataset.imgEid = 'room-' + (S.style||'japandi') + '-' + r.id;
+    d.appendChild(_ri);
     var info = document.createElement('div');
     info.className = 'room-card__info';
     info.innerHTML = '<div class="room-card__name">' + r.name + '</div>' +
@@ -460,7 +502,9 @@ function renderSetup() {
         var optCard = document.createElement('div');
         optCard.className = 'opt' + (chosen === v ? ' on' : '');
         var url = iconUrl(S.style || 'japandi', S.room || 'living', cat.id, slotId, v);
-        optCard.appendChild(imgBox('opt__icon', url));
+        var _oi = imgBox('opt__icon', url);
+        _oi.dataset.imgEid = 'opt-' + (S.style||'j') + '-' + (S.room||'l') + '-' + cat.id + '-' + idx + '-' + v;
+        optCard.appendChild(_oi);
         var lbl2 = document.createElement('div');
         lbl2.className = 'opt__lbl';
         var _styleOpts = ROOM_OPTS[S.style] || ROOM_OPTS.japandi;
@@ -614,7 +658,8 @@ function applyEdits() {
     var v = EDITS[el.dataset.eid];
     if (v !== undefined) el.textContent = v;
   });
-  if (_editOn) _attachEditable();
+  applyImgEdits();
+  if (_editOn) { _attachEditable(); _attachImgDots(); }
 }
 
 function _attachEditable() {
@@ -640,7 +685,112 @@ document.getElementById('edit-dot').addEventListener('click', function() {
   _editOn = !_editOn;
   this.classList.toggle('on', _editOn);
   document.body.classList.toggle('editing', _editOn);
-  if (_editOn) _attachEditable(); else _detachEditable();
+  if (_editOn) { _attachEditable(); _attachImgDots(); }
+  else          { _detachEditable(); _detachImgDots(); }
+});
+
+/* ── Image edit ── */
+var IMG_STORE = {};
+try { IMG_STORE = JSON.parse(localStorage.getItem('ie_imgs') || '{}'); } catch(e) {}
+
+function saveImgStore() {
+  try { localStorage.setItem('ie_imgs', JSON.stringify(IMG_STORE)); } catch(e) {}
+}
+
+function applyImgEdits() {
+  document.querySelectorAll('[data-img-eid]').forEach(function(wrap) {
+    var d = IMG_STORE[wrap.dataset.imgEid];
+    if (d && d.url) {
+      var img = wrap.querySelector('img');
+      if (!img) { img = document.createElement('img'); img.alt=''; wrap.appendChild(img); }
+      img.src = d.url;
+    }
+  });
+}
+
+function _attachImgDots() {
+  document.querySelectorAll('[data-img-eid]').forEach(function(wrap) {
+    if (wrap.querySelector('.img-dot')) return;
+    var dot = document.createElement('div');
+    dot.className = 'img-dot' + (IMG_STORE[wrap.dataset.imgEid] ? ' has-custom' : '');
+    dot.textContent = '✎';
+    dot.addEventListener('click', function(e) { e.stopPropagation(); openImgModal(wrap); });
+    wrap.style.position = 'relative';
+    wrap.appendChild(dot);
+  });
+}
+
+function _detachImgDots() {
+  document.querySelectorAll('.img-dot').forEach(function(d) { d.remove(); });
+}
+
+var _iemTarget = null;
+var _iemPending = null;
+
+function openImgModal(wrap) {
+  _iemTarget  = wrap;
+  _iemPending = null;
+  var eid = wrap.dataset.imgEid;
+  var saved = IMG_STORE[eid] || {};
+  var img = wrap.querySelector('img');
+  document.getElementById('iem-preview').src = saved.url || (img && img.src) || '';
+  document.getElementById('iem-prompt').value  = saved.prompt || '';
+  document.getElementById('iem-neg').value     = saved.neg    || '';
+  document.getElementById('iem-file').value    = '';
+  document.getElementById('img-edit-modal').style.display = 'flex';
+}
+
+function closeImgModal() {
+  document.getElementById('img-edit-modal').style.display = 'none';
+  _iemTarget = null; _iemPending = null;
+}
+
+document.getElementById('iem-file').addEventListener('change', function() {
+  var file = this.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    _iemPending = e.target.result;
+    document.getElementById('iem-preview').src = _iemPending;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('iem-save').addEventListener('click', function() {
+  if (!_iemTarget) return;
+  var eid = _iemTarget.dataset.imgEid;
+  var entry = IMG_STORE[eid] || {};
+  if (_iemPending)  entry.url    = _iemPending;
+  var p = document.getElementById('iem-prompt').value.trim();
+  var n = document.getElementById('iem-neg').value.trim();
+  if (p) entry.prompt = p; else delete entry.prompt;
+  if (n) entry.neg    = n; else delete entry.neg;
+  if (Object.keys(entry).length) IMG_STORE[eid] = entry;
+  else delete IMG_STORE[eid];
+  saveImgStore();
+  if (_iemPending) {
+    var img = _iemTarget.querySelector('img');
+    if (!img) { img = document.createElement('img'); img.alt=''; _iemTarget.appendChild(img); }
+    img.src = _iemPending;
+  }
+  var dot = _iemTarget.querySelector('.img-dot');
+  if (dot) dot.classList.toggle('has-custom', !!IMG_STORE[eid]);
+  closeImgModal();
+});
+
+document.getElementById('iem-reset').addEventListener('click', function() {
+  if (!_iemTarget) return;
+  var eid = _iemTarget.dataset.imgEid;
+  delete IMG_STORE[eid];
+  saveImgStore();
+  // restore original src from render
+  renderStyles(); renderRooms(); renderSetup();
+  if (_editOn) _attachImgDots();
+  closeImgModal();
+});
+
+document.getElementById('iem-cancel').addEventListener('click', closeImgModal);
+document.getElementById('img-edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeImgModal();
 });
 
 /* ── Init ── */
