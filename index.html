@@ -130,6 +130,13 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
 #iem-save{flex:1;background:var(--acc);color:#fff;font-size:15px;font-weight:600;font-family:var(--font);padding:15px;border-radius:14px;border:none;cursor:pointer;-webkit-appearance:none}
 #iem-cancel{flex:0 0 auto;background:transparent;color:var(--ts);font-size:14px;font-weight:500;font-family:var(--font);padding:15px 18px;border-radius:14px;border:1.5px solid var(--br);cursor:pointer;-webkit-appearance:none}
 #iem-reset{background:none;border:none;color:#B94040;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;padding:2px 0;text-align:left;align-self:flex-start}
+#iem-gen{width:100%;padding:14px;background:#1A1A2E;color:#fff;font-size:14px;font-weight:600;font-family:var(--font);border:none;border-radius:14px;cursor:pointer;-webkit-appearance:none;transition:opacity 150ms}
+#iem-gen:disabled{opacity:.45;cursor:default}
+#gen-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:2000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#gen-overlay-txt{color:#fff;font-size:17px;font-weight:600;font-family:var(--font)}
+#gen-overlay-sub{color:rgba(255,255,255,.6);font-size:13px;font-family:var(--font)}
+.gen-spin{width:44px;height:44px;border:3px solid rgba(255,255,255,.18);border-top-color:#fff;border-radius:50%;animation:_spin .8s linear infinite}
+@keyframes _spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -183,11 +190,18 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
     <textarea id="iem-prompt" placeholder="Промт для генерации..."></textarea>
     <div class="iem-lbl">Негативный промт</div>
     <textarea id="iem-neg" placeholder="Что исключить из картинки..."></textarea>
+    <button id="iem-gen">⚡ Сгенерировать по промту</button>
     <div class="iem-btns">
       <button id="iem-cancel">Отмена</button>
       <button id="iem-save">Сохранить</button>
     </div>
   </div>
+</div>
+
+<div id="gen-overlay">
+  <div class="gen-spin"></div>
+  <div id="gen-overlay-txt">Генерирую...</div>
+  <div id="gen-overlay-sub">FLUX.1-schnell · ~10–20 с</div>
 </div>
 
 <script>
@@ -859,6 +873,72 @@ document.getElementById('iem-reset').addEventListener('click', function() {
 document.getElementById('iem-cancel').addEventListener('click', closeImgModal);
 document.getElementById('img-edit-modal').addEventListener('click', function(e) {
   if (e.target === this) closeImgModal();
+});
+
+document.getElementById('iem-gen').addEventListener('click', function() {
+  var prompt = document.getElementById('iem-prompt').value.trim();
+  if (!prompt) { alert('Укажите промт для генерации'); return; }
+
+  var tok = localStorage.getItem('hf_tok');
+  if (!tok) {
+    tok = window.prompt('HuggingFace API Token\n(сохранится в браузере, не передаётся никуда):');
+    if (!tok || !tok.trim()) return;
+    tok = tok.trim();
+    localStorage.setItem('hf_tok', tok);
+  }
+
+  var eid = _iemTarget && _iemTarget.dataset.imgEid || '';
+  var isOpt = eid.startsWith('opt-');
+  var w = isOpt ? 1024 : 1344, h = isOpt ? 1024 : 768;
+
+  var overlay = document.getElementById('gen-overlay');
+  var overSub = document.getElementById('gen-overlay-sub');
+  overlay.style.display = 'flex';
+  document.getElementById('img-edit-modal').style.display = 'none';
+
+  var t0 = Date.now();
+  var timer = setInterval(function() {
+    var s = Math.round((Date.now() - t0) / 1000);
+    overSub.textContent = 'FLUX.1-schnell · ' + s + ' с';
+  }, 1000);
+
+  fetch('https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell', {
+    method: 'POST',
+    headers: {'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json'},
+    body: JSON.stringify({inputs: prompt, parameters: {width: w, height: h}})
+  }).then(function(r) {
+    if (r.status === 401) { localStorage.removeItem('hf_tok'); }
+    if (!r.ok) return r.text().then(function(t) { throw new Error(r.status + ': ' + t.slice(0, 120)); });
+    return r.blob();
+  }).then(function(blob) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      clearInterval(timer);
+      var dataUrl = e.target.result;
+      if (_iemTarget) {
+        var saveEid = _iemTarget.dataset.imgEid;
+        var entry = IMG_STORE[saveEid] || {};
+        entry.url = dataUrl;
+        var p = document.getElementById('iem-prompt').value.trim();
+        var n = document.getElementById('iem-neg').value.trim();
+        if (p) entry.prompt = p; else delete entry.prompt;
+        if (n) entry.neg = n; else delete entry.neg;
+        IMG_STORE[saveEid] = entry;
+        saveImgStore();
+        applyImgEdits();
+        _iemPending = dataUrl;
+        document.getElementById('iem-preview').src = dataUrl;
+      }
+      overlay.style.display = 'none';
+      document.getElementById('img-edit-modal').style.display = 'flex';
+    };
+    reader.readAsDataURL(blob);
+  }).catch(function(err) {
+    clearInterval(timer);
+    overlay.style.display = 'none';
+    document.getElementById('img-edit-modal').style.display = 'flex';
+    alert('Ошибка генерации: ' + err.message);
+  });
 });
 
 /* ── Init ── */
