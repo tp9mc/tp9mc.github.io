@@ -116,16 +116,16 @@ body::-webkit-scrollbar{display:none}
 
 <section class="sec" id="sec-style">
   <div class="sec-head">
-    <div class="sec-h1">Выберите стиль</div>
-    <div class="sec-sub">Это задаст характер всему пространству</div>
+    <div class="sec-h1">Стиль интерьера</div>
+    <div class="sec-sub">Выберите эстетику, которая вам близка</div>
   </div>
   <div class="cards" id="style-cards"></div>
 </section>
 
 <section class="sec" id="sec-room">
   <div class="sec-head">
-    <div class="sec-h1">Какую комнату<br>оформляем?</div>
-    <div class="sec-sub" style="margin-bottom:20px"> </div>
+    <div class="sec-h1">Комната</div>
+    <div class="sec-sub">Выберите пространство для работы</div>
   </div>
   <div class="cards" id="room-cards"></div>
 </section>
@@ -133,7 +133,7 @@ body::-webkit-scrollbar{display:none}
 <section id="sec-setup">
   <div class="cat-tabs" id="cat-tabs">
     <button class="cat-tab on" type="button" data-cat="furniture">Мебель</button>
-    <button class="cat-tab"    type="button" data-cat="lighting">Свет</button>
+    <button class="cat-tab"    type="button" data-cat="lighting">Освещение</button>
     <button class="cat-tab"    type="button" data-cat="materials">Материалы</button>
   </div>
   <div class="cat-pane on" id="pane-furniture" data-cat="furniture"></div>
@@ -144,8 +144,8 @@ body::-webkit-scrollbar{display:none}
 
 <div id="sec-cta">
   <div class="cta-sum" id="cta-sum"></div>
-  <button class="btn-s" id="btn-back" type="button">↑ Изменить настройки</button>
-  <button class="btn-p" id="btn-gen"  type="button">Сгенерировать ▶</button>
+  <button class="btn-s" id="btn-back" type="button">Изменить выбор</button>
+  <button class="btn-p" id="btn-gen"  type="button">Создать интерьер</button>
 </div>
 
 <script>
@@ -591,7 +591,7 @@ if (tg && tg.BackButton) {
   });
 }
 if (tg && tg.MainButton) {
-  tg.MainButton.setParams({text:'Сгенерировать', color:'#1A1A1A', text_color:'#FFFFFF'});
+  tg.MainButton.setParams({text:'Создать интерьер', color:'#1C1917', text_color:'#FFFFFF'});
 }
 
 /* ── Init ── */
