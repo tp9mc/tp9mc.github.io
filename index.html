@@ -193,11 +193,10 @@ body::-webkit-scrollbar{display:none}
 <script>
 /* ── Telegram ── */
 var tg = (window.Telegram || {}).WebApp || null;
-/* Hide landing if inside Telegram, otherwise keep it and stop app init */
-if (tg && tg.initData) {
+/* Hide landing if inside Telegram (platform !== 'unknown'), else show it */
+if (tg && tg.platform && tg.platform !== 'unknown') {
   document.getElementById('landing').style.display = 'none';
 } else {
-  /* Browser: show landing, don't run the app */
   document.getElementById('landing').style.display = 'flex';
   throw new Error('browser');
 }
