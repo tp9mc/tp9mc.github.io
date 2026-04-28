@@ -187,8 +187,8 @@ def build_tasks(catalog):
                         item = catalog[s][room][cat_id].get(key, {})
                         if not item:
                             continue
-                        fname = f'{STYLE_FNAME[s]}__{room}__{cat_id}__{prefix}_{slot}__{variant}.webp'
-                        path = os.path.join(ASSETS, 'icons', 'pair_picker', fname)
+                        fname = f'{prefix}_{slot}__{variant}.webp'
+                        path = os.path.join(ASSETS, 'items', STYLE_FNAME[s], room, fname)
                         tasks.append({
                             'desc': f'icon/pp/{s}/{room}/{cat_id}/{prefix}_{slot}/{variant}',
                             'prompt': item['positive'],
@@ -213,8 +213,8 @@ def build_tasks(catalog):
                                              ('alt',  alt_prompt,  KITCHEN_NEG)]:
                     if not prompt:
                         continue
-                    fname = f'{STYLE_FNAME[s]}__kitchen__{cat_id}__{prefix}_{slot}__{variant}.webp'
-                    path  = os.path.join(ASSETS, 'icons', 'pair_picker', fname)
+                    fname = f'{prefix}_{slot}__{variant}.webp'
+                    path  = os.path.join(ASSETS, 'items', STYLE_FNAME[s], 'kitchen', fname)
                     tasks.append({
                         'desc':  f'icon/pp/{s}/kitchen/{cat_id}/{prefix}_{slot}/{variant}',
                         'prompt': prompt,
