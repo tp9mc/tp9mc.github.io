@@ -181,6 +181,10 @@ def main_keyboard():
         text='🏠 Открыть конструктор',
         web_app=telebot.types.WebAppInfo(url='https://tp9mc.github.io'),
     ))
+    markup.row(
+        telebot.types.KeyboardButton(text='🔄 Перезапустить'),
+        telebot.types.KeyboardButton(text='📊 Статистика'),
+    )
     return markup
 
 
@@ -453,6 +457,14 @@ def main():
             )
         except Exception:
             pass  # older clients may not support it
+
+    @bot.message_handler(func=lambda m: m.text == '🔄 Перезапустить')
+    def on_btn_restart(message):
+        on_start(message)
+
+    @bot.message_handler(func=lambda m: m.text == '📊 Статистика')
+    def on_btn_stats(message):
+        on_stats(message)
 
     @bot.message_handler(commands=['start', 'restart'])
     def on_start(message):
