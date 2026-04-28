@@ -25,9 +25,57 @@ ROOM_DNA = {
     'kitchen':  'modern kitchen, functional workspace, clean countertops, organized storage, natural light',
 }
 STYLE_RU = {'japandi': 'Japandi', 'modern_classic': 'Модерн Классик', 'scandi': 'Скандинавский'}
-ROOM_RU   = {'living': 'Гостиная', 'bedroom': 'Спальня', 'bathroom': 'Ванная', 'kitchen': 'Кухня'}
-CATS      = [('furniture', 'f'), ('lighting', 'l'), ('materials', 'm')]
-CAT_RU    = {'furniture': 'Мебель', 'lighting': 'Освещение', 'materials': 'Материалы'}
+ROOM_RU  = {'living': 'Гостиная', 'bedroom': 'Спальня', 'bathroom': 'Ванная', 'kitchen': 'Кухня'}
+CATS     = [('furniture', 'f'), ('lighting', 'l'), ('materials', 'm')]
+CAT_RU   = {'furniture': 'Мебель', 'lighting': 'Освещение', 'materials': 'Материалы'}
+
+# Russian slot labels per room (matches ROOM_LABELS in index.html)
+SLOT_LABELS = {
+    'living': {
+        'furniture': ['Диван','Журнальный стол','Кресло','Полка / ТВ-тумба','Ширма','Шкаф / Комод','Пуф / Табурет','Напольные подушки','Стеллаж'],
+        'lighting':  ['Подвес','Торшер','Скрытая LED','Настольная лампа','Бра','Абажур','Потолочные споты','Декор. светильник','Акцентный свет'],
+        'materials': ['Стены (цвет)','Пол','Стены (панели)','Текстиль','Камень','Акцентные детали','Керамика','Ковёр','Шторы'],
+    },
+    'bedroom': {
+        'furniture': ['Кровать','Прикроватные тумбы','Шкаф','Банкетка','Туалетный столик','Акцентное кресло','Зеркало','Вешалка','Хранение'],
+        'lighting':  ['Подвес над кроватью','Прикроватные лампы','Бра','LED под кроватью','Торшер','Потолочные споты','Подсветка шкафа','Навигационный свет','Основной свет'],
+        'materials': ['Стены','Пол','Изголовье','Постельное бельё','Ковёр','Шторы','Декор','Фурнитура','Металлические акценты'],
+    },
+    'bathroom': {
+        'furniture': ['Тумба под раковину','Скамья','Пенал','Корзина','Раковина','Полка на ванну','Зеркало','Скамья в душевой','Хранение'],
+        'lighting':  ['Подсветка зеркала','Подвес','LED-лента','Потолочные','LED под тумбой','Основной свет','Бра','Закарнизный свет','Над ванной'],
+        'materials': ['Стены','Потолок','Пол','Пол в душевой','Сантехника','Текстиль','Акценты','Декор','Перегородки'],
+    },
+    'kitchen': {
+        'furniture': ['Кухонный остров','Барный стул','Обеденный стол','Навесная полка','Шкаф-пенал','Тележка','Мойка','Смеситель','Разделочная доска'],
+        'lighting':  ['Подвес над островом','Бра рабочей зоны','Встроенная подсветка','Потолочный спот','Трековый светильник','Лампа на подоконник','Безрамный светильник','Умный выключатель','Подсветка цоколя'],
+        'materials': ['Фартук','Столешница','Фасад кухни','Текстиль','Посуда','Декор','Фурнитура','Пол','Окно'],
+    },
+}
+
+# Russian variant names per slot (matches ROOM_OPTS in index.html)
+SLOT_OPTS = {
+    'living': {
+        'furniture': [['Модульный','Футон'],['Бионический','Травертин'],['Ротанг','Букле'],['ТВ-тумба','Парящая полка'],['Реечная','Сёдзи'],['Встроенный','Отдельный'],['Бамбук','Деревянный пень'],['Подушки','Скамья'],['Открытый','Закрытый']],
+        'lighting':  [['Akari','Матовая сфера'],['Бумажный','Льняной'],['LED-лента','Безрамочные'],['Керамика','Бамбук'],['Направленный','Рассеянный'],['Ротанг','Плиссе'],['Накладные','Магнитный трек'],['Переносной','Каменный'],['За экранами','Подоконник']],
+        'materials': [['Беж','Шалфей'],['Дуб','Микроцемент'],['Рейки','Штукатурка'],['Лён','Букле'],['Травертин','Керамогранит'],['Бамбук','Тёмный орех'],['Ваби-саби','Гладкая'],['Джут','Килим'],['Рисовая бумага','Жалюзи']],
+    },
+    'bedroom': {
+        'furniture': [['Подиум','Мягкое изголовье'],['Консольные','Керамический'],['Сёдзи-слайдеры','Открытое'],['Банкетка','Сундук'],['Столик','Парящая полка'],['Ротанг','Букле'],['Напольное','Настенное'],['Камердинер','Рейка с крюками'],['Встроенное','Комод']],
+        'lighting':  [['Фонарь','Матовое стекло'],['Бамбуковые','Керамика'],['Чтение','Латунные'],['Под кроватью','За изголовьем'],['Зона чтения','Направленное бра'],['Безрамочные','Накладные'],['Внутри шкафа','На фасады'],['Плинтус','Встроенные'],['Диммируемый','Умная система']],
+        'materials': [['Штукатурка','Матовая краска'],['Дуб/ясень','Татами'],['Деревянное','Лён'],['Стираный лён','Органик хлопок'],['Джут','Шерстяной'],['Экраны сёдзи','Льняные'],['Глина','Дрейфвуд'],['Каменная','Скрытая'],['Чёрный матовый','Бронза']],
+    },
+    'bathroom': {
+        'furniture': [['Подвесная','Бетонная'],['Деревянная','Бамбуковая'],['Деревянный','В нишах'],['Деревянная','Плетёная'],['Каменная','Керамическая'],['Деревянная','Металлическая'],['Без рамы','В раме-полке'],['Встроенная','Тик'],['За зеркалом','Парящие полки']],
+        'lighting':  [['Backlight','Бра по бокам'],['Матовое стекло','Деревянные'],['LED-ниша','Спот в душе'],['Безрамочные','Плоские'],['Под тумбой','Напольный'],['2700K','Переменная'],['Керамика','Латунь'],['Закарнизный','Skylight'],['Подвесной','Настенный']],
+        'materials': [['Tadelakt','Керамогранит'],['Реечный','Окрашенный'],['Микроцемент','Под дерево'],['Галька','Рейки'],['Чёрная','Gunmetal'],['Вафельные','Льняные'],['Травертин','Сланец'],['Бамбуковый','Диатомит'],['Матовое','Прозрачное']],
+    },
+    'kitchen': {
+        'furniture': [['Камень и рейки','Тёмный дуб'],['Ротанг','Металл'],['Массив','Белый'],['Открытая','Со стеклом'],['Сёдзи','Матовый белый'],['Деревянная','Металлическая'],['Керамика','Нержавейка'],['Двойной','Одинарный'],['Дерево (спил)','Мрамор']],
+        'lighting':  [['Рисовая бумага','Индастриал'],['Бра','LED-лента'],['Ниша','Споты'],['Споты','Накладные'],['Трек','Магнитный'],['Настенный','Гусиная шея'],['Встроенный','Панель'],['Деревянная панель','Сенсорная'],['Цоколь','Плинтус']],
+        'materials': [['Штукатурка','Zellige'],['Травертин','Марокканский мрамор'],['Шпон','Шалфей'],['Лён','Вафельный'],['Керамика','Белая керамика'],['Бамбук','Терракота'],['Скрытая','Латунная'],['Микроцемент','Бетон'],['Сёдзи','Лён']],
+    },
+}
 
 NEG = ('people, person, human figure, ugly, deformed, noisy, blurry, low resolution, '
        'oversaturated, flat lighting, text, watermark, logo, clutter, dark')
@@ -88,10 +136,10 @@ def item_phrase(item: dict) -> str:
 def build_prompt_and_report(style, room, setup, catalog):
     """
     Returns (prompt_str, selections_list).
-    selections_list: list of (cat_id, slot_num, variant, phrase) for all 27 slots.
+    selections_list: list of (cat_id, n, variant, name_ru, phrase) for all 27 slots.
     """
-    scene_parts  = [STYLE_DNA[style], ROOM_DNA[room]]
-    selections   = []  # (cat_id, slot_num, variant, phrase)
+    scene_parts = [STYLE_DNA[style], ROOM_DNA[room]]
+    selections  = []  # (cat_id, n, variant, name_ru, phrase)
 
     for cat_id, px in CATS:
         cat_setup = setup.get(cat_id, {})
@@ -99,8 +147,9 @@ def build_prompt_and_report(style, room, setup, catalog):
             slot_key = f'{px}_{n}'
             variant  = cat_setup.get(slot_key, 'main')
             item     = get_item(catalog, style, room, cat_id, n, variant)
+            name_ru  = item.get('name_ru', '')
             phrase   = item_phrase(item)
-            selections.append((cat_id, n, variant, phrase))
+            selections.append((cat_id, n, variant, name_ru, phrase))
             if phrase:
                 scene_parts.append(phrase)
 
@@ -114,51 +163,47 @@ def build_prompt_and_report(style, room, setup, catalog):
 
 
 def build_report(style, room, setup, selections, prompt, seed, elapsed_sec):
+    W = 62
     lines = []
-    lines.append('=' * 60)
-    lines.append('  INTERIOR CONSTRUCTOR — GENERATION REPORT')
-    lines.append('=' * 60)
-    lines.append(f'Date:    {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
-    lines.append(f'Style:   {STYLE_RU[style]} ({style})')
-    lines.append(f'Room:    {ROOM_RU[room]} ({room})')
-    lines.append(f'Time:    {elapsed_sec // 60}m {elapsed_sec % 60:02d}s')
-    lines.append('')
-    lines.append('─' * 60)
-    lines.append('  ВЫБОРЫ ПОЛЬЗОВАТЕЛЯ (все 27 слотов)')
-    lines.append('─' * 60)
 
+    # ── Шапка ──────────────────────────────────────────────────
+    lines += ['═' * W, '  КОНФИГУРАЦИЯ ИНТЕРЬЕРА', '═' * W, '']
+    lines.append(f'  Дата:    {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+    lines.append(f'  Стиль:   {STYLE_RU[style]}')
+    lines.append(f'  Комната: {ROOM_RU[room]}')
+    lines.append('')
+
+    # ── Выборы пользователя (3 категории × 9 слотов) ──────────
     for cat_id, px in CATS:
-        lines.append(f'\n[{CAT_RU[cat_id]}]')
-        cat_sels = [(n, v, ph) for (c, n, v, ph) in selections if c == cat_id]
-        for n, variant, phrase in cat_sels:
-            px_id = [p for _, p in CATS if _ == cat_id][0]
-            slot_label = f'{px_id}_{n}'
-            flag = '→' if variant == 'main' else '⇒'
-            lines.append(f'  {slot_label:5s} [{variant:4s}] {flag} {phrase or "(нет в каталоге)"}')
+        lines += ['─' * W, f'  {CAT_RU[cat_id].upper()}', '─' * W]
+        slot_labels = SLOT_LABELS.get(room, {}).get(cat_id, [])
+        slot_opts   = SLOT_OPTS.get(room, {}).get(cat_id, [])
+        cat_sels = [(n, v, nr, ph) for (c, n, v, nr, ph) in selections if c == cat_id]
+        for n, variant, name_ru, phrase in cat_sels:
+            label    = slot_labels[n - 1] if n - 1 < len(slot_labels) else f'{px}_{n}'
+            vi       = 0 if variant == 'main' else 1
+            var_name = slot_opts[n - 1][vi] if n - 1 < len(slot_opts) else ('A' if vi == 0 else 'Б')
+            # Use name_ru from catalog if available, otherwise var_name
+            display  = name_ru if name_ru else var_name
+            lines.append(f'  {n:2}. {label:<26} [{var_name}]  {display}')
+        lines.append('')
 
+    # ── Технические параметры ──────────────────────────────────
+    lines += ['═' * W, '  ТЕХНИЧЕСКИЕ ПАРАМЕТРЫ', '═' * W, '']
+    lines.append(f'  Модель:    Juggernaut XL v9')
+    lines.append(f'  Сэмплер:   Euler / Simple')
+    lines.append(f'  Шаги:      30')
+    lines.append(f'  CFG:       7')
+    lines.append(f'  Seed:      {seed}')
+    lines.append(f'  Размер:    1024×576')
+    lines.append(f'  Время:     {elapsed_sec // 60}м {elapsed_sec % 60:02d}с')
     lines.append('')
-    lines.append('─' * 60)
-    lines.append('  ПАРАМЕТРЫ ГЕНЕРАЦИИ')
-    lines.append('─' * 60)
-    lines.append('Model:     Juggernaut XL v9 (juggernautXL_v9Rdphoto2Lightning.safetensors)')
-    lines.append('Sampler:   Euler')
-    lines.append('Scheduler: Simple')
-    lines.append('Steps:     30')
-    lines.append('CFG Scale: 7')
-    lines.append(f'Seed:      {seed}')
-    lines.append('Size:      1024x576')
-    lines.append('')
-    lines.append('─' * 60)
-    lines.append('  ПОЛНЫЙ ПРОМТ')
-    lines.append('─' * 60)
+    lines += ['─' * W, '  ПРОМТ (EN)', '─' * W]
     lines.append(prompt)
     lines.append('')
-    lines.append('─' * 60)
-    lines.append('  НЕГАТИВНЫЙ ПРОМТ')
-    lines.append('─' * 60)
+    lines += ['─' * W, '  НЕГАТИВНЫЙ ПРОМТ', '─' * W]
     lines.append(NEG)
-    lines.append('')
-    lines.append('=' * 60)
+    lines += ['', '═' * W]
     return '\n'.join(lines)
 
 
