@@ -9,7 +9,9 @@ from PIL import Image
 from datetime import datetime
 from collections import defaultdict
 
-from bot_secrets import BOT_TOKEN  # not committed to git
+from bot_secrets import BOT_TOKEN, HF_TOKEN  # not committed to git
+HF_URL        = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
+HF_TIMEOUT    = 120
 SD_URL        = 'http://localhost:7860/sdapi/v1/txt2img'
 SD_HEALTH     = 'http://localhost:7860/sdapi/v1/sd-models'
 SD_WEBUI_DIR  = '/Users/timofeev_sd/stable-diffusion-webui'
@@ -425,7 +427,7 @@ def build_prompt_and_report(style, room, setup, catalog):
     return prompt, neg, selections
 
 
-def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec):
+def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec, backend='hf'):
     W = 62
     lines = []
 
@@ -457,21 +459,57 @@ def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec)
 
     # ── Технические параметры ──────────────────────────────────
     lines += ['═' * W, '  ТЕХНИЧЕСКИЕ ПАРАМЕТРЫ', '═' * W, '']
-    lines.append(f'  Модель:    Juggernaut XL v9')
-    lines.append(f'  Сэмплер:   Euler / Karras')
-    lines.append(f'  Шаги:      30')
-    lines.append(f'  CFG:       10')
-    lines.append(f'  Seed:      {seed}')
-    lines.append(f'  Размер:    1344×768')
-    lines.append(f'  Время:     {elapsed_sec // 60}м {elapsed_sec % 60:02d}с')
-    lines.append('')
-    lines += ['─' * W, '  ПРОМТ (EN)', '─' * W]
-    lines.append(prompt)
-    lines.append('')
-    lines += ['─' * W, '  НЕГАТИВНЫЙ ПРОМТ', '─' * W]
-    lines.append(neg)
+    if backend == 'hf':
+        lines.append(f'  Модель:    FLUX.1-schnell (black-forest-labs)')
+        lines.append(f'  Провайдер: HuggingFace Inference API')
+        lines.append(f'  Размер:    1344×768')
+        lines.append(f'  Время:     {elapsed_sec // 60}м {elapsed_sec % 60:02d}с')
+        lines.append('')
+        lines += ['─' * W, '  ПРОМТ (EN)', '─' * W]
+        lines.append(prompt)
+    else:
+        lines.append(f'  Модель:    Juggernaut XL v9 (SD WebUI fallback)')
+        lines.append(f'  Сэмплер:   Euler / Karras')
+        lines.append(f'  Шаги:      30')
+        lines.append(f'  CFG:       10')
+        lines.append(f'  Seed:      {seed}')
+        lines.append(f'  Размер:    1344×768')
+        lines.append(f'  Время:     {elapsed_sec // 60}м {elapsed_sec % 60:02d}с')
+        lines.append('')
+        lines += ['─' * W, '  ПРОМТ (EN)', '─' * W]
+        lines.append(prompt)
+        lines.append('')
+        lines += ['─' * W, '  НЕГАТИВНЫЙ ПРОМТ', '─' * W]
+        lines.append(neg)
     lines += ['', '═' * W]
     return '\n'.join(lines)
+
+
+def _generate_hf(prompt: str) -> bytes:
+    """Generate image via HuggingFace FLUX.1-schnell. Returns raw image bytes."""
+    r = requests.post(
+        HF_URL,
+        headers={'Authorization': f'Bearer {HF_TOKEN}'},
+        json={'inputs': prompt, 'parameters': {'width': 1344, 'height': 768}},
+        timeout=HF_TIMEOUT,
+    )
+    if r.status_code != 200:
+        raise RuntimeError(f'HF {r.status_code}: {r.text[:120]}')
+    return r.content
+
+
+def _generate_sd(prompt: str, neg: str) -> bytes:
+    """Generate image via local SD WebUI. Returns raw image bytes."""
+    r = requests.post(SD_URL, json={
+        'prompt': prompt, 'negative_prompt': neg,
+        'steps': 30, 'cfg_scale': 10,
+        'width': 1344, 'height': 768,
+        'sampler_name': 'Euler', 'scheduler': 'Karras',
+        'seed': -1, 'override_settings': {'CLIP_stop_at_last_layers': 1},
+    }, timeout=SD_TIMEOUT)
+    if r.status_code != 200:
+        raise RuntimeError(f'SD {r.status_code}')
+    return base64.b64decode(r.json()['images'][0])
 
 
 def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot, username: str = ''):
@@ -487,96 +525,56 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot, username: s
     log_event(chat_id, username, 'gen_start', {'style': style, 'room': room})
     _last_gen_time = time.time()
 
-    if not sd_ensure_up():
-        bot.send_message(chat_id, '❌ SD WebUI не удалось запустить. Попробуй позже.')
-        return
-
-    catalog    = load_catalog()
+    catalog = load_catalog()
     prompt, neg, selections = build_prompt_and_report(style, room, setup, catalog)
 
     bot.send_message(
         chat_id,
-        f'🏠 Генерирую *{STYLE_RU[style]}* · *{ROOM_RU[room]}*\n'
-        f'Это займёт 1–3 минуты, буду присылать обновления.',
+        f'🏠 Генерирую *{STYLE_RU[style]}* · *{ROOM_RU[room]}*…',
         parse_mode='Markdown',
         reply_markup=app_keyboard(),
     )
 
-    stop_event = threading.Event()
-    start_ts   = time.time()
+    start_ts = time.time()
+    img_bytes = None
+    backend   = 'hf'
 
-    def ticker():
-        if stop_event.wait(50):
-            return
-        while not stop_event.is_set():
-            elapsed = int(time.time() - start_ts)
-            bot.send_message(chat_id, f'⏳ Генерация идёт… {elapsed // 60}м {elapsed % 60:02d}с')
-            stop_event.wait(30)
-
-    threading.Thread(target=ticker, daemon=True).start()
-
+    # Primary: HuggingFace FLUX.1-schnell
     try:
-        r = requests.post(SD_URL, json={
-            'prompt':                prompt,
-            'negative_prompt':       neg,
-            'steps':                 30,
-            'cfg_scale':             10,
-            'width':                 1344,
-            'height':                768,
-            'sampler_name':          'Euler',
-            'scheduler':             'Karras',
-            'seed':                  -1,
-            'override_settings':     {'CLIP_stop_at_last_layers': 1},
-        }, timeout=SD_TIMEOUT)
-
-        stop_event.set()
-
-        if r.status_code != 200:
-            bot.send_message(chat_id, f'❌ SD WebUI вернул HTTP {r.status_code}')
+        img_bytes = _generate_hf(prompt)
+    except Exception as e:
+        hf_err = str(e)[:80]
+        # Fallback: local SD WebUI
+        backend = 'sd'
+        try:
+            if not sd_ensure_up():
+                raise RuntimeError('SD WebUI не удалось запустить')
+            img_bytes = _generate_sd(prompt, neg)
+        except Exception as e2:
+            log_event(chat_id, username, 'gen_fail', {'reason': f'hf={hf_err} sd={str(e2)[:60]}'})
+            bot.send_message(chat_id, f'❌ Не удалось сгенерировать.\nHF: {hf_err}\nSD: {str(e2)[:100]}')
             return
 
-        resp     = r.json()
-        img_bytes = base64.b64decode(resp['images'][0])
+    elapsed = int(time.time() - start_ts)
+    _last_gen_time = time.time()
 
-        # Extract actual seed used
-        try:
-            info = json.loads(resp.get('info', '{}'))
-            seed = info.get('seed', -1)
-        except Exception:
-            seed = -1
+    img = Image.open(BytesIO(img_bytes)).convert('RGB')
+    img_buf = BytesIO()
+    img.save(img_buf, 'JPEG', quality=92)
+    img_buf.seek(0)
 
-        elapsed = int(time.time() - start_ts)
+    log_event(chat_id, username, 'gen_ok', {'style': style, 'room': room, 'elapsed': elapsed, 'backend': backend})
 
-        # Image
-        img = Image.open(BytesIO(img_bytes)).convert('RGB')
-        img_buf = BytesIO()
-        img.save(img_buf, 'JPEG', quality=92)
-        img_buf.seek(0)
+    bot.send_photo(
+        chat_id, img_buf,
+        caption=f'✅ Готово за {elapsed}с\n*{STYLE_RU[style]}* · *{ROOM_RU[room]}*',
+        parse_mode='Markdown',
+    )
 
-        _last_gen_time = time.time()
-        log_event(chat_id, username, 'gen_ok', {'style': style, 'room': room, 'elapsed': elapsed, 'seed': seed})
-
-        bot.send_photo(
-            chat_id, img_buf,
-            caption=f'✅ Готово за {elapsed // 60}м {elapsed % 60:02d}с\n'
-                    f'*{STYLE_RU[style]}* · *{ROOM_RU[room]}*',
-            parse_mode='Markdown',
-        )
-
-        # Report document
-        report_text = build_report(style, room, setup, selections, prompt, neg, seed, elapsed)
-        report_buf  = BytesIO(report_text.encode('utf-8'))
-        report_buf.name = f'report_{style}_{room}.txt'
-        bot.send_document(chat_id, report_buf, caption='📄 Параметры генерации')
-
-    except requests.Timeout:
-        stop_event.set()
-        log_event(chat_id, username, 'gen_fail', {'reason': 'timeout'})
-        bot.send_message(chat_id, '❌ SD WebUI не ответил за 10 минут — попробуй ещё раз.')
-    except Exception as e:
-        stop_event.set()
-        log_event(chat_id, username, 'gen_fail', {'reason': str(e)[:80]})
-        bot.send_message(chat_id, f'❌ Ошибка: {str(e)[:200]}')
+    report_text = build_report(style, room, setup, selections, prompt, neg, -1, elapsed, backend)
+    report_buf  = BytesIO(report_text.encode('utf-8'))
+    report_buf.name = f'report_{style}_{room}.txt'
+    bot.send_document(chat_id, report_buf, caption='📄 Параметры генерации')
 
 
 def main():
@@ -656,14 +654,23 @@ def main():
 
 
 if __name__ == '__main__':
+    import fcntl
     lock_path = '/tmp/propferma_bot.lock'
+    # Check if a running PID is already in the lock file before taking the lock.
+    # This survives stale-file situations created by `rm` of the old lock.
     try:
-        lock_fd = open(lock_path, 'w')
-        import fcntl
-        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        lock_fd.write(str(os.getpid()))
-        lock_fd.flush()
-    except OSError:
-        print('Another instance is already running. Exiting.')
-        raise SystemExit(1)
+        with open(lock_path) as _f:
+            _old_pid = int(_f.read().strip())
+        try:
+            os.kill(_old_pid, 0)          # signal 0 = just probe
+            print(f'Another instance is already running (PID {_old_pid}). Exiting.')
+            raise SystemExit(1)
+        except ProcessLookupError:
+            pass                          # stale PID — safe to continue
+    except (FileNotFoundError, ValueError):
+        pass                              # no lock file or empty — safe to continue
+    lock_fd = open(lock_path, 'w')
+    fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    lock_fd.write(str(os.getpid()))
+    lock_fd.flush()
     main()
