@@ -505,7 +505,7 @@ function renderSetup() {
         optCard.className = 'opt' + (chosen === v ? ' on' : '');
         var url = iconUrl(S.style || 'japandi', S.room || 'living', cat.id, slotId, v);
         var _oi = imgBox('opt__icon', url);
-        _oi.dataset.imgEid = 'opt-' + (S.style||'j') + '-' + (S.room||'l') + '-' + cat.id + '-' + idx + '-' + v;
+        _oi.dataset.imgEid = 'opt-' + (S.style||'japandi') + '-' + (S.room||'living') + '-' + cat.id + '-' + idx + '-' + v;
         optCard.appendChild(_oi);
         var lbl2 = document.createElement('div');
         lbl2.className = 'opt__lbl';
