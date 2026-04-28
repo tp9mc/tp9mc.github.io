@@ -156,13 +156,19 @@ def _start_tunnel(notify_chat_id: int | None = None, bot_ref=None):
                                 ),
                             )
                         ]])
-                        bot_ref.send_message(
+                        msg = bot_ref.send_message(
                             notify_chat_id,
-                            f'🌐 Прокси запущен: `{_tunnel_url}`\n\n'
-                            'Нажми кнопку — Mini App откроется и запомнит прокси автоматически.',
+                            f'🌐 Прокси: `{_tunnel_url}`',
                             parse_mode='Markdown',
                             reply_markup=markup,
+                            disable_notification=True,
                         )
+                        # Auto-delete after 30s so it doesn't clutter the chat
+                        def _del(cid=notify_chat_id, mid=msg.message_id):
+                            time.sleep(30)
+                            try: bot_ref.delete_message(cid, mid)
+                            except Exception: pass
+                        threading.Thread(target=_del, daemon=True).start()
                     except Exception:
                         pass
                 break
