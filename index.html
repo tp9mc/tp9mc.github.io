@@ -706,12 +706,22 @@ function _detachEditable() {
   });
 }
 
+var _promptsLoaded = false;
+function _loadPrompts(cb) {
+  if (_promptsLoaded) { if (cb) cb(); return; }
+  fetch('prompts.json').then(function(r) { return r.json(); }).then(function(data) {
+    Object.assign(ORIG_PROMPTS, data);
+    _promptsLoaded = true;
+    if (cb) cb();
+  }).catch(function() { _promptsLoaded = true; if (cb) cb(); });
+}
+
 document.getElementById('edit-dot').addEventListener('click', function() {
   _editOn = !_editOn;
   this.classList.toggle('on', _editOn);
   document.body.classList.toggle('editing', _editOn);
   document.getElementById('export-prompts-btn').style.display = _editOn ? 'block' : 'none';
-  if (_editOn) { _attachEditable(); _attachImgDots(); }
+  if (_editOn) { _loadPrompts(function() { _attachEditable(); _attachImgDots(); }); }
   else          { _detachEditable(); _detachImgDots(); }
 });
 
