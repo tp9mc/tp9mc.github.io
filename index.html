@@ -684,7 +684,7 @@ function applyEdits() {
     if (v !== undefined) el.textContent = v;
   });
   applyImgEdits();
-  if (_editOn) { _attachEditable(); _attachImgDots(); }
+  if (_editOn) { _attachEditable(); _loadPrompts(function() { _attachImgDots(); }); }
 }
 
 function _attachEditable() {
