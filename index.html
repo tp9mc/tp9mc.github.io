@@ -109,9 +109,52 @@ body::-webkit-scrollbar{display:none}
 
 @media(max-height:600px){.sec-h1{font-size:22px}.style-card__img{height:110px}}
 @media(max-width:320px){.slot-opts{gap:6px}.sec-h1{font-size:22px}}
+
+/* landing */
+#landing{position:fixed;inset:0;background:#FAFAF7;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center}
+.land-badge{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ts);background:var(--sf2);border:1px solid var(--br);border-radius:20px;padding:5px 14px;margin-bottom:28px}
+.land-icon{width:72px;height:72px;border-radius:20px;background:var(--acc);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:34px}
+.land-h1{font-size:30px;font-weight:700;letter-spacing:-.6px;line-height:1.18;margin-bottom:14px}
+.land-sub{font-size:15px;color:var(--ts);line-height:1.6;margin-bottom:36px;max-width:340px}
+.land-features{display:flex;flex-direction:column;gap:10px;margin-bottom:40px;text-align:left;width:100%;max-width:340px}
+.land-feat{display:flex;align-items:flex-start;gap:12px;background:#fff;border:1px solid var(--br);border-radius:14px;padding:12px 14px}
+.land-feat-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.land-feat-text{font-size:13px;color:var(--ts);line-height:1.45}
+.land-feat-text strong{display:block;font-size:14px;color:var(--tp);font-weight:600;margin-bottom:2px}
+.land-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:17px 28px;background:var(--acc);color:#fff;font-size:16px;font-weight:600;font-family:inherit;border-radius:16px;border:none;text-decoration:none;width:100%;max-width:340px;box-shadow:0 8px 24px rgba(26,26,26,.18);transition:transform 120ms,box-shadow 120ms}
+.land-btn:active{transform:scale(.97);box-shadow:0 4px 12px rgba(26,26,26,.14)}
+.land-btn svg{flex-shrink:0}
+.land-footer{margin-top:20px;font-size:12px;color:var(--state-off)}
 </style>
 </head>
 <body>
+
+<!-- Landing: shown in browser, hidden inside Telegram -->
+<div id="landing">
+  <div class="land-badge">Telegram Mini App</div>
+  <div class="land-icon">🏠</div>
+  <div class="land-h1">Конструктор<br>интерьера</div>
+  <div class="land-sub">Выберите стиль, комнату и элементы — получите AI-рендер вашего интерьера прямо в Telegram</div>
+  <div class="land-features">
+    <div class="land-feat">
+      <div class="land-feat-icon">🎨</div>
+      <div class="land-feat-text"><strong>3 стиля</strong>Japandi, Модерн Классик, Скандинавский</div>
+    </div>
+    <div class="land-feat">
+      <div class="land-feat-icon">🛋️</div>
+      <div class="land-feat-text"><strong>4 комнаты, 27 элементов</strong>Мебель, освещение, материалы — попарно</div>
+    </div>
+    <div class="land-feat">
+      <div class="land-feat-icon">⚡</div>
+      <div class="land-feat-text"><strong>AI-генерация за 1–3 минуты</strong>Результат приходит прямо в чат с ботом</div>
+    </div>
+  </div>
+  <a class="land-btn" href="https://t.me/PropFerma_bot">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8l-1.69 7.96c-.12.56-.46.7-.93.43l-2.56-1.89-1.24 1.19c-.14.14-.25.25-.51.25l.18-2.6 4.69-4.23c.2-.18-.04-.28-.32-.1L7.82 14.57l-2.51-.78c-.55-.17-.56-.55.11-.81l9.81-3.78c.46-.17.86.11.71.6z" fill="currentColor"/></svg>
+    Открыть в Telegram
+  </a>
+  <div class="land-footer">@PropFerma_bot</div>
+</div>
 
 <section class="sec" id="sec-style">
   <div class="sec-head">
@@ -150,6 +193,14 @@ body::-webkit-scrollbar{display:none}
 <script>
 /* ── Telegram ── */
 var tg = (window.Telegram || {}).WebApp || null;
+/* Hide landing if inside Telegram, otherwise keep it and stop app init */
+if (tg && tg.initData) {
+  document.getElementById('landing').style.display = 'none';
+} else {
+  /* Browser: show landing, don't run the app */
+  document.getElementById('landing').style.display = 'flex';
+  throw new Error('browser');
+}
 if (tg) {
   tg.ready(); tg.expand();
   if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
