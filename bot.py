@@ -191,8 +191,8 @@ def main():
 
     @bot.message_handler(commands=['start'])
     def on_start(message):
-        markup = telebot.types.InlineKeyboardMarkup()
-        markup.add(telebot.types.InlineKeyboardButton(
+        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add(telebot.types.KeyboardButton(
             text='🏠 Открыть конструктор',
             web_app=telebot.types.WebAppInfo(url='https://tp9mc.github.io'),
         ))
