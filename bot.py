@@ -135,10 +135,11 @@ def item_phrase(item: dict) -> str:
 
 def build_prompt_and_report(style, room, setup, catalog):
     """
-    Returns (prompt_str, selections_list).
+    Returns (prompt_str, neg_str, selections_list).
     selections_list: list of (cat_id, n, variant, name_ru, phrase) for all 27 slots.
     """
     scene_parts = [STYLE_DNA[style], ROOM_DNA[room]]
+    neg_parts   = [NEG]
     selections  = []  # (cat_id, n, variant, name_ru, phrase)
 
     for cat_id, px in CATS:
@@ -152,6 +153,10 @@ def build_prompt_and_report(style, room, setup, catalog):
             selections.append((cat_id, n, variant, name_ru, phrase))
             if phrase:
                 scene_parts.append(phrase)
+            # Collect item-level negative prompt (English only)
+            item_neg = item.get('negative', '')
+            if item_neg and not re.search(r'[а-яёА-ЯЁ]', item_neg):
+                neg_parts.append(item_neg.strip())
 
     scene_parts += [
         'professional interior photography', 'natural daylight',
@@ -159,10 +164,19 @@ def build_prompt_and_report(style, room, setup, catalog):
         'photo realistic', '8k',
     ]
     prompt = ', '.join(p for p in scene_parts if p)
-    return prompt, selections
+    # Deduplicate neg terms
+    seen, neg_dedup = set(), []
+    for part in neg_parts:
+        for term in part.split(','):
+            t = term.strip().lower()
+            if t and t not in seen:
+                seen.add(t)
+                neg_dedup.append(term.strip())
+    neg = ', '.join(neg_dedup)
+    return prompt, neg, selections
 
 
-def build_report(style, room, setup, selections, prompt, seed, elapsed_sec):
+def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec):
     W = 62
     lines = []
 
@@ -202,7 +216,7 @@ def build_report(style, room, setup, selections, prompt, seed, elapsed_sec):
     lines.append(prompt)
     lines.append('')
     lines += ['─' * W, '  НЕГАТИВНЫЙ ПРОМТ', '─' * W]
-    lines.append(NEG)
+    lines.append(neg)
     lines += ['', '═' * W]
     return '\n'.join(lines)
 
@@ -217,7 +231,7 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot):
         return
 
     catalog    = load_catalog()
-    prompt, selections = build_prompt_and_report(style, room, setup, catalog)
+    prompt, neg, selections = build_prompt_and_report(style, room, setup, catalog)
 
     bot.send_message(
         chat_id,
@@ -240,7 +254,7 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot):
     try:
         r = requests.post(SD_URL, json={
             'prompt':            prompt,
-            'negative_prompt':   NEG,
+            'negative_prompt':   neg,
             'steps':             30,
             'cfg_scale':         7,
             'width':             1024,
@@ -283,7 +297,7 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot):
         )
 
         # Report document
-        report_text = build_report(style, room, setup, selections, prompt, seed, elapsed)
+        report_text = build_report(style, room, setup, selections, prompt, neg, seed, elapsed)
         report_buf  = BytesIO(report_text.encode('utf-8'))
         report_buf.name = f'report_{style}_{room}.txt'
         bot.send_document(chat_id, report_buf, caption='📄 Параметры генерации')
