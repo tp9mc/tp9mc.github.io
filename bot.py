@@ -12,6 +12,7 @@ from collections import defaultdict
 from bot_secrets import BOT_TOKEN, HF_TOKEN  # not committed to git
 HF_URL        = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
 HF_TIMEOUT    = 120
+HF_COST_PER_IMAGE = 0.0017  # $1.40 / 802 requests (Apr 2026)
 SD_URL        = 'http://localhost:7860/sdapi/v1/txt2img'
 SD_HEALTH     = 'http://localhost:7860/sdapi/v1/sd-models'
 SD_WEBUI_DIR  = '/Users/timofeev_sd/stable-diffusion-webui'
@@ -98,12 +99,14 @@ def build_stats_report() -> str:
     gen_times    = []
     gen_ok       = 0
     gen_fail     = 0
+    hf_count     = 0
+    sd_count     = 0
 
     for e in events:
         uid  = e['user_id']
         uname = e.get('username', str(uid))
         if uid not in users:
-            users[uid] = {'username': uname, 'actions': defaultdict(int), 'first': e['ts']}
+            users[uid] = {'username': uname, 'actions': defaultdict(int), 'gens_hf': 0, 'gens_sd': 0, 'first': e['ts']}
         users[uid]['actions'][e['action']] += 1
         users[uid]['last'] = e['ts']
 
@@ -113,6 +116,12 @@ def build_stats_report() -> str:
             room_count[e.get('room', '?')]   += 1
             if 'elapsed' in e:
                 gen_times.append(e['elapsed'])
+            if e.get('backend', 'hf') == 'hf':
+                hf_count += 1
+                users[uid]['gens_hf'] += 1
+            else:
+                sd_count += 1
+                users[uid]['gens_sd'] += 1
         elif e['action'] == 'gen_fail':
             gen_fail += 1
 
@@ -122,11 +131,13 @@ def build_stats_report() -> str:
     lines.append(f'  Дата отчёта:   {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
     lines.append(f'  Всего событий: {len(events)}')
     lines.append(f'  Уникальных пользователей: {len(users)}')
-    lines.append(f'  Генераций успешных: {gen_ok}')
+    lines.append(f'  Генераций успешных: {gen_ok}  (HF: {hf_count}, SD: {sd_count})')
     lines.append(f'  Генераций с ошибкой: {gen_fail}')
     if gen_times:
         avg = sum(gen_times) / len(gen_times)
         lines.append(f'  Среднее время генерации: {int(avg)//60}м {int(avg)%60:02d}с')
+    hf_total = hf_count * HF_COST_PER_IMAGE
+    lines.append(f'  Расходы HF (бот): ${hf_total:.4f}  (×${HF_COST_PER_IMAGE:.4f}/генерация)')
     lines.append('')
 
     if style_count:
@@ -145,9 +156,13 @@ def build_stats_report() -> str:
     for uid, u in sorted(users.items(), key=lambda x: -sum(x[1]['actions'].values())):
         acts = u['actions']
         total_acts = sum(acts.values())
-        gens  = acts.get('gen_ok', 0)
+        gens     = acts.get('gen_ok', 0)
+        gens_hf  = u.get('gens_hf', 0)
+        gens_sd  = u.get('gens_sd', 0)
+        cost_hf  = gens_hf * HF_COST_PER_IMAGE
         lines.append(f'  @{u["username"]} (id {uid})')
-        lines.append(f'    Всего действий: {total_acts}  |  Генераций: {gens}')
+        lines.append(f'    Всего действий: {total_acts}  |  Генераций: {gens}  (HF: {gens_hf}, SD: {gens_sd})')
+        lines.append(f'    Расходы HF: ${cost_hf:.4f}')
         lines.append(f'    Первое: {u["first"]}  |  Последнее: {u.get("last","")}')
         details = ', '.join(f'{k}={v}' for k, v in sorted(acts.items()))
         lines.append(f'    Действия: {details}')
@@ -464,6 +479,7 @@ def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec,
         lines.append(f'  Провайдер: HuggingFace Inference API')
         lines.append(f'  Размер:    1344×768')
         lines.append(f'  Время:     {elapsed_sec // 60}м {elapsed_sec % 60:02d}с')
+        lines.append(f'  Стоимость: ${HF_COST_PER_IMAGE:.4f}')
         lines.append('')
         lines += ['─' * W, '  ПРОМТ (EN)', '─' * W]
         lines.append(prompt)
@@ -475,6 +491,7 @@ def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec,
         lines.append(f'  Seed:      {seed}')
         lines.append(f'  Размер:    1344×768')
         lines.append(f'  Время:     {elapsed_sec // 60}м {elapsed_sec % 60:02d}с')
+        lines.append(f'  Стоимость: $0.00 (локальная генерация)')
         lines.append('')
         lines += ['─' * W, '  ПРОМТ (EN)', '─' * W]
         lines.append(prompt)
