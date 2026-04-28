@@ -3,7 +3,7 @@ Interior Constructor Bot
 Receives web_app_data from Mini App, generates a room render via SD WebUI,
 sends status updates every 30s, delivers image + full report to user.
 """
-import json, threading, time, base64, requests, telebot
+import json, re, threading, time, base64, requests, telebot
 from io import BytesIO
 from PIL import Image
 from datetime import datetime
@@ -31,6 +31,14 @@ CAT_RU    = {'furniture': 'Мебель', 'lighting': 'Освещение', 'mat
 
 NEG = ('people, person, human figure, ugly, deformed, noisy, blurry, low resolution, '
        'oversaturated, flat lighting, text, watermark, logo, clutter, dark')
+
+def main_keyboard():
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(telebot.types.KeyboardButton(
+        text='🏠 Открыть конструктор',
+        web_app=telebot.types.WebAppInfo(url='https://tp9mc.github.io'),
+    ))
+    return markup
 
 
 def load_catalog():
@@ -66,13 +74,14 @@ def get_item(catalog, style, room, cat_id, slot_num, variant):
 
 
 def item_phrase(item: dict) -> str:
-    """Short keyword phrase from catalog item for use in scene prompt."""
+    """Short English-only keyword phrase for use in scene prompt."""
     pos = item.get('positive', '')
     if not pos:
         return ''
     clean = strip_boilerplate(pos)
-    # Take first two comma-segments for enough context
-    segs = [s.strip() for s in clean.split(',') if s.strip()]
+    # Drop any segment that contains Cyrillic
+    segs = [s.strip() for s in clean.split(',')
+            if s.strip() and not re.search(r'[а-яёА-ЯЁ]', s)]
     return ', '.join(segs[:2])[:100]
 
 
@@ -170,6 +179,7 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot):
         f'🏠 Генерирую *{STYLE_RU[style]}* · *{ROOM_RU[room]}*\n'
         f'Это займёт 1–3 минуты, буду присылать обновления.',
         parse_mode='Markdown',
+        reply_markup=main_keyboard(),
     )
 
     stop_event = threading.Event()
@@ -259,16 +269,11 @@ def main():
 
     @bot.message_handler(commands=['start'])
     def on_start(message):
-        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add(telebot.types.KeyboardButton(
-            text='🏠 Открыть конструктор',
-            web_app=telebot.types.WebAppInfo(url='https://tp9mc.github.io'),
-        ))
         bot.send_message(
             message.chat.id,
             '👋 Привет! Выбери стиль и комнату, нажми «Сгенерировать» — '
             'я создам рендер и пришлю сюда.',
-            reply_markup=markup,
+            reply_markup=main_keyboard(),
         )
 
     print('Bot started, polling…')
