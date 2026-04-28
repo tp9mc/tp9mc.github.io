@@ -450,23 +450,31 @@ document.getElementById('btn-back').addEventListener('click', function() {
 
 var locked = false;
 document.getElementById('btn-gen').addEventListener('click', function() {
-  if (locked) return; locked = true;
+  if (locked) return;
+  if (!S.style) { haptic('impact','medium'); scrollTo('sec-style'); return; }
+  if (!S.room)  { haptic('impact','medium'); scrollTo('sec-room');  return; }
+  locked = true;
   haptic('notify','success');
   var btn = this; btn.disabled = true; btn.textContent = '...';
   var payload = { v:2, style:S.style, room:S.room, mode:'pair_picker', setup:S.setup, ts:Math.floor(Date.now()/1000) };
+
+  function reset() { btn.disabled=false; btn.textContent='Сгенерировать ▶'; locked=false; }
+
   setTimeout(function() {
     if (tg) {
       try {
         if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
         tg.sendData(JSON.stringify(payload));
+        // sendData closes the app immediately on success — if we're still here, it failed silently
+        setTimeout(reset, 1500);
       } catch(e) {
-        btn.disabled=false; btn.textContent='Сгенерировать ▶'; locked=false;
+        reset();
         if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
       }
     } else {
       console.log('payload:', JSON.stringify(payload, null, 2));
-      alert('Демо-режим\n\nСтиль: '+payload.style+'\nКомната: '+payload.room+'\n\nПолный payload в консоли.');
-      btn.disabled=false; btn.textContent='Сгенерировать ▶'; locked=false;
+      alert('Демо: ' + payload.style + ' / ' + payload.room);
+      reset();
     }
   }, 300);
 });
