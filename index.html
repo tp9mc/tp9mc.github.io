@@ -251,16 +251,19 @@ function defaultSetup() {
   CATS.forEach(function(c) { for (var i=1;i<=9;i++) s[c.id][c.px+'_'+i]=null; });
   return s;
 }
+var STATE_V = 2;
 var S = { style:null, room:null, setup: defaultSetup() };
 (function() {
   try {
     var sv = JSON.parse(sessionStorage.getItem('int_state') || 'null');
-    if (sv && sv.style) S.style = sv.style;
-    if (sv && sv.room)  S.room  = sv.room;
-    if (sv && sv.setup) S.setup = sv.setup;
+    if (sv && sv.v === STATE_V) {
+      if (sv.style) S.style = sv.style;
+      if (sv.room)  S.room  = sv.room;
+      if (sv.setup) S.setup = sv.setup;
+    }
   } catch(e) {}
 })();
-function save() { try { sessionStorage.setItem('int_state', JSON.stringify({style:S.style,room:S.room,setup:S.setup})); } catch(e) {} }
+function save() { try { sessionStorage.setItem('int_state', JSON.stringify({v:STATE_V,style:S.style,room:S.room,setup:S.setup})); } catch(e) {} }
 
 /* ── DOM helpers ── */
 var CHK = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5l3 3 5-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
