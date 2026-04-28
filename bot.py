@@ -440,9 +440,24 @@ def main():
             daemon=True,
         ).start()
 
+    APP_URL = 'https://tp9mc.github.io'
+
+    def set_menu_button(chat_id):
+        try:
+            bot.set_chat_menu_button(
+                chat_id=chat_id,
+                menu_button=telebot.types.MenuButtonWebApp(
+                    text='🏠 Конструктор',
+                    web_app=telebot.types.WebAppInfo(url=APP_URL),
+                ),
+            )
+        except Exception:
+            pass  # older clients may not support it
+
     @bot.message_handler(commands=['start', 'restart'])
     def on_start(message):
         log_event(message.chat.id, uname(message), message.text.split()[0].lstrip('/'))
+        set_menu_button(message.chat.id)
         bot.send_message(
             message.chat.id,
             '👋 Привет! Выбери стиль и комнату, нажми «Сгенерировать» — '
