@@ -274,8 +274,8 @@ def build_stats_report() -> str:
         lines.append(f'    Действия: {details}')
         lines.append('')
 
-    lines += ['─' * W, '  ПОЛНЫЙ ЛОГ СОБЫТИЙ', '─' * W]
-    for e in events:
+    lines += ['─' * W, '  ПОЛНЫЙ ЛОГ СОБЫТИЙ (новые сверху)', '─' * W]
+    for e in reversed(events):
         detail = {k: v for k, v in e.items() if k not in ('ts', 'user_id', 'username', 'action')}
         detail_str = ('  ' + ', '.join(f'{k}={v}' for k, v in detail.items())) if detail else ''
         lines.append(f'  {e["ts"]}  @{e["username"]}  {e["action"]}{detail_str}')
@@ -549,7 +549,7 @@ def build_prompt_and_report(style, room, setup, catalog):
 
 
 def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec, backend='hf'):
-    W = 62
+    W = 42
     lines = []
 
     # ── Шапка ──────────────────────────────────────────────────
@@ -570,36 +570,37 @@ def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec,
         for n, variant, name_ru, phrase in cat_sels:
             label = slot_labels[n - 1] if n - 1 < len(slot_labels) else f'{px}_{n}'
             if not variant:
-                lines.append(f'  {n:2}. {label:<26} —')
+                lines.append(f'  {n:2}. {label}')
+                lines.append(f'      — не выбрано')
                 continue
             vi       = 0 if variant == 'main' else 1
             var_name = slot_opts[n - 1][vi] if n - 1 < len(slot_opts) else ('A' if vi == 0 else 'Б')
             display  = name_ru if name_ru else var_name
-            lines.append(f'  {n:2}. {label:<26} [{var_name}]  {display}')
+            lines.append(f'  {n:2}. {label}')
+            lines.append(f'      ↳ [{var_name}] {display}')
         lines.append('')
 
     # ── Технические параметры ──────────────────────────────────
     lines += ['═' * W, '  ТЕХНИЧЕСКИЕ ПАРАМЕТРЫ', '═' * W, '']
     if backend == 'hf':
-        lines.append(f'  Модель:    FLUX.1-schnell (black-forest-labs)')
-        lines.append(f'  Провайдер: HuggingFace Inference API')
+        lines.append(f'  Модель:    FLUX.1-schnell')
+        lines.append(f'  Провайдер: HuggingFace')
         lines.append(f'  Размер:    1344×768')
         lines.append(f'  Время:     {elapsed_sec // 60}м {elapsed_sec % 60:02d}с')
         lines.append(f'  Стоимость: ${HF_COST_PER_IMAGE:.4f}')
         lines.append('')
-        lines += ['─' * W, '  ПРОМТ (EN)', '─' * W]
+        lines += ['─' * W, '  ПРОМТ', '─' * W]
         lines.append(prompt)
     else:
-        lines.append(f'  Модель:    Juggernaut XL v9 (SD WebUI fallback)')
+        lines.append(f'  Модель:    Juggernaut XL v9')
         lines.append(f'  Сэмплер:   Euler / Karras')
-        lines.append(f'  Шаги:      30')
-        lines.append(f'  CFG:       10')
+        lines.append(f'  Шаги:      30  CFG: 10')
         lines.append(f'  Seed:      {seed}')
         lines.append(f'  Размер:    1344×768')
         lines.append(f'  Время:     {elapsed_sec // 60}м {elapsed_sec % 60:02d}с')
-        lines.append(f'  Стоимость: $0.00 (локальная генерация)')
+        lines.append(f'  Стоимость: $0.00 (локально)')
         lines.append('')
-        lines += ['─' * W, '  ПРОМТ (EN)', '─' * W]
+        lines += ['─' * W, '  ПРОМТ', '─' * W]
         lines.append(prompt)
         lines.append('')
         lines += ['─' * W, '  НЕГАТИВНЫЙ ПРОМТ', '─' * W]
