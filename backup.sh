@@ -42,3 +42,14 @@ done
 find "$BDIR" -maxdepth 1 \( -name "code-*.tar.gz" -o -name "bot_stats-*.jsonl" -o -name "catalog-*.json" \) \
     -mtime +14 -delete
 log "rotation done. backup complete."
+
+# ── 5. Restart bot ────────────────────────────────────────────
+BOT_PID=$(cat /tmp/propferma_bot.lock 2>/dev/null)
+if [[ -n "$BOT_PID" ]] && kill -0 "$BOT_PID" 2>/dev/null; then
+    kill "$BOT_PID"
+    log "stopped bot (PID $BOT_PID)"
+fi
+rm -f /tmp/propferma_bot.lock
+sleep 2
+nohup /usr/local/bin/python3.14 "$REPO/bot.py" >> /tmp/bot.log 2>&1 &
+log "bot restarted (PID $!)"
