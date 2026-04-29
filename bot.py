@@ -833,11 +833,56 @@ def main():
             bot.send_message(message.chat.id, '❌ Не удалось разобрать данные из Mini App.')
             return
 
+        if payload.get('type') == 'publish':
+            def _do_publish():
+                data = payload
+                edits  = data.get('edits', {})
+                imgs   = data.get('imgs',  {})
+                changes = data.get('changes', [])
+                os.makedirs(ASSETS_DIR, exist_ok=True)
+                site_edits_path = os.path.join(REPO_DIR, 'site_edits.json')
+                with open(site_edits_path, 'w', encoding='utf-8') as f:
+                    json.dump({'edits': edits, 'imgs': imgs}, f, ensure_ascii=False, indent=2)
+                result = subprocess.run(
+                    'git add site_edits.json custom_assets/ '
+                    '&& git diff --cached --quiet '
+                    '|| git commit -m "site: publish editor changes" '
+                    '&& git push origin main',
+                    shell=True, cwd=REPO_DIR, capture_output=True, text=True,
+                )
+                if result.returncode == 0:
+                    log_event(message.chat.id, un, 'site_publish', {
+                        'texts':   len(edits),
+                        'images':  len(imgs),
+                        'changes': changes,
+                    })
+                    bot.send_message(message.chat.id, '✅ Изменения опубликованы на сайте!')
+                else:
+                    bot.send_message(message.chat.id, '❌ Ошибка публикации.')
+            threading.Thread(target=_do_publish, daemon=True).start()
+            return
+
         threading.Thread(
             target=generate_room,
             args=(message.chat.id, payload, bot, un),
             daemon=True,
         ).start()
+
+    @bot.message_handler(commands=['publish'])
+    def on_publish(message):
+        if message.chat.id not in EDITOR_CHAT_IDS:
+            return
+        log_event(message.chat.id, uname(message), 'publish_cmd')
+        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        markup.add(telebot.types.KeyboardButton(
+            text='✏️ Открыть редактор',
+            web_app=telebot.types.WebAppInfo(url=APP_URL),
+        ))
+        bot.send_message(
+            message.chat.id,
+            '👇 Открой редактор, внеси изменения и нажми на точку — они придут прямо в бот.',
+            reply_markup=markup,
+        )
 
     APP_URL = 'https://tp9mc.github.io'
 

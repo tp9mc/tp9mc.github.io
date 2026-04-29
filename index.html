@@ -795,11 +795,20 @@ document.getElementById('edit-dot').addEventListener('click', function() {
         changes.push({type: 'prompt', eid: eid, value: cur.prompt});
     });
     // Publish changes
+    var tg = window.Telegram && window.Telegram.WebApp;
+    // sendData is only available when opened via ReplyKeyboard button (/publish command)
+    if (tg && tg.sendData && changes.length > 0) {
+      var payload = JSON.stringify({type:'publish', edits:EDITS, imgs:{}, changes:changes});
+      if (payload.length <= 4096) {
+        tg.sendData(payload);
+        return; // app closes, bot handles the rest
+      }
+    }
     dot.style.pointerEvents = 'none'; dot.style.opacity = '0.4';
     fetch(_getProxyUrl() + '/publish', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({edits: EDITS, imgs: IMG_STORE, changes: changes, user: (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe ? window.Telegram.WebApp.initDataUnsafe.user || null : null)})
+      body: JSON.stringify({edits: EDITS, imgs: IMG_STORE, changes: changes, user: (tg && tg.initDataUnsafe ? tg.initDataUnsafe.user || null : null)})
     }).then(function(r) { return r.json(); }).then(function(d) {
       dot.style.pointerEvents = ''; dot.style.opacity = '';
       dot.classList.add(d.ok ? 'pub-ok' : 'pub-err');
