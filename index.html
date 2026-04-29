@@ -766,8 +766,10 @@ function _loadPrompts(cb) {
 var EDITOR_IDS = [184667104, 356003432];
 (function() {
   var tgWA = window.Telegram && window.Telegram.WebApp;
-  var uid = tgWA && tgWA.initDataUnsafe && tgWA.initDataUnsafe.user && parseInt(tgWA.initDataUnsafe.user.id);
-  if (!uid || EDITOR_IDS.indexOf(uid) === -1)
+  var user = tgWA && tgWA.initDataUnsafe && tgWA.initDataUnsafe.user;
+  // Hide only when identity is known AND user is not an editor.
+  // If initDataUnsafe is empty (desktop Telegram, direct link) — show the dot.
+  if (user && user.id && EDITOR_IDS.indexOf(parseInt(user.id)) === -1)
     document.getElementById('edit-dot').style.display = 'none';
 })();
 
