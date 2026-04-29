@@ -716,7 +716,9 @@ var ORIG_PROMPTS = {
 var EDITS = {};
 try { EDITS = JSON.parse(localStorage.getItem('ie_edits') || '{}'); } catch(e) {}
 var _editOn = false;
-var _savedScrollY = 0;
+function _scrollLock(e) {
+  if (!e.target.closest('#img-edit-modal,#gen-overlay')) e.preventDefault();
+}
 
 function applyEdits() {
   document.querySelectorAll('[data-eid]').forEach(function(el) {
@@ -765,19 +767,11 @@ document.getElementById('edit-dot').addEventListener('click', function() {
   document.body.classList.toggle('editing', _editOn);
 
   if (_editOn) {
-    _savedScrollY = document.body.scrollTop || window.pageYOffset || 0;
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = (-_savedScrollY) + 'px';
-    document.body.style.width = '100%';
+    document.addEventListener('touchmove', _scrollLock, {passive: false});
     _editSnapshot = JSON.stringify({e: EDITS, i: IMG_STORE});
     _loadPrompts(function() { _attachEditable(); _attachImgDots(); });
   } else {
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    window.scrollTo(0, _savedScrollY);
+    document.removeEventListener('touchmove', _scrollLock, {passive: false});
     _detachEditable(); _detachImgDots();
     var changed = JSON.stringify({e: EDITS, i: IMG_STORE}) !== _editSnapshot;
     if (!changed) return;
