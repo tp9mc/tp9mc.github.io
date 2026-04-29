@@ -281,7 +281,7 @@ def _start_tunnel(bot_ref=None):
                     markup.add(telebot.types.KeyboardButton(
                         text='✏️ Открыть редактор',
                         web_app=telebot.types.WebAppInfo(
-                            url=f'https://tp9mc.github.io?proxy={_tunnel_url}&t={GH_PUBLISH_TOKEN}'
+                            url=f'https://tp9mc.github.io?proxy={_tunnel_url}&t={GH_PUBLISH_TOKEN}&u=editor'
                         ),
                     ))
                     for cid in EDITOR_CHAT_IDS:
@@ -596,8 +596,11 @@ SLOT_OPTS = {
 NEG = ('people, person, human figure, ugly, deformed, noisy, blurry, low resolution, '
        'oversaturated, flat lighting, text, watermark, logo, clutter, dark')
 
-def app_keyboard(editor=False):
-    url = f'https://tp9mc.github.io?t={GH_PUBLISH_TOKEN}' if editor else 'https://tp9mc.github.io'
+def app_keyboard(editor=False, username=''):
+    if editor:
+        url = f'https://tp9mc.github.io?t={GH_PUBLISH_TOKEN}&u={username}'
+    else:
+        url = 'https://tp9mc.github.io'
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(telebot.types.KeyboardButton(
         text='🏠 Открыть конструктор',
@@ -951,7 +954,7 @@ def main():
         bot.send_message(
             message.chat.id,
             '👋 Привет! Нажми кнопку чтобы открыть конструктор.',
-            reply_markup=app_keyboard(editor=is_editor),
+            reply_markup=app_keyboard(editor=is_editor, username=uname(message)),
         )
 
     @bot.message_handler(commands=['stats'])

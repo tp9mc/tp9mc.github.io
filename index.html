@@ -213,6 +213,8 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
     if (p) localStorage.setItem('gen_proxy_url', p.replace(/\/$/, ''));
     var t = params.get('t');
     if (t) localStorage.setItem('gh_pub_token', t);
+    var u = params.get('u');
+    if (u) localStorage.setItem('gh_pub_user', u);
   } catch(e) {}
 })();
 
@@ -796,7 +798,8 @@ function _publishToGitHub(edits, imgs, changes, tgUser) {
         });
       }
       var body = JSON.stringify({edits: edits, imgs: mergedImgs}, null, 2);
-      var author = tgUser ? (tgUser.username || tgUser.first_name || 'editor') : 'editor';
+      var author = (tgUser && (tgUser.username || tgUser.first_name))
+                  || localStorage.getItem('gh_pub_user') || 'editor';
       return fetch(API, {
         method: 'PUT', headers: hdrs,
         body: JSON.stringify({
