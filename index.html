@@ -796,12 +796,14 @@ document.getElementById('edit-dot').addEventListener('click', function() {
     });
     // Publish changes
     var tg = window.Telegram && window.Telegram.WebApp;
-    // sendData is only available when opened via ReplyKeyboard button (/publish command)
+    // sendData works when app is opened via ReplyKeyboard (/start button)
     if (tg && tg.sendData && changes.length > 0) {
       var payload = JSON.stringify({type:'publish', edits:EDITS, imgs:{}, changes:changes});
       if (payload.length <= 4096) {
-        tg.sendData(payload);
-        return; // app closes, bot handles the rest
+        try {
+          tg.sendData(payload);
+          return; // app closes, bot handles the rest
+        } catch(e) {} // not in keyboard context — fall through to proxy
       }
     }
     dot.style.pointerEvents = 'none'; dot.style.opacity = '0.4';

@@ -230,20 +230,18 @@ def _start_tunnel(bot_ref=None):
                 _tunnel_url = m.group(0)
                 print(f'[tunnel] {_tunnel_url}')
                 if bot_ref:
-                    markup = telebot.types.InlineKeyboardMarkup([[
-                        telebot.types.InlineKeyboardButton(
-                            '🏠 Открыть редактор',
-                            web_app=telebot.types.WebAppInfo(
-                                url=f'https://tp9mc.github.io?proxy={_tunnel_url}'
-                            ),
-                        )
-                    ]])
+                    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+                    markup.add(telebot.types.KeyboardButton(
+                        text='✏️ Открыть редактор',
+                        web_app=telebot.types.WebAppInfo(
+                            url=f'https://tp9mc.github.io?proxy={_tunnel_url}'
+                        ),
+                    ))
                     for cid in EDITOR_CHAT_IDS:
                         try:
                             msg = bot_ref.send_message(
                                 cid,
-                                f'🌐 Прокси: `{_tunnel_url}`',
-                                parse_mode='Markdown',
+                                '✏️ Редактор готов',
                                 reply_markup=markup,
                                 disable_notification=True,
                             )
@@ -841,6 +839,13 @@ def main():
                 changes = data.get('changes', [])
                 os.makedirs(ASSETS_DIR, exist_ok=True)
                 site_edits_path = os.path.join(REPO_DIR, 'site_edits.json')
+                # sendData sends imgs:{} — preserve existing custom images
+                if not imgs:
+                    try:
+                        with open(site_edits_path, 'r', encoding='utf-8') as f:
+                            imgs = json.load(f).get('imgs', {})
+                    except Exception:
+                        imgs = {}
                 with open(site_edits_path, 'w', encoding='utf-8') as f:
                     json.dump({'edits': edits, 'imgs': imgs}, f, ensure_ascii=False, indent=2)
                 result = subprocess.run(
@@ -867,22 +872,6 @@ def main():
             args=(message.chat.id, payload, bot, un),
             daemon=True,
         ).start()
-
-    @bot.message_handler(commands=['publish'])
-    def on_publish(message):
-        if message.chat.id not in EDITOR_CHAT_IDS:
-            return
-        log_event(message.chat.id, uname(message), 'publish_cmd')
-        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        markup.add(telebot.types.KeyboardButton(
-            text='✏️ Открыть редактор',
-            web_app=telebot.types.WebAppInfo(url=APP_URL),
-        ))
-        bot.send_message(
-            message.chat.id,
-            '👇 Открой редактор, внеси изменения и нажми на точку — они придут прямо в бот.',
-            reply_markup=markup,
-        )
 
     APP_URL = 'https://tp9mc.github.io'
 
