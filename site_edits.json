@@ -1,4 +1,10 @@
 {
-  "edits": {},
+  "edits": {
+    "h-style": "Стиль интерьера",
+    "test": "ok",
+    "opt-japandi-bedroom-furniture-0-alt": "Высокая",
+    "opt-modern_classic-bathroom-furniture-4-main": "Парящие",
+    "h-room": "Комната"
+  },
   "imgs": {}
 }
