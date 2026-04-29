@@ -198,6 +198,45 @@ def _start_gen_proxy():
 threading.Thread(target=_start_gen_proxy, daemon=True).start()
 
 
+def _poll_gh_publishes():
+    """Detect GitHub-API publishes by polling commits to site_edits.json."""
+    last_sha = None
+    while True:
+        time.sleep(300)
+        try:
+            r = requests.get(
+                'https://api.github.com/repos/tp9mc/tp9mc.github.io/commits'
+                '?path=site_edits.json&per_page=1',
+                headers={'Authorization': f'token {GH_PUBLISH_TOKEN}'},
+                timeout=10,
+            )
+            if r.status_code != 200:
+                continue
+            commits = r.json()
+            if not commits:
+                continue
+            sha = commits[0]['sha']
+            if last_sha is None:
+                last_sha = sha
+                continue
+            if sha == last_sha:
+                continue
+            last_sha = sha
+            msg = commits[0]['commit']['message']
+            # "site: publish by @Username"
+            m = re.search(r'@(\S+)', msg)
+            author = m.group(1) if m else 'editor'
+            log_event(OWNER_CHAT_ID, author, 'site_publish', {
+                'texts': 0, 'images': 0, 'changes': [],
+                'via': 'github_api', 'sha': sha[:8],
+            })
+        except Exception:
+            pass
+
+
+threading.Thread(target=_poll_gh_publishes, daemon=True).start()
+
+
 # ── Cloudflare quick tunnel (public HTTPS URL for the proxy) ──────────────
 _tunnel_url: str | None = None
 _PENDING_DEL_PATH = '/tmp/propferma_pending_del.json'
