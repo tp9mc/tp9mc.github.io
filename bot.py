@@ -349,7 +349,7 @@ def build_stats_report() -> str:
         }
         for e in reversed(publish_events):
             changes = e.get('changes', [])
-            pub_who = f'@{e["username"]}  ' if e.get('username') and e['username'] != 'editor' else ''
+            pub_who = f'@{e.get("username","?")}  '
             lines.append(f'  {e["ts"]}  {pub_who}({len(changes)} изм.)')
             for c in changes:
                 t    = TYPE_RU.get(c.get('type',''), c.get('type',''))
