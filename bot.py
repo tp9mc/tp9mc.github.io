@@ -152,6 +152,12 @@ class _GenHandler(BaseHTTPRequestHandler):
                 shell=True, cwd=REPO_DIR, capture_output=True, text=True,
             )
             ok = result.returncode == 0
+            if ok:
+                log_event(OWNER_CHAT_ID, 'editor', 'site_publish', {
+                    'texts':  len(edits),
+                    'images': len(clean_imgs),
+                    'eids':   list(edits.keys())[:20] + list(clean_imgs.keys())[:20],
+                })
             self._respond(200, json.dumps({'ok': ok}).encode(), 'application/json')
         except Exception as e:
             self._respond(500, json.dumps({'error': str(e)[:200]}).encode(), 'application/json')
@@ -284,6 +290,8 @@ def build_stats_report() -> str:
         elif e['action'] == 'gen_fail':
             gen_fail += 1
 
+    publish_events = [e for e in events if e['action'] == 'site_publish']
+
     W = 62
     lines = []
     lines += ['═' * W, '  СТАТИСТИКА БОТА', '═' * W, '']
@@ -326,6 +334,19 @@ def build_stats_report() -> str:
         details = ', '.join(f'{k}={v}' for k, v in sorted(acts.items()))
         lines.append(f'    Действия: {details}')
         lines.append('')
+
+    if publish_events:
+        lines += ['─' * W, '  ИЗМЕНЕНИЯ НА САЙТЕ', '─' * W]
+        for e in reversed(publish_events):
+            texts  = e.get('texts',  0)
+            images = e.get('images', 0)
+            eids   = e.get('eids',   [])
+            lines.append(f'  {e["ts"]}')
+            lines.append(f'    Текстов: {texts}  Картинок: {images}')
+            if eids:
+                for eid in eids:
+                    lines.append(f'    • {eid}')
+            lines.append('')
 
     lines += ['─' * W, '  ПОЛНЫЙ ЛОГ СОБЫТИЙ (новые сверху)', '─' * W]
     for e in reversed(events):
