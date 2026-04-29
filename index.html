@@ -762,7 +762,47 @@ function _loadPrompts(cb) {
   }).catch(function() { _promptsLoaded = true; if (cb) cb(); });
 }
 
+// editor Telegram user IDs — mirrors EDITOR_CHAT_IDS in bot_secrets.py
+var EDITOR_IDS = [184667104, 356003432];
+(function() {
+  var tgWA = window.Telegram && window.Telegram.WebApp;
+  var uid = tgWA && tgWA.initDataUnsafe && tgWA.initDataUnsafe.user && parseInt(tgWA.initDataUnsafe.user.id);
+  if (!uid || EDITOR_IDS.indexOf(uid) === -1)
+    document.getElementById('edit-dot').style.display = 'none';
+})();
+
 var _editSnapshot = '';
+
+function _publishToGitHub(edits, imgs, changes, tgUser) {
+  var GH_TOKEN = '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';
+  var API = 'https://api.github.com/repos/tp9mc/tp9mc.github.io/contents/site_edits.json';
+  var hdrs = {'Authorization':'token '+GH_TOKEN,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
+  return fetch(API, {headers: hdrs})
+    .then(function(r) { return r.json(); })
+    .then(function(cur) {
+      var existing = {};
+      try { existing = JSON.parse(decodeURIComponent(escape(atob(cur.content.replace(/\n/g,''))))); } catch(e) {}
+      var hasImg = changes.some(function(c) { return c.type==='upload'||c.type==='gen'; });
+      var mergedImgs = Object.assign({}, existing.imgs || {});
+      if (hasImg) {
+        Object.keys(imgs).forEach(function(eid) {
+          var it = imgs[eid];
+          if (it && it.url && it.url.indexOf('data:') !== 0) mergedImgs[eid] = it;
+        });
+      }
+      var body = JSON.stringify({edits: edits, imgs: mergedImgs}, null, 2);
+      var author = tgUser ? (tgUser.username || tgUser.first_name || 'editor') : 'editor';
+      return fetch(API, {
+        method: 'PUT', headers: hdrs,
+        body: JSON.stringify({
+          message: 'site: publish by @' + author,
+          content: btoa(unescape(encodeURIComponent(body))),
+          sha: cur.sha
+        })
+      });
+    })
+    .then(function(r) { if (!r.ok) throw new Error(r.status); });
+}
 
 document.getElementById('edit-dot').addEventListener('click', function() {
   var dot = this;
@@ -779,7 +819,6 @@ document.getElementById('edit-dot').addEventListener('click', function() {
     _detachEditable(); _detachImgDots();
     var changed = JSON.stringify({e: EDITS, i: IMG_STORE}) !== _editSnapshot;
     if (!changed) return;
-    // Build diff for logging
     var snap = JSON.parse(_editSnapshot);
     var snapE = snap.e || {}, snapI = snap.i || {};
     var changes = [];
@@ -794,27 +833,15 @@ document.getElementById('edit-dot').addEventListener('click', function() {
       if (cur.prompt && cur.prompt !== prev.prompt)
         changes.push({type: 'prompt', eid: eid, value: cur.prompt});
     });
-    // Publish changes
     var tg = window.Telegram && window.Telegram.WebApp;
-    // sendData works when app is opened via ReplyKeyboard (/start button)
-    if (tg && tg.sendData && changes.length > 0) {
-      var payload = JSON.stringify({type:'publish', edits:EDITS, imgs:{}, changes:changes});
-      if (payload.length <= 4096) {
-        try {
-          tg.sendData(payload);
-          return; // app closes, bot handles the rest
-        } catch(e) {} // not in keyboard context — fall through to proxy
-      }
-    }
+    var tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user || null : null;
     dot.style.pointerEvents = 'none'; dot.style.opacity = '0.4';
-    fetch(_getProxyUrl() + '/publish', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({edits: EDITS, imgs: IMG_STORE, changes: changes, user: (tg && tg.initDataUnsafe ? tg.initDataUnsafe.user || null : null)})
-    }).then(function(r) { return r.json(); }).then(function(d) {
+    _publishToGitHub(EDITS, IMG_STORE, changes, tgUser).then(function() {
       dot.style.pointerEvents = ''; dot.style.opacity = '';
-      dot.classList.add(d.ok ? 'pub-ok' : 'pub-err');
-      setTimeout(function() { dot.classList.remove('pub-ok','pub-err'); }, 2000);
+      dot.classList.add('pub-ok');
+      setTimeout(function() { dot.classList.remove('pub-ok'); }, 2000);
+      // stats ping to bot — fire-and-forget, ok if unreachable
+      try { fetch(_getProxyUrl()+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({edits:{},imgs:{},changes:changes,user:tgUser,stats_only:true})}).catch(function(){}); } catch(e) {}
     }).catch(function() {
       dot.style.pointerEvents = ''; dot.style.opacity = '';
       dot.classList.add('pub-err');

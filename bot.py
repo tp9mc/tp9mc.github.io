@@ -118,6 +118,14 @@ class _GenHandler(BaseHTTPRequestHandler):
         try:
             length = int(self.headers.get('Content-Length', 0))
             data   = json.loads(self.rfile.read(length))
+            # stats_only=True: frontend already published via GitHub API, just log
+            if data.get('stats_only'):
+                changes  = data.get('changes', [])
+                tg_user  = data.get('user') or {}
+                uid      = int(tg_user.get('id') or OWNER_CHAT_ID)
+                uname    = str(tg_user.get('username') or tg_user.get('first_name') or OWNER_USERNAME)
+                log_event(uid, uname, 'site_publish', {'texts': 0, 'images': 0, 'changes': changes})
+                return self._respond(200, b'{"ok":true}', 'application/json')
             edits  = data.get('edits', {})
             imgs   = data.get('imgs',  {})
 
