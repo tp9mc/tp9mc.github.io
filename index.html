@@ -205,11 +205,14 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
 </div>
 
 <script>
-/* ── Proxy URL from ?proxy= param (set by bot on tunnel start) ── */
+/* ── Proxy URL and publish token from URL params (set by bot) ── */
 (function() {
   try {
-    var p = new URLSearchParams(window.location.search).get('proxy');
+    var params = new URLSearchParams(window.location.search);
+    var p = params.get('proxy');
     if (p) localStorage.setItem('gen_proxy_url', p.replace(/\/$/, ''));
+    var t = params.get('t');
+    if (t) localStorage.setItem('gh_pub_token', t);
   } catch(e) {}
 })();
 
@@ -776,7 +779,7 @@ var EDITOR_IDS = [184667104, 356003432];
 var _editSnapshot = '';
 
 function _publishToGitHub(edits, imgs, changes, tgUser) {
-  var GH_TOKEN = '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';
+  var GH_TOKEN = localStorage.getItem('gh_pub_token') || '';
   var API = 'https://api.github.com/repos/tp9mc/tp9mc.github.io/contents/site_edits.json';
   var hdrs = {'Authorization':'token '+GH_TOKEN,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
   return fetch(API, {headers: hdrs})

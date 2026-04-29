@@ -10,7 +10,7 @@ from PIL import Image
 from datetime import datetime
 from collections import defaultdict
 
-from bot_secrets import BOT_TOKEN, HF_TOKEN, OWNER_CHAT_ID, OWNER_USERNAME, EDITOR_CHAT_IDS  # not committed to git
+from bot_secrets import BOT_TOKEN, HF_TOKEN, OWNER_CHAT_ID, OWNER_USERNAME, EDITOR_CHAT_IDS, GH_PUBLISH_TOKEN  # not committed to git
 HF_URL        = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
 HF_TIMEOUT    = 120
 HF_COST_PER_IMAGE = 0.0017  # $1.40 / 802 requests (Apr 2026)
@@ -242,7 +242,7 @@ def _start_tunnel(bot_ref=None):
                     markup.add(telebot.types.KeyboardButton(
                         text='✏️ Открыть редактор',
                         web_app=telebot.types.WebAppInfo(
-                            url=f'https://tp9mc.github.io?proxy={_tunnel_url}'
+                            url=f'https://tp9mc.github.io?proxy={_tunnel_url}&t={GH_PUBLISH_TOKEN}'
                         ),
                     ))
                     for cid in EDITOR_CHAT_IDS:
@@ -557,11 +557,12 @@ SLOT_OPTS = {
 NEG = ('people, person, human figure, ugly, deformed, noisy, blurry, low resolution, '
        'oversaturated, flat lighting, text, watermark, logo, clutter, dark')
 
-def app_keyboard():
+def app_keyboard(editor=False):
+    url = f'https://tp9mc.github.io?t={GH_PUBLISH_TOKEN}' if editor else 'https://tp9mc.github.io'
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(telebot.types.KeyboardButton(
         text='🏠 Открыть конструктор',
-        web_app=telebot.types.WebAppInfo(url='https://tp9mc.github.io'),
+        web_app=telebot.types.WebAppInfo(url=url),
     ))
     return markup
 
@@ -907,10 +908,11 @@ def main():
     def on_start(message):
         log_event(message.chat.id, uname(message), message.text.split()[0].lstrip('/'))
         set_menu_button(message.chat.id)
+        is_editor = message.chat.id in EDITOR_CHAT_IDS
         bot.send_message(
             message.chat.id,
             '👋 Привет! Нажми кнопку чтобы открыть конструктор.',
-            reply_markup=app_keyboard(),
+            reply_markup=app_keyboard(editor=is_editor),
         )
 
     @bot.message_handler(commands=['stats'])
