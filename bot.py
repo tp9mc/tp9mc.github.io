@@ -10,7 +10,7 @@ from PIL import Image
 from datetime import datetime
 from collections import defaultdict
 
-from bot_secrets import BOT_TOKEN, HF_TOKEN, OWNER_CHAT_ID, OWNER_USERNAME  # not committed to git
+from bot_secrets import BOT_TOKEN, HF_TOKEN, OWNER_CHAT_ID, OWNER_USERNAME, EDITOR_CHAT_IDS  # not committed to git
 HF_URL        = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
 HF_TIMEOUT    = 120
 HF_COST_PER_IMAGE = 0.0017  # $1.40 / 802 requests (Apr 2026)
@@ -194,7 +194,7 @@ threading.Thread(target=_start_gen_proxy, daemon=True).start()
 _tunnel_url: str | None = None
 
 
-def _start_tunnel(notify_chat_id: int | None = None, bot_ref=None):
+def _start_tunnel(bot_ref=None):
     """Start cloudflared quick tunnel, parse URL, optionally notify via Telegram."""
     global _tunnel_url
     try:
@@ -209,31 +209,31 @@ def _start_tunnel(notify_chat_id: int | None = None, bot_ref=None):
             if m:
                 _tunnel_url = m.group(0)
                 print(f'[tunnel] {_tunnel_url}')
-                if notify_chat_id and bot_ref:
-                    try:
-                        markup = telebot.types.InlineKeyboardMarkup([[
-                            telebot.types.InlineKeyboardButton(
-                                '🏠 Открыть редактор',
-                                web_app=telebot.types.WebAppInfo(
-                                    url=f'https://tp9mc.github.io?proxy={_tunnel_url}'
-                                ),
-                            )
-                        ]])
-                        msg = bot_ref.send_message(
-                            notify_chat_id,
-                            f'🌐 Прокси: `{_tunnel_url}`',
-                            parse_mode='Markdown',
-                            reply_markup=markup,
-                            disable_notification=True,
+                if bot_ref:
+                    markup = telebot.types.InlineKeyboardMarkup([[
+                        telebot.types.InlineKeyboardButton(
+                            '🏠 Открыть редактор',
+                            web_app=telebot.types.WebAppInfo(
+                                url=f'https://tp9mc.github.io?proxy={_tunnel_url}'
+                            ),
                         )
-                        # Auto-delete after 30s so it doesn't clutter the chat
-                        def _del(cid=notify_chat_id, mid=msg.message_id):
-                            time.sleep(30)
-                            try: bot_ref.delete_message(cid, mid)
-                            except Exception: pass
-                        threading.Thread(target=_del, daemon=True).start()
-                    except Exception:
-                        pass
+                    ]])
+                    for cid in EDITOR_CHAT_IDS:
+                        try:
+                            msg = bot_ref.send_message(
+                                cid,
+                                f'🌐 Прокси: `{_tunnel_url}`',
+                                parse_mode='Markdown',
+                                reply_markup=markup,
+                                disable_notification=True,
+                            )
+                            def _del(c=cid, m=msg.message_id):
+                                time.sleep(30)
+                                try: bot_ref.delete_message(c, m)
+                                except Exception: pass
+                            threading.Thread(target=_del, daemon=True).start()
+                        except Exception:
+                            pass
                 break
         proc.wait()
     except FileNotFoundError:
@@ -793,7 +793,7 @@ def main():
     bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
 
     threading.Thread(
-        target=_start_tunnel, kwargs={'notify_chat_id': OWNER_CHAT_ID, 'bot_ref': bot},
+        target=_start_tunnel, kwargs={'bot_ref': bot},
         daemon=True,
     ).start()
 
