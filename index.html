@@ -601,6 +601,10 @@ document.getElementById('cat-tabs').addEventListener('click', function(e) {
   var btn = e.target.closest('.cat-tab'); if (!btn) return;
   haptic('impact','light');
   switchCat(btn.dataset.cat);
+  setTimeout(function() {
+    var first = document.querySelector('#pane-' + btn.dataset.cat + ' > div:first-child');
+    if (first) first.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }, 50);
 });
 
 /* ── Scroll after slot pick ── */
