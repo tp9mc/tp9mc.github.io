@@ -152,11 +152,12 @@ class _GenHandler(BaseHTTPRequestHandler):
                 shell=True, cwd=REPO_DIR, capture_output=True, text=True,
             )
             ok = result.returncode == 0
+            changes = data.get('changes', [])
             if ok:
                 log_event(OWNER_CHAT_ID, 'editor', 'site_publish', {
-                    'texts':  len(edits),
-                    'images': len(clean_imgs),
-                    'eids':   list(edits.keys())[:20] + list(clean_imgs.keys())[:20],
+                    'texts':   len(edits),
+                    'images':  len(clean_imgs),
+                    'changes': changes,
                 })
             self._respond(200, json.dumps({'ok': ok}).encode(), 'application/json')
         except Exception as e:
@@ -337,15 +338,24 @@ def build_stats_report() -> str:
 
     if publish_events:
         lines += ['─' * W, '  ИЗМЕНЕНИЯ НА САЙТЕ', '─' * W]
+        TYPE_RU = {
+            'text':   'Текст',
+            'prompt': 'Промт',
+            'upload': 'Картинка (загружена)',
+            'gen':    'Картинка (генерация)',
+        }
         for e in reversed(publish_events):
-            texts  = e.get('texts',  0)
-            images = e.get('images', 0)
-            eids   = e.get('eids',   [])
-            lines.append(f'  {e["ts"]}')
-            lines.append(f'    Текстов: {texts}  Картинок: {images}')
-            if eids:
-                for eid in eids:
-                    lines.append(f'    • {eid}')
+            changes = e.get('changes', [])
+            lines.append(f'  {e["ts"]}  ({len(changes)} изм.)')
+            for c in changes:
+                t    = TYPE_RU.get(c.get('type',''), c.get('type',''))
+                eid  = c.get('eid', '')
+                val  = c.get('value', '')
+                if val:
+                    short = val[:60] + ('…' if len(val) > 60 else '')
+                    lines.append(f'    • {t}: [{eid}] → {short}')
+                else:
+                    lines.append(f'    • {t}: [{eid}]')
             lines.append('')
 
     lines += ['─' * W, '  ПОЛНЫЙ ЛОГ СОБЫТИЙ (новые сверху)', '─' * W]

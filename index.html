@@ -770,12 +770,27 @@ document.getElementById('edit-dot').addEventListener('click', function() {
     _detachEditable(); _detachImgDots();
     var changed = JSON.stringify({e: EDITS, i: IMG_STORE}) !== _editSnapshot;
     if (!changed) return;
+    // Build diff for logging
+    var snap = JSON.parse(_editSnapshot);
+    var snapE = snap.e || {}, snapI = snap.i || {};
+    var changes = [];
+    Object.keys(EDITS).forEach(function(eid) {
+      if (EDITS[eid] !== snapE[eid])
+        changes.push({type: 'text', eid: eid, value: EDITS[eid]});
+    });
+    Object.keys(IMG_STORE).forEach(function(eid) {
+      var cur = IMG_STORE[eid], prev = snapI[eid] || {};
+      if (cur.url && cur.url !== prev.url)
+        changes.push({type: cur.source === 'generated' ? 'gen' : 'upload', eid: eid});
+      if (cur.prompt && cur.prompt !== prev.prompt)
+        changes.push({type: 'prompt', eid: eid, value: cur.prompt});
+    });
     // Publish changes
     dot.style.pointerEvents = 'none'; dot.style.opacity = '0.4';
     fetch(_getProxyUrl() + '/publish', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({edits: EDITS, imgs: IMG_STORE})
+      body: JSON.stringify({edits: EDITS, imgs: IMG_STORE, changes: changes})
     }).then(function(r) { return r.json(); }).then(function(d) {
       dot.style.pointerEvents = ''; dot.style.opacity = '';
       dot.classList.add(d.ok ? 'pub-ok' : 'pub-err');
@@ -859,7 +874,7 @@ document.getElementById('iem-save').addEventListener('click', function() {
   if (!_iemTarget) return;
   var eid = _iemTarget.dataset.imgEid;
   var entry = IMG_STORE[eid] || {};
-  if (_iemPending)  entry.url    = _iemPending;
+  if (_iemPending) { entry.url = _iemPending; entry.source = 'upload'; }
   var p = document.getElementById('iem-prompt').value.trim();
   var n = document.getElementById('iem-neg').value.trim();
   if (p) entry.prompt = p; else delete entry.prompt;
@@ -974,7 +989,7 @@ document.getElementById('iem-gen').addEventListener('click', function() {
       if (_iemTarget) {
         var saveEid = _iemTarget.dataset.imgEid;
         var entry = IMG_STORE[saveEid] || {};
-        entry.url = dataUrl;
+        entry.url = dataUrl; entry.source = 'generated';
         var p = document.getElementById('iem-prompt').value.trim();
         var n = document.getElementById('iem-neg').value.trim();
         if (p) entry.prompt = p; else delete entry.prompt;
