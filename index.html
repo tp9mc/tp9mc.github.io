@@ -107,8 +107,8 @@ body::-webkit-scrollbar{display:none}
 @media(max-width:320px){.slot-opts{gap:6px}.sec-h1{font-size:22px}}
 
 /* edit mode */
-#publish-btn{position:fixed;top:max(env(safe-area-inset-top,0px),8px);left:14px;z-index:200;padding:5px 12px;background:#1A1A2E;color:#fff;font-size:12px;font-weight:600;font-family:var(--font);border:none;border-radius:10px;cursor:pointer;display:none;-webkit-appearance:none}
-#publish-btn:disabled{opacity:.5;cursor:default}
+.edit-dot.pub-ok{background:#27AE60!important;transform:scale(1.4)}
+.edit-dot.pub-err{background:#E74C3C!important;transform:scale(1.4)}
 .edit-dot{position:fixed;top:max(env(safe-area-inset-top,0px),10px);right:14px;width:8px;height:8px;border-radius:50%;background:#C8C3BB;z-index:200;cursor:pointer;transition:background 200ms,transform 200ms}
 .edit-dot.on{background:var(--acc);transform:scale(1.6)}
 body.editing [data-eid]{outline:1.5px dashed rgba(26,26,26,.22);border-radius:3px;cursor:text;min-width:8px}
@@ -142,7 +142,6 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
 </head>
 <body>
 <div id="edit-dot" class="edit-dot"></div>
-<button id="publish-btn">↑ Опубликовать</button>
 
 <section class="sec" id="sec-style">
   <div class="sec-head">
@@ -756,30 +755,37 @@ function _loadPrompts(cb) {
   }).catch(function() { _promptsLoaded = true; if (cb) cb(); });
 }
 
-document.getElementById('edit-dot').addEventListener('click', function() {
-  _editOn = !_editOn;
-  this.classList.toggle('on', _editOn);
-  document.body.classList.toggle('editing', _editOn);
-  document.getElementById('publish-btn').style.display = _editOn ? 'block' : 'none';
-  if (_editOn) { _loadPrompts(function() { _attachEditable(); _attachImgDots(); }); }
-  else          { _detachEditable(); _detachImgDots(); }
-});
+var _editSnapshot = '';
 
-document.getElementById('publish-btn').addEventListener('click', function() {
-  var btn = this;
-  btn.disabled = true; btn.textContent = '⏳ Публикую...';
-  fetch(_getProxyUrl() + '/publish', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({edits: EDITS, imgs: IMG_STORE})
-  }).then(function(r) { return r.json(); }).then(function(d) {
-    btn.disabled = false;
-    btn.textContent = d.ok ? '✓ Опубликовано' : '✗ Ошибка';
-    setTimeout(function() { btn.textContent = '↑ Опубликовать'; }, 3000);
-  }).catch(function() {
-    btn.disabled = false; btn.textContent = '✗ Нет связи с ботом';
-    setTimeout(function() { btn.textContent = '↑ Опубликовать'; }, 3000);
-  });
+document.getElementById('edit-dot').addEventListener('click', function() {
+  var dot = this;
+  _editOn = !_editOn;
+  dot.classList.toggle('on', _editOn);
+  document.body.classList.toggle('editing', _editOn);
+
+  if (_editOn) {
+    _editSnapshot = JSON.stringify({e: EDITS, i: IMG_STORE});
+    _loadPrompts(function() { _attachEditable(); _attachImgDots(); });
+  } else {
+    _detachEditable(); _detachImgDots();
+    var changed = JSON.stringify({e: EDITS, i: IMG_STORE}) !== _editSnapshot;
+    if (!changed) return;
+    // Publish changes
+    dot.style.pointerEvents = 'none'; dot.style.opacity = '0.4';
+    fetch(_getProxyUrl() + '/publish', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({edits: EDITS, imgs: IMG_STORE})
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      dot.style.pointerEvents = ''; dot.style.opacity = '';
+      dot.classList.add(d.ok ? 'pub-ok' : 'pub-err');
+      setTimeout(function() { dot.classList.remove('pub-ok','pub-err'); }, 2000);
+    }).catch(function() {
+      dot.style.pointerEvents = ''; dot.style.opacity = '';
+      dot.classList.add('pub-err');
+      setTimeout(function() { dot.classList.remove('pub-err'); }, 2000);
+    });
+  }
 });
 
 /* ── Image edit ── */
