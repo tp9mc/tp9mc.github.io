@@ -10,7 +10,7 @@ from PIL import Image
 from datetime import datetime
 from collections import defaultdict
 
-from bot_secrets import BOT_TOKEN, HF_TOKEN, OWNER_CHAT_ID  # not committed to git
+from bot_secrets import BOT_TOKEN, HF_TOKEN, OWNER_CHAT_ID, OWNER_USERNAME  # not committed to git
 HF_URL        = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
 HF_TIMEOUT    = 120
 HF_COST_PER_IMAGE = 0.0017  # $1.40 / 802 requests (Apr 2026)
@@ -155,7 +155,7 @@ class _GenHandler(BaseHTTPRequestHandler):
             changes = data.get('changes', [])
             tg_user = data.get('user') or {}
             pub_user_id = int(tg_user.get('id') or OWNER_CHAT_ID)
-            pub_username = str(tg_user.get('username') or tg_user.get('first_name') or 'editor')
+            pub_username = str(tg_user.get('username') or tg_user.get('first_name') or OWNER_USERNAME)
             if ok:
                 log_event(pub_user_id, pub_username, 'site_publish', {
                     'texts':   len(edits),
