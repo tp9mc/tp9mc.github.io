@@ -153,8 +153,11 @@ class _GenHandler(BaseHTTPRequestHandler):
             )
             ok = result.returncode == 0
             changes = data.get('changes', [])
+            tg_user = data.get('user') or {}
+            pub_user_id = int(tg_user.get('id') or OWNER_CHAT_ID)
+            pub_username = str(tg_user.get('username') or tg_user.get('first_name') or 'editor')
             if ok:
-                log_event(OWNER_CHAT_ID, 'editor', 'site_publish', {
+                log_event(pub_user_id, pub_username, 'site_publish', {
                     'texts':   len(edits),
                     'images':  len(clean_imgs),
                     'changes': changes,
@@ -346,7 +349,8 @@ def build_stats_report() -> str:
         }
         for e in reversed(publish_events):
             changes = e.get('changes', [])
-            lines.append(f'  {e["ts"]}  ({len(changes)} изм.)')
+            pub_who = f'@{e["username"]}  ' if e.get('username') and e['username'] != 'editor' else ''
+            lines.append(f'  {e["ts"]}  {pub_who}({len(changes)} изм.)')
             for c in changes:
                 t    = TYPE_RU.get(c.get('type',''), c.get('type',''))
                 eid  = c.get('eid', '')
