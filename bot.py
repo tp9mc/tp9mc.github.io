@@ -77,12 +77,23 @@ threading.Thread(target=_idle_watchdog, daemon=True).start()
 # ── Local generation proxy (Mini App → bot → HF) ──────────────────────────
 GEN_PROXY_PORT = 8765
 
+REPO_DIR     = '/Users/timofeev_sd/claude-workspace/tp9mc.github.io'
+SITE_URL     = 'https://tp9mc.github.io'
+ASSETS_DIR   = os.path.join(REPO_DIR, 'custom_assets')
+
+
 class _GenHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
         self._cors(); self.end_headers()
 
     def do_POST(self):
+        if self.path == '/publish':
+            self._handle_publish()
+        else:
+            self._handle_generate()
+
+    def _handle_generate(self):
         try:
             length = int(self.headers.get('Content-Length', 0))
             body   = json.loads(self.rfile.read(length))
@@ -103,6 +114,48 @@ class _GenHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._respond(500, json.dumps({'error': str(e)[:120]}).encode(), 'application/json')
 
+    def _handle_publish(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            data   = json.loads(self.rfile.read(length))
+            edits  = data.get('edits', {})
+            imgs   = data.get('imgs',  {})
+
+            os.makedirs(ASSETS_DIR, exist_ok=True)
+
+            # Save data-URL images as real files; keep only metadata + new URL
+            clean_imgs = {}
+            for eid, item in imgs.items():
+                url = item.get('url', '')
+                clean = {k: v for k, v in item.items() if k != 'url'}
+                if url.startswith('data:image'):
+                    _, b64 = url.split(',', 1)
+                    fname = eid.replace('/', '_') + '.jpg'
+                    with open(os.path.join(ASSETS_DIR, fname), 'wb') as f:
+                        f.write(base64.b64decode(b64))
+                    clean['url'] = f'{SITE_URL}/custom_assets/{fname}'
+                elif url:
+                    clean['url'] = url
+                if clean:
+                    clean_imgs[eid] = clean
+
+            site_edits_path = os.path.join(REPO_DIR, 'site_edits.json')
+            with open(site_edits_path, 'w', encoding='utf-8') as f:
+                json.dump({'edits': edits, 'imgs': clean_imgs}, f,
+                          ensure_ascii=False, indent=2)
+
+            result = subprocess.run(
+                'git add site_edits.json custom_assets/ '
+                '&& git diff --cached --quiet '
+                '|| git commit -m "site: publish editor changes" '
+                '&& git push origin main',
+                shell=True, cwd=REPO_DIR, capture_output=True, text=True,
+            )
+            ok = result.returncode == 0
+            self._respond(200, json.dumps({'ok': ok}).encode(), 'application/json')
+        except Exception as e:
+            self._respond(500, json.dumps({'error': str(e)[:200]}).encode(), 'application/json')
+
     def _cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -117,7 +170,7 @@ class _GenHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def log_message(self, *args):
-        pass  # suppress HTTP access logs
+        pass
 
 
 def _start_gen_proxy():

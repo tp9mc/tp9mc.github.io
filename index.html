@@ -107,6 +107,8 @@ body::-webkit-scrollbar{display:none}
 @media(max-width:320px){.slot-opts{gap:6px}.sec-h1{font-size:22px}}
 
 /* edit mode */
+#publish-btn{position:fixed;top:max(env(safe-area-inset-top,0px),8px);left:14px;z-index:200;padding:5px 12px;background:#1A1A2E;color:#fff;font-size:12px;font-weight:600;font-family:var(--font);border:none;border-radius:10px;cursor:pointer;display:none;-webkit-appearance:none}
+#publish-btn:disabled{opacity:.5;cursor:default}
 .edit-dot{position:fixed;top:max(env(safe-area-inset-top,0px),10px);right:14px;width:8px;height:8px;border-radius:50%;background:#C8C3BB;z-index:200;cursor:pointer;transition:background 200ms,transform 200ms}
 .edit-dot.on{background:var(--acc);transform:scale(1.6)}
 body.editing [data-eid]{outline:1.5px dashed rgba(26,26,26,.22);border-radius:3px;cursor:text;min-width:8px}
@@ -140,6 +142,7 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
 </head>
 <body>
 <div id="edit-dot" class="edit-dot"></div>
+<button id="publish-btn">↑ Опубликовать</button>
 
 <section class="sec" id="sec-style">
   <div class="sec-head">
@@ -210,6 +213,23 @@ body.editing [data-eid]:focus{outline:1.5px solid var(--acc);background:rgba(26,
     if (p) localStorage.setItem('gen_proxy_url', p.replace(/\/$/, ''));
   } catch(e) {}
 })();
+
+/* ── Load published site edits (visible to all users) ── */
+fetch('site_edits.json?_=' + Date.now())
+  .then(function(r) { return r.ok ? r.json() : null; })
+  .then(function(d) {
+    if (!d) return;
+    if (d.edits) Object.keys(d.edits).forEach(function(k) {
+      if (!(k in EDITS)) EDITS[k] = d.edits[k];
+    });
+    if (d.imgs) Object.keys(d.imgs).forEach(function(k) {
+      if (!(k in IMG_STORE)) IMG_STORE[k] = d.imgs[k];
+    });
+    try { localStorage.setItem('ie_edits', JSON.stringify(EDITS)); } catch(e) {}
+    saveImgStore();
+    renderStyles(); renderRooms(); renderSetup();
+  })
+  .catch(function() {});
 
 /* ── Telegram ── */
 var tg = (window.Telegram || {}).WebApp || null;
@@ -740,8 +760,26 @@ document.getElementById('edit-dot').addEventListener('click', function() {
   _editOn = !_editOn;
   this.classList.toggle('on', _editOn);
   document.body.classList.toggle('editing', _editOn);
+  document.getElementById('publish-btn').style.display = _editOn ? 'block' : 'none';
   if (_editOn) { _loadPrompts(function() { _attachEditable(); _attachImgDots(); }); }
   else          { _detachEditable(); _detachImgDots(); }
+});
+
+document.getElementById('publish-btn').addEventListener('click', function() {
+  var btn = this;
+  btn.disabled = true; btn.textContent = '⏳ Публикую...';
+  fetch(_getProxyUrl() + '/publish', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({edits: EDITS, imgs: IMG_STORE})
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    btn.disabled = false;
+    btn.textContent = d.ok ? '✓ Опубликовано' : '✗ Ошибка';
+    setTimeout(function() { btn.textContent = '↑ Опубликовать'; }, 3000);
+  }).catch(function() {
+    btn.disabled = false; btn.textContent = '✗ Нет связи с ботом';
+    setTimeout(function() { btn.textContent = '↑ Опубликовать'; }, 3000);
+  });
 });
 
 /* ── Image edit ── */
