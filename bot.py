@@ -192,6 +192,26 @@ threading.Thread(target=_start_gen_proxy, daemon=True).start()
 
 # ── Cloudflare quick tunnel (public HTTPS URL for the proxy) ──────────────
 _tunnel_url: str | None = None
+_PENDING_DEL_PATH = '/tmp/propferma_pending_del.json'
+
+def _save_pending_del(chat_id, message_id):
+    try:
+        data = []
+        try:
+            with open(_PENDING_DEL_PATH) as f: data = json.load(f)
+        except Exception: pass
+        data.append({'c': chat_id, 'm': message_id})
+        with open(_PENDING_DEL_PATH, 'w') as f: json.dump(data, f)
+    except Exception: pass
+
+def _flush_pending_del(bot_ref):
+    try:
+        with open(_PENDING_DEL_PATH) as f: data = json.load(f)
+        os.remove(_PENDING_DEL_PATH)
+        for entry in data:
+            try: bot_ref.delete_message(entry['c'], entry['m'])
+            except Exception: pass
+    except Exception: pass
 
 
 def _start_tunnel(bot_ref=None):
@@ -227,6 +247,7 @@ def _start_tunnel(bot_ref=None):
                                 reply_markup=markup,
                                 disable_notification=True,
                             )
+                            _save_pending_del(cid, msg.message_id)
                             def _del(c=cid, m=msg.message_id):
                                 time.sleep(30)
                                 try: bot_ref.delete_message(c, m)
@@ -792,6 +813,8 @@ def generate_room(chat_id: int, payload: dict, bot: telebot.TeleBot, username: s
 def main():
     bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
 
+    _flush_pending_del(bot)
+
     threading.Thread(
         target=_start_tunnel, kwargs={'bot_ref': bot},
         daemon=True,
@@ -867,7 +890,7 @@ def main():
     set_menu_button(None)
 
     print('Bot started, polling…')
-    bot.infinity_polling(timeout=30, long_polling_timeout=20)
+    bot.infinity_polling(timeout=30, long_polling_timeout=20, interval=5, skip_pending=True)
 
 
 if __name__ == '__main__':
