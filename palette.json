@@ -1,0 +1,172 @@
+{
+  "_doc": "Style palette per (style, room). Every prompt should pick materials/colors ONLY from its cell's palette. Ensures visual coherence in user-built sets.",
+  "_version": "v1-20260514",
+
+  "japandi": {
+    "_dna": "Japanese minimalism + Scandinavian warmth. Wabi-sabi, natural imperfection, earthy tones, asymmetric balance, low silhouettes.",
+    "living": {
+      "wood_primary":   "light natural oak with matte oil finish, visible straight grain",
+      "wood_secondary": "warm walnut accent, oiled",
+      "metal_primary":  "matte black powder-coated steel, fine sandblasted texture",
+      "metal_accent":   "darkened bronze, soft patina",
+      "fabric_main":    "natural undyed linen, ecru / oatmeal, coarse weave",
+      "fabric_accent":  "ivory bouclé, soft loop pile",
+      "stone":          "honed beige travertine, visible pores",
+      "wall":           "warm off-white lime plaster, subtle texture",
+      "ceiling":        "smooth matte white plaster, soft warm cast",
+      "accent_color":   "muted clay terracotta (≤10% surface area)",
+      "finish_note":    "all surfaces matte or honed — no high gloss"
+    },
+    "bedroom": {
+      "wood_primary":   "light natural oak, oil finish",
+      "wood_secondary": "soft pale ash, wide grain",
+      "metal_primary":  "matte black steel",
+      "metal_accent":   "warm brushed brass (sparing use)",
+      "fabric_main":    "washed linen, sand color, slubby texture",
+      "fabric_accent":  "ivory wool throw, chunky knit",
+      "stone":          "honed beige travertine accents",
+      "wall":           "soft warm beige limewash",
+      "ceiling":        "smooth matte off-white plaster",
+      "accent_color":   "dusty sage green (≤10%)",
+      "finish_note":    "low contrast, warm undertones, all matte"
+    },
+    "bathroom": {
+      "wood_primary":   "teak wood, oiled, water-resistant slats",
+      "wood_secondary": "light natural oak veneer",
+      "metal_primary":  "matte black brushed metal fixtures",
+      "metal_accent":   "warm bronze hardware",
+      "fabric_main":    "natural unbleached cotton waffle, beige",
+      "fabric_accent":  "creamy linen with frayed edge",
+      "stone":          "honed beige travertine, large format",
+      "wall":           "microcement, warm grey-beige, seamless",
+      "ceiling":        "smooth matte white",
+      "accent_color":   "wabi-sabi clay terracotta details",
+      "finish_note":    "honed stone, matte fixtures — never polished"
+    },
+    "kitchen": {
+      "wood_primary":   "light natural oak cabinet fronts, oiled, visible grain",
+      "wood_secondary": "smoked dark oak accent, oiled",
+      "metal_primary":  "matte black hardware and pulls, sandblasted",
+      "metal_accent":   "warm darkened bronze tap and details",
+      "fabric_main":    "natural unbleached linen towels, coarse weave",
+      "fabric_accent":  "ivory waffle cotton",
+      "stone":          "honed beige travertine countertop, visible pores",
+      "wall":           "warm white limewash with subtle texture",
+      "ceiling":        "smooth matte white plaster",
+      "accent_color":   "muted clay terracotta pot or vase",
+      "finish_note":    "no chrome, no high gloss — all matte and honed"
+    }
+  },
+
+  "modern_classic": {
+    "_dna": "Transitional luxury. Symmetric layouts, polished marbles, jewel-tone upholstery, brass accents, classical moldings, refined craftsmanship.",
+    "living": {
+      "wood_primary":   "rich dark walnut, polished open-pore, deep grain",
+      "wood_secondary": "ebonized oak accent",
+      "metal_primary":  "polished antique brass, warm yellow tone",
+      "metal_accent":   "champagne bronze",
+      "fabric_main":    "deep emerald green velvet, plush pile",
+      "fabric_accent":  "ivory raw silk",
+      "stone":          "polished Carrara marble, soft grey veining",
+      "wall":           "soft warm grey plaster with subtle paneling moldings",
+      "ceiling":        "off-white plaster with ornate crown molding",
+      "accent_color":   "deep navy or burgundy (10–15% pillows / curtains)",
+      "finish_note":    "polished marble, polished brass, plush velvet — high contrast luxury"
+    },
+    "bedroom": {
+      "wood_primary":   "rich walnut, polished, beveled details",
+      "wood_secondary": "ebonized oak nightstands",
+      "metal_primary":  "polished antique brass",
+      "metal_accent":   "rose gold accent",
+      "fabric_main":    "champagne silk-cotton bedding, slight sheen",
+      "fabric_accent":  "tufted velvet headboard, mushroom beige",
+      "stone":          "Calacatta marble side surfaces, polished",
+      "wall":           "soft taupe paneled walls, ornate molding",
+      "ceiling":        "ivory plaster with subtle cornice",
+      "accent_color":   "blush pink or muted burgundy",
+      "finish_note":    "elegant sheen on textiles, polished hardware, symmetry"
+    },
+    "bathroom": {
+      "wood_primary":   "rich walnut vanity, polished",
+      "wood_secondary": "ebonized oak inlay",
+      "metal_primary":  "polished brass fixtures, gleaming",
+      "metal_accent":   "champagne gold accent rails",
+      "fabric_main":    "white Egyptian cotton towels, plush pile",
+      "fabric_accent":  "champagne satin trim",
+      "stone":          "polished Calacatta gold marble, dramatic veining",
+      "wall":           "marble slab cladding, polished",
+      "ceiling":        "white plaster with cove lighting molding",
+      "accent_color":   "deep emerald or sapphire accent (towels, soap dish)",
+      "finish_note":    "polished marble and brass everywhere, high-gloss surfaces"
+    },
+    "kitchen": {
+      "wood_primary":   "rich walnut cabinet fronts with raised panels, polished",
+      "wood_secondary": "ebonized oak island base",
+      "metal_primary":  "polished antique brass handles and tap",
+      "metal_accent":   "champagne bronze details",
+      "fabric_main":    "white linen tea towels with embroidered trim",
+      "fabric_accent":  "champagne silk drape",
+      "stone":          "polished Calacatta marble countertop and backsplash, bold veining",
+      "wall":           "soft warm cream with classical molding",
+      "ceiling":        "ivory plaster with cornice",
+      "accent_color":   "burgundy or hunter green ceramic accents",
+      "finish_note":    "classical raised-panel cabinetry, polished brass, dramatic marble"
+    }
+  },
+
+  "scandi": {
+    "_dna": "Bright, functional, hygge. Light woods, white walls, soft wool, muted pastels, plenty of natural light, uncluttered.",
+    "living": {
+      "wood_primary":   "light birch wood, soft white-washed finish",
+      "wood_secondary": "pale ash, matte lacquer",
+      "metal_primary":  "matte black slim steel",
+      "metal_accent":   "brushed nickel sparingly",
+      "fabric_main":    "cream wool bouclé, soft pile",
+      "fabric_accent":  "natural sheepskin throw",
+      "stone":          "off-white concrete planter accents",
+      "wall":           "crisp matte white painted wall, smooth",
+      "ceiling":        "bright white smooth plaster",
+      "accent_color":   "dusty rose or pale sage (≤10%)",
+      "finish_note":    "bright, airy, low contrast, plenty of soft textures"
+    },
+    "bedroom": {
+      "wood_primary":   "white-washed birch",
+      "wood_secondary": "pale pine, matte",
+      "metal_primary":  "matte black thin steel",
+      "metal_accent":   "brushed brass small details",
+      "fabric_main":    "crisp white cotton percale bedding",
+      "fabric_accent":  "cream chunky knit wool throw, sheepskin rug",
+      "stone":          "—",
+      "wall":           "white painted, soft matte",
+      "ceiling":        "bright white plaster",
+      "accent_color":   "muted blush or pale ochre",
+      "finish_note":    "airy, soft, comfortable, white-dominant"
+    },
+    "bathroom": {
+      "wood_primary":   "pale birch slatted accents",
+      "wood_secondary": "white-washed ash shelf",
+      "metal_primary":  "matte black fixtures, slim",
+      "metal_accent":   "brushed nickel small accents",
+      "fabric_main":    "white cotton terry towels, soft loops",
+      "fabric_accent":  "cream linen bath mat",
+      "stone":          "white matte porcelain large format tile",
+      "wall":           "white subway tile, matte, narrow grey grout",
+      "ceiling":        "bright white smooth",
+      "accent_color":   "soft pale sage accent (≤5%)",
+      "finish_note":    "all-white palette with one pale accent, matte surfaces"
+    },
+    "kitchen": {
+      "wood_primary":   "white-washed birch cabinet fronts, flat-panel",
+      "wood_secondary": "pale ash wood countertop edge or shelf",
+      "metal_primary":  "matte black slim hardware",
+      "metal_accent":   "brushed nickel tap (one only)",
+      "fabric_main":    "white linen dish towel with grey stripe",
+      "fabric_accent":  "natural wool runner",
+      "stone":          "white quartz countertop, soft grey vein",
+      "wall":           "white subway tile backsplash",
+      "ceiling":        "white smooth plaster",
+      "accent_color":   "pale ochre or dusty sage ceramic (small)",
+      "finish_note":    "minimal handles, flat panels, lots of white, single accent"
+    }
+  }
+}
