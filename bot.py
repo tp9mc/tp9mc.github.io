@@ -634,6 +634,9 @@ def get_item(catalog, style, room, cat_id, slot_num, variant):
     """Look up a catalog item, handling kitchen vs non-kitchen key format."""
     try:
         cat = catalog[style][room][cat_id]
+        # variant-aware lookup first; falls back to slot-only for legacy kitchen
+        if f'{slot_num}_{variant}' in cat:
+            return cat[f'{slot_num}_{variant}']
         if room == 'kitchen':
             return cat.get(str(slot_num), {})
         return cat.get(f'{slot_num}_{variant}', {})

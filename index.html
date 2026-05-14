@@ -80,7 +80,7 @@ body::-webkit-scrollbar{display:none}
 
 /* slot */
 .slot-lbl{font-size:13px;font-weight:500;color:var(--ts);margin-bottom:8px}
-.slot-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.slot-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .opt{background:var(--sf1);border:1.5px solid var(--br);border-radius:20px;padding:10px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 120ms cubic-bezier(.2,0,0,1),border-color 200ms,background 200ms,box-shadow 200ms}
 .opt:active{transform:scale(.96)}
 .opt.on{border-color:var(--acc);background:var(--acc-s);box-shadow:0 2px 8px rgba(184,168,142,.14);transform:translateY(-2px)}
@@ -544,7 +544,7 @@ function renderSetup() {
       slotEl.appendChild(lblEl);
       var optsEl = document.createElement('div');
       optsEl.className = 'slot-opts';
-      ['main','alt'].forEach(function(v, vi) {
+      ['main','alt','alt2'].forEach(function(v, vi) {
         var optCard = document.createElement('div');
         optCard.className = 'opt' + (chosen === v ? ' on' : '');
         var url = iconUrl(S.style || 'japandi', S.room || 'living', cat.id, slotId, v);
@@ -555,7 +555,8 @@ function renderSetup() {
         lbl2.className = 'opt__lbl';
         var _styleOpts = ROOM_OPTS[S.style] || ROOM_OPTS.japandi;
         var roomOpts = (_styleOpts[S.room] || _styleOpts.living || {})[cat.id];
-        lbl2.textContent = (roomOpts && roomOpts[idx] || [])[vi] || (v === 'main' ? 'A' : 'Б');
+        var _defLbl = {main:'A', alt:'Б', alt2:'В'};
+        lbl2.textContent = (roomOpts && roomOpts[idx] || [])[vi] || _defLbl[v] || '·';
         lbl2.dataset.eid = 'opt-' + (S.style||'j') + '-' + (S.room||'l') + '-' + cat.id + '-' + idx + '-' + v;
         optCard.appendChild(lbl2);
         optCard.addEventListener('click', function() {
