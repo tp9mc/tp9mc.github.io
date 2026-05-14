@@ -16,7 +16,7 @@ from PIL import Image
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(REPO, 'assets')
-PROMPTS_FILE = os.path.join(REPO, 'prompts_v2.json')
+PROMPTS_FILE = os.path.join(REPO, sys.argv[1] if len(sys.argv) > 1 else 'prompts_v2.json')
 
 sys.path.insert(0, REPO)
 from bot_secrets import HF_TOKEN  # noqa: E402
