@@ -16,10 +16,12 @@ API = f'https://api.telegram.org/bot{BOT_TOKEN}'
 
 
 def send_text(chat_id, text, parse_mode=None):
-    r = requests.post(f'{API}/sendMessage', json={
-        'chat_id': chat_id, 'text': text,
-        'parse_mode': parse_mode, 'disable_web_page_preview': True,
-    }, timeout=30)
+    payload = {'chat_id': chat_id, 'text': text, 'disable_web_page_preview': True}
+    if parse_mode:
+        payload['parse_mode'] = parse_mode
+    r = requests.post(f'{API}/sendMessage', json=payload, timeout=30)
+    if r.status_code != 200:
+        print('RESP:', r.text)
     r.raise_for_status()
     return r.json()
 
