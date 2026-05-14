@@ -965,11 +965,161 @@ def main():
         buf.name = f'stats_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
         bot.send_document(message.chat.id, buf, caption='📊 Статистика бота')
 
+    # ── Versions / rollback ─────────────────────────────────────────────
+    REPO_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    def _git(*args, check=True) -> str:
+        r = subprocess.run(['git', '-C', REPO_DIR, *args],
+                           capture_output=True, text=True, timeout=60)
+        if check and r.returncode != 0:
+            raise RuntimeError(f'git {" ".join(args)}: {r.stderr.strip()}')
+        return r.stdout.strip()
+
+    def _git_log(n: int = 10) -> list:
+        # tab-delimited hash, relative-date, ISO-date, subject
+        out = _git('log', f'-n{n}', '--pretty=format:%h\t%cr\t%ci\t%s')
+        items = []
+        for line in out.splitlines():
+            parts = line.split('\t', 3)
+            if len(parts) == 4:
+                items.append({'hash': parts[0], 'rel': parts[1],
+                              'iso': parts[2][:16], 'subject': parts[3]})
+        return items
+
+    def _restart_bot_async():
+        """Schedule self-restart in 1s so the current response can flush."""
+        def _do():
+            time.sleep(1)
+            os.system(f'nohup /usr/local/bin/python3.14 "{__file__}" '
+                      f'>> /tmp/bot.log 2>&1 &')
+            os.kill(os.getpid(), signal.SIGTERM)
+        threading.Thread(target=_do, daemon=True).start()
+
+    @bot.message_handler(commands=['versions'])
+    def on_versions(message):
+        log_event(message.chat.id, uname(message), 'versions')
+        if message.chat.id not in EDITOR_CHAT_IDS:
+            bot.send_message(message.chat.id, '⛔ Только для редакторов.')
+            return
+        try:
+            items = _git_log(10)
+            lines = ['📜 *Последние версии*\n']
+            for i, it in enumerate(items, 1):
+                subj = it['subject'][:60]
+                lines.append(f'{i}. `{it["hash"]}` _{it["rel"]}_\n   {subj}')
+            lines.append('\nДля отката: /rollback')
+            bot.send_message(message.chat.id, '\n'.join(lines), parse_mode='Markdown')
+        except Exception as e:
+            bot.send_message(message.chat.id, f'❌ Ошибка: {e}')
+
+    @bot.message_handler(commands=['changelog'])
+    def on_changelog(message):
+        log_event(message.chat.id, uname(message), 'changelog')
+        cl_path = os.path.join(REPO_DIR, 'CHANGELOG.md')
+        if not os.path.exists(cl_path):
+            bot.send_message(message.chat.id, 'CHANGELOG.md отсутствует.')
+            return
+        with open(cl_path, encoding='utf-8') as f:
+            text = f.read()
+        if len(text) > 3800:
+            buf = BytesIO(text.encode('utf-8'))
+            buf.name = 'CHANGELOG.md'
+            bot.send_document(message.chat.id, buf, caption='📋 Журнал изменений')
+        else:
+            bot.send_message(message.chat.id, text, parse_mode=None,
+                             disable_web_page_preview=True)
+
+    @bot.message_handler(commands=['rollback'])
+    def on_rollback(message):
+        log_event(message.chat.id, uname(message), 'rollback_menu')
+        if message.chat.id not in EDITOR_CHAT_IDS:
+            bot.send_message(message.chat.id, '⛔ Только для редакторов.')
+            return
+        try:
+            items = _git_log(10)
+            # offer to revert to commits 2..10 (revert current=1 makes no sense)
+            kb = telebot.types.InlineKeyboardMarkup(row_width=1)
+            for it in items[1:6]:  # show 5 choices (most recent revertable)
+                label = f'⏪ {it["hash"]}  {it["subject"][:40]}'
+                kb.add(telebot.types.InlineKeyboardButton(
+                    label, callback_data=f'rb:{it["hash"]}'))
+            kb.add(telebot.types.InlineKeyboardButton('✖ Отмена', callback_data='rb:cancel'))
+            bot.send_message(message.chat.id,
+                '↩️ *Откат к версии*\n\nВыбери версию, к которой откатиться. '
+                'Все коммиты после неё будут отменены через `git revert` '
+                '(история сохранится).',
+                parse_mode='Markdown', reply_markup=kb)
+        except Exception as e:
+            bot.send_message(message.chat.id, f'❌ Ошибка: {e}')
+
+    @bot.callback_query_handler(func=lambda c: c.data and c.data.startswith('rb:'))
+    def on_rollback_cb(call):
+        if call.message.chat.id not in EDITOR_CHAT_IDS:
+            bot.answer_callback_query(call.id, '⛔ Только редакторы.')
+            return
+        action = call.data.split(':', 1)[1]
+        if action == 'cancel':
+            bot.answer_callback_query(call.id, 'Отменено')
+            bot.edit_message_text('✖ Отмена', call.message.chat.id,
+                                  call.message.message_id)
+            return
+        if not action.startswith('confirm:'):
+            target = action
+            kb = telebot.types.InlineKeyboardMarkup(row_width=2)
+            kb.add(
+                telebot.types.InlineKeyboardButton('✅ Подтвердить',
+                                                    callback_data=f'rb:confirm:{target}'),
+                telebot.types.InlineKeyboardButton('✖ Отмена',
+                                                    callback_data='rb:cancel'),
+            )
+            try:
+                items = _git_log(10)
+                tinfo = next((i for i in items if i['hash'] == target), None)
+                subj = tinfo['subject'] if tinfo else '?'
+            except Exception:
+                subj = '?'
+            bot.edit_message_text(
+                f'⚠️ Откатиться к `{target}`?\n_{subj}_\n\n'
+                'Будет создан НОВЫЙ commit, отменяющий все правки выше '
+                'этой версии. site\\_edits.json НЕ затронут.',
+                call.message.chat.id, call.message.message_id,
+                parse_mode='Markdown', reply_markup=kb)
+            return
+        # action == 'confirm:<hash>'
+        target = action.split(':', 1)[1]
+        log_event(call.message.chat.id, '', 'rollback_exec', {'to': target})
+        try:
+            ahead = _git('rev-list', '--count', f'{target}..HEAD')
+            n_ahead = int(ahead)
+            if n_ahead == 0:
+                bot.edit_message_text('Уже на этой версии.',
+                                      call.message.chat.id, call.message.message_id)
+                return
+            # revert each commit ahead, preserving site_edits.json
+            _git('reset', '--hard', 'HEAD')
+            _git('revert', '--no-edit', '--no-commit', f'{target}..HEAD')
+            # restore site_edits.json from current working tree (uncommitted edit)
+            _git('checkout', 'HEAD', '--', 'site_edits.json', check=False)
+            _git('-c', 'user.email=bot@local', '-c', 'user.name=propferma-bot',
+                 'commit', '-m', f'rollback: revert to {target} via bot')
+            push_out = _git('push', 'origin', 'main')
+            bot.edit_message_text(
+                f'✅ Откачено к `{target}`. Бот перезапускается.\n\n'
+                f'`{push_out[-200:] if push_out else "pushed"}`',
+                call.message.chat.id, call.message.message_id, parse_mode='Markdown')
+            _restart_bot_async()
+        except Exception as e:
+            bot.edit_message_text(f'❌ Не удалось откатить: {e}',
+                                  call.message.chat.id, call.message.message_id)
+
     bot.set_my_commands([
-        telebot.types.BotCommand('/start',   '👋 Запустить бота'),
-        telebot.types.BotCommand('/app',     '🏠 Открыть конструктор'),
-        telebot.types.BotCommand('/stats',   '📊 Статистика'),
-        telebot.types.BotCommand('/restart', '🔄 Перезапустить'),
+        telebot.types.BotCommand('/start',     '👋 Запустить бота'),
+        telebot.types.BotCommand('/app',       '🏠 Открыть конструктор'),
+        telebot.types.BotCommand('/stats',     '📊 Статистика'),
+        telebot.types.BotCommand('/versions',  '📜 Версии'),
+        telebot.types.BotCommand('/changelog', '📋 Журнал изменений'),
+        telebot.types.BotCommand('/rollback',  '↩️ Откат к версии'),
+        telebot.types.BotCommand('/restart',   '🔄 Перезапустить'),
     ])
 
     # Set globally (no chat_id) so button appears for all users without /start
