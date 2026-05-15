@@ -1,0 +1,51 @@
+{
+  "_doc": "Humor 4th category. 9 fixed comedic mechanisms per room. Style (japandi/modern_classic/scandi) only changes the FINISH via palette.json (same gag, executed in the room's materials) — the absurdity stays, the expensive-minimalist execution is the extra comedy layer. alt/alt2 = different gags of the SAME mechanism, not just material swaps.",
+  "_mechanisms": [
+    "absurd_scale", "animal_takeover", "anachronism", "soviet_meme",
+    "literal_idiom", "function_swap", "food_as_furniture", "pop_absurd", "cursed_combo"
+  ],
+  "living": [
+    {"mech": "absurd_scale", "en": "a single household object scaled to sofa size used as the main seat (giant polished pebble / oversized book / colossal remote)", "ru": "Абсурдный масштаб"},
+    {"mech": "animal_takeover", "en": "an ornate throne-bed built for a fat house cat, treated as the room's centerpiece, human furniture pushed aside", "ru": "Звериный захват"},
+    {"mech": "anachronism", "en": "a full medieval samurai armor stand awkwardly repurposed to hold the TV remote and coasters", "ru": "Анахронизм"},
+    {"mech": "soviet_meme", "en": "a wall-hung rug with deer print and crystal glassware cabinet, grandma-USSR style, jarring against the refined room", "ru": "Совковый мем"},
+    {"mech": "literal_idiom", "en": "a literal life-size carved 'elephant in the room' standing calmly as a sculptural anchor", "ru": "Буквальная идиома"},
+    {"mech": "function_swap", "en": "a hammock slung between two minimalist columns replacing the sofa entirely", "ru": "Подмена функции"},
+    {"mech": "food_as_furniture", "en": "an oversized avocado-shaped armchair with a pit-shaped side table", "ru": "Еда как мебель"},
+    {"mech": "pop_absurd", "en": "a vintage claw-machine arcade cabinet as the feature piece, prizes visible inside", "ru": "Поп-абсурд"},
+    {"mech": "cursed_combo", "en": "a serene meditating Buddha statue wearing chunky VR goggles, wired to nothing", "ru": "Проклятая комбинация"}
+  ],
+  "bedroom": [
+    {"mech": "absurd_scale", "en": "a wristwatch scaled to bed size used as the actual bed, strap as headboard", "ru": "Абсурдный масштаб"},
+    {"mech": "animal_takeover", "en": "a grand canopy bed sized and styled for a single pampered dog, human cot tiny beside it", "ru": "Звериный захват"},
+    {"mech": "anachronism", "en": "a knight's suit of armor standing guard as the bedside valet holding pyjamas", "ru": "Анахронизм"},
+    {"mech": "soviet_meme", "en": "a wall carpet over the headboard plus a folding 'stenka' wall-unit, Soviet apartment vibe", "ru": "Совковый мем"},
+    {"mech": "literal_idiom", "en": "a literal 'sleeping like a log' — a giant carved wooden log as the bed", "ru": "Буквальная идиома"},
+    {"mech": "function_swap", "en": "a playground ball-pit sunken where the bed should be, ladder to climb in", "ru": "Подмена функции"},
+    {"mech": "food_as_furniture", "en": "a giant fried-egg shaped bed, yolk as the pillow mound", "ru": "Еда как мебель"},
+    {"mech": "pop_absurd", "en": "a glittering rotating disco ball as the only ceiling fixture over the bed", "ru": "Поп-абсурд"},
+    {"mech": "cursed_combo", "en": "a taxidermy deer head wrapped in glowing neon tubing above the bed", "ru": "Проклятая комбинация"}
+  ],
+  "bathroom": [
+    {"mech": "absurd_scale", "en": "a rubber duck scaled to bathtub size serving as the actual tub", "ru": "Абсурдный масштаб"},
+    {"mech": "animal_takeover", "en": "a luxurious clawfoot tub clearly built and decorated for a cat's spa day", "ru": "Звериный захват"},
+    {"mech": "anachronism", "en": "a medieval iron knight helmet repurposed as the sink basin", "ru": "Анахронизм"},
+    {"mech": "soviet_meme", "en": "a wall rug beside the tub and a chrome-crystal soap holder, USSR bathroom kitsch", "ru": "Совковый мем"},
+    {"mech": "literal_idiom", "en": "a literal 'money down the drain' — golden coins sculpted swirling into the drain", "ru": "Буквальная идиома"},
+    {"mech": "function_swap", "en": "a playground slide delivering you straight into the bathtub", "ru": "Подмена функции"},
+    {"mech": "food_as_furniture", "en": "a halved-watermelon shaped bathtub, seeds as decorative tiles", "ru": "Еда как мебель"},
+    {"mech": "pop_absurd", "en": "a gumball-machine dome dispensing bath bombs as the vanity feature", "ru": "Поп-абсурд"},
+    {"mech": "cursed_combo", "en": "a classical marble bust wearing a snorkel mask and neon halo over the sink", "ru": "Проклятая комбинация"}
+  ],
+  "kitchen": [
+    {"mech": "absurd_scale", "en": "a single colossal fork standing floor-to-ceiling as the kitchen island sculpture", "ru": "Абсурдный масштаб"},
+    {"mech": "animal_takeover", "en": "a chef-station built for a cat, tiny apron and stool, human counter shrunk", "ru": "Звериный захват"},
+    {"mech": "anachronism", "en": "a cast-iron medieval cauldron on a chain serving as the modern range", "ru": "Анахронизм"},
+    {"mech": "soviet_meme", "en": "a wall rug by the table plus an aluminium ZIL fridge and crystal vazochka, Soviet kitchen", "ru": "Совковый мем"},
+    {"mech": "literal_idiom", "en": "a literal 'too many cooks' — a dense cluster of identical chef figurines crowding the counter", "ru": "Буквальная идиома"},
+    {"mech": "function_swap", "en": "a hammock strung across the kitchen replacing the dining chairs", "ru": "Подмена функции"},
+    {"mech": "food_as_furniture", "en": "a giant donut-shaped kitchen island, glaze as the worktop", "ru": "Еда как мебель"},
+    {"mech": "pop_absurd", "en": "a working pinball machine built into the kitchen island", "ru": "Поп-абсурд"},
+    {"mech": "cursed_combo", "en": "a garden gnome chef statue with glowing neon eyes manning the stove", "ru": "Проклятая комбинация"}
+  ]
+}
