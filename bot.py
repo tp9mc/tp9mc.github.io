@@ -294,7 +294,7 @@ def _start_tunnel(bot_ref=None):
                             )
                             _save_pending_del(cid, msg.message_id)
                             def _del(c=cid, m=msg.message_id):
-                                time.sleep(30)
+                                time.sleep(900)
                                 try: bot_ref.delete_message(c, m)
                                 except Exception: pass
                             threading.Thread(target=_del, daemon=True).start()
@@ -3759,6 +3759,30 @@ def main():
             reply_markup=app_keyboard(editor=is_editor, username=uname(message)),
         )
 
+    @bot.message_handler(commands=['editor'])
+    def on_editor(message):
+        log_event(message.chat.id, uname(message), 'editor')
+        if message.chat.id not in EDITOR_CHAT_IDS:
+            bot.send_message(message.chat.id, '⛔ Только для редакторов.')
+            return
+        if not _tunnel_url:
+            bot.send_message(message.chat.id,
+                             '⏳ Туннель ещё поднимается, попробуй через 10–20 сек.')
+            return
+        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add(telebot.types.KeyboardButton(
+            text='✏️ Открыть редактор',
+            web_app=telebot.types.WebAppInfo(
+                url=f'https://tp9mc.github.io?proxy={_tunnel_url}'
+                    f'&t={GH_PUBLISH_TOKEN}&u=editor'),
+        ))
+        bot.send_message(
+            message.chat.id,
+            '✏️ Редактор готов. Кнопка ниже открывает Mini App с активным '
+            'прокси — генерация по промту и публикация будут работать.',
+            reply_markup=markup,
+        )
+
     @bot.message_handler(commands=['stats'])
     def on_stats(message):
         log_event(message.chat.id, uname(message), 'stats')
@@ -3917,6 +3941,7 @@ def main():
     bot.set_my_commands([
         telebot.types.BotCommand('/start',     '👋 Запустить бота'),
         telebot.types.BotCommand('/app',       '🏠 Открыть конструктор'),
+        telebot.types.BotCommand('/editor',    '✏️ Ссылка редактора (прокси)'),
         telebot.types.BotCommand('/stats',     '📊 Статистика'),
         telebot.types.BotCommand('/versions',  '📜 Версии'),
         telebot.types.BotCommand('/changelog', '📋 Журнал изменений'),
