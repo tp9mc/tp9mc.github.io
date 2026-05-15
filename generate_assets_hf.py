@@ -8,7 +8,7 @@ Regenerates 663 interior-constructor assets via HuggingFace FLUX.1-schnell.
 ~2s per image, ~3 workers → ~5 min total.
 Overwrites existing files. Skips nothing (full regen).
 """
-import os, sys, time, json, requests
+import os, re, sys, time, json, requests
 from io import BytesIO
 from PIL import Image
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -35,8 +35,11 @@ WORKERS = 3
 
 STYLES = ['japandi', 'modern_classic', 'scandi']
 ROOMS  = ['living', 'bedroom', 'bathroom', 'kitchen']
-CATS   = [('furniture', 'f'), ('lighting', 'l'), ('materials', 'm')]
+CATS   = [('furniture', 'f'), ('lighting', 'l'), ('materials', 'm'), ('humor', 'h')]
+VARIANTS = ['main', 'alt', 'alt2']
 STYLE_FNAME = {'japandi': 'japandi', 'modern_classic': 'modern-classic', 'scandi': 'scandi'}
+# Probe mode: ASSET_PROBE=semicolon-separated desc substrings → only those.
+PROBE = [p for p in os.environ.get('ASSET_PROBE', '').split(';') if p]
 
 STYLE_PREVIEW_PROMPTS = {
     'japandi':        'japandi living room interior, low oak coffee table, linen sofa, rice paper pendant lamp, zen atmosphere, natural light, professional interior photography, architectural digest',
@@ -93,18 +96,37 @@ KITCHEN_ALTS = {
 
 
 def generate_hf(prompt, gen_w, gen_h, out_w, out_h, path):
-    r = requests.post(
-        HF_URL,
-        headers={'Authorization': f'Bearer {HF_TOKEN}'},
-        json={'inputs': prompt, 'parameters': {'width': gen_w, 'height': gen_h}},
-        timeout=120,
-    )
-    if r.status_code != 200:
-        return f'HTTP {r.status_code}: {r.text[:60]}'
-    img = Image.open(BytesIO(r.content)).convert('RGB').resize((out_w, out_h), Image.LANCZOS)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    img.save(path, 'WEBP', quality=85, method=4)
-    return f'{os.path.getsize(path) // 1024}KB'
+    last = 'unknown'
+    for attempt in range(4):
+        try:
+            r = requests.post(
+                HF_URL,
+                headers={'Authorization': f'Bearer {HF_TOKEN}'},
+                json={'inputs': prompt,
+                      'parameters': {'width': gen_w, 'height': gen_h}},
+                timeout=120,
+            )
+            if r.status_code != 200:
+                last = f'HTTP {r.status_code}: {r.text[:60]}'
+                time.sleep(6 * (attempt + 1))
+                continue
+            if len(r.content) < 1500:  # throttled/blank payload
+                last = f'tiny payload {len(r.content)}B'
+                time.sleep(6 * (attempt + 1))
+                continue
+            img = Image.open(BytesIO(r.content)).convert('RGB').resize(
+                (out_w, out_h), Image.LANCZOS)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            img.save(path, 'WEBP', quality=85, method=4)
+            if os.path.getsize(path) < 700:  # rendered near-blank white
+                last = 'blank render'
+                time.sleep(6 * (attempt + 1))
+                continue
+            return f'{os.path.getsize(path) // 1024}KB'
+        except Exception as e:
+            last = repr(e)[:80]
+            time.sleep(6 * (attempt + 1))
+    return f'FAIL {last}'
 
 
 def build_tasks(catalog):
@@ -123,36 +145,46 @@ def build_tasks(catalog):
             tasks.append({'desc': f'room/{s}__{r}', 'prompt': prompt,
                           'gen_w': 1152, 'gen_h': 512, 'out_w': 720, 'out_h': 320, 'path': path})
 
+    # v3 catalog is uniform across all rooms: keys are {slot}_{variant}
+    # for furniture/lighting/materials/humor, 3 variants each.
     for s in STYLES:
-        for room in ['living', 'bedroom', 'bathroom']:
+        for room in ROOMS:
             for cat_id, prefix in CATS:
                 for slot in range(1, 10):
-                    for variant in ['main', 'alt']:
+                    for variant in VARIANTS:
                         item = catalog[s][room][cat_id].get(f'{slot}_{variant}', {})
-                        if not item:
+                        if not item or not item.get('positive'):
                             continue
                         path = os.path.join(ASSETS, 'items', STYLE_FNAME[s], room, cat_id,
                                             f'{slot}__{variant}.webp')
+                        prompt = item['positive']
+                        if cat_id == 'materials':
+                            # White/pale materials on a white bg render
+                            # invisible. Swap the white-bg instruction for a
+                            # neutral grey studio backdrop (consistent across
+                            # all 324 materials) + a defined sample slab so
+                            # even pale finishes read clearly.
+                            prompt = re.sub(
+                                r'isolated on (a )?pure white background',
+                                'on a soft neutral light grey studio backdrop',
+                                prompt, flags=re.IGNORECASE)
+                            prompt += (' Presented as a thick rectangular '
+                                       'material sample slab with clearly '
+                                       'visible beveled edges and a soft '
+                                       'contact shadow, three-quarter angle, '
+                                       'medium grey background, strong edge '
+                                       'contrast.')
                         tasks.append({'desc': f'icon/{s}/{room}/{cat_id}/{slot}/{variant}',
-                                      'prompt': item['positive'],
+                                      'prompt': prompt,
                                       'gen_w': 1024, 'gen_h': 1024, 'out_w': 400, 'out_h': 400,
                                       'path': path})
 
-        for cat_id, prefix in CATS:
-            for slot in range(1, 10):
-                item = catalog[s]['kitchen'][cat_id].get(str(slot), {})
-                main_prompt = item.get('positive', '') if item else ''
-                alt_prompt  = KITCHEN_ALTS[cat_id][slot - 1]
-                for variant, prompt in [('main', main_prompt), ('alt', alt_prompt)]:
-                    if not prompt:
-                        continue
-                    path = os.path.join(ASSETS, 'items', STYLE_FNAME[s], 'kitchen', cat_id,
-                                        f'{slot}__{variant}.webp')
-                    tasks.append({'desc': f'icon/{s}/kitchen/{cat_id}/{slot}/{variant}',
-                                  'prompt': prompt,
-                                  'gen_w': 1024, 'gen_h': 1024, 'out_w': 400, 'out_h': 400,
-                                  'path': path})
-
+    if PROBE:
+        want = set(PROBE)
+        tasks = [t for t in tasks if t['desc'] in want]
+    only_cat = os.environ.get('ASSET_ONLY_CAT', '')
+    if only_cat:
+        tasks = [t for t in tasks if f'/{only_cat}/' in t['desc']]
     return tasks
 
 
