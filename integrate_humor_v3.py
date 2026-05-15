@@ -49,20 +49,29 @@ _cj = dict(ensure_ascii=False, separators=(',', ':'))
 new_room_labels = 'var ROOM_LABELS = ' + json.dumps(labels, **_cj) + ';'
 new_room_opts = 'var ROOM_OPTS = ' + json.dumps(opts, **_cj) + ';'
 
-html = re.sub(r'var ROOM_LABELS = \{.*?\n\};', lambda m: new_room_labels,
-              html, count=1, flags=re.DOTALL)
-html = re.sub(r'var ROOM_OPTS = \{.*?\n\};', lambda m: new_room_opts,
-              html, count=1, flags=re.DOTALL)
+# Anchored to the NEXT block so re-runs (single- or multi-line) can never
+# over-match and swallow following code. Each pattern consumes its block +
+# trailing newline; replacement restores one clean trailing newline.
+def sub1(pattern, repl, s, what):
+    s2, n = re.subn(pattern, lambda m: repl, s, count=1, flags=re.DOTALL)
+    if n != 1:
+        raise SystemExit(f'integrate: pattern for {what} matched {n}x (expected 1)')
+    return s2
 
-# CATS array
+html = sub1(r'var ROOM_LABELS = \{.*?\n\};\n(?=var ROOM_OPTS)',
+            new_room_labels + '\n', html, 'ROOM_LABELS')
+html = sub1(r'var ROOM_OPTS = \{.*?\n\};\n(?=\nvar STYLE_FNAME)',
+            new_room_opts + '\n', html, 'ROOM_OPTS')
+
+# CATS array (anchored before ROOM_LABELS)
 new_cats = ('var CATS = [\n'
             "  { id:'furniture', px:'f' },\n"
             "  { id:'lighting',  px:'l' },\n"
             "  { id:'materials', px:'m' },\n"
             "  { id:'humor',     px:'h' },\n"
             '];')
-html = re.sub(r'var CATS = \[.*?\n\];', lambda m: new_cats, html, count=1,
-              flags=re.DOTALL)
+html = sub1(r'var CATS = \[.*?\n\];\n(?=var ROOM_LABELS)',
+            new_cats + '\n', html, 'CATS')
 
 # cat-tabs: add humor button (idempotent)
 if 'data-cat="humor"' not in html:
