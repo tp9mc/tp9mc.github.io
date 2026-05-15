@@ -644,19 +644,45 @@ def get_item(catalog, style, room, cat_id, slot_num, variant):
         return {}
 
 
-def item_phrase(item: dict) -> str:
-    """English-only keyword phrase from positive prompt for scene prompt."""
+# Tail/boilerplate that must never reach the scene prompt (wastes the T5
+# 256-token budget and, e.g. "white background", actively fights the scene).
+_TAIL_RE = re.compile(
+    r'\b(isolated on (a )?pure white background|isolated on white background|'
+    r'on (a )?pure white background|white background|soft studio lighting|'
+    r'studio lighting|ambient occlusion|centered front view|top-down view|'
+    r'professional product photography|product photography|high quality|'
+    r'photorealistic|photo realistic|hyper-detailed|highly detailed|'
+    r'8k|4k|high resolution|crisp focus|commercial photography)\b',
+    re.IGNORECASE)
+_PREFIX_RE = re.compile(
+    r'^\s*((minimalist\s+)?3d render of (an?|the)?\s*|'
+    r'a (highly detailed|hyper-detailed)[^,]*render of (an?|the)?\s*|'
+    r'positive\s*(prompt)?\s*\)?\s*:?\s*)', re.IGNORECASE)
+
+
+def item_phrase(item: dict, max_segs: int = 2, max_chars: int = 75) -> str:
+    """Compact English keyword phrase for the scene prompt.
+
+    Aggressively strips render/quality boilerplate and the v2 tail so the
+    limited T5 budget is spent on actual described objects, not on
+    "white background, 8k, product photography" repeated 27 times.
+    """
     pos = item.get('positive') or ''
     if not pos:
         return ''
-    # Strip prefix labels
-    pos = re.sub(r'^[Pp]ositive\s*[Pp]rompt\s*\)?\s*:?\s*', '', pos)
-    pos = re.sub(r'^[Pp]ositive\s*:?\s*', '', pos)
-    clean = strip_boilerplate(pos)
-    # Filter per-term: drop any segment containing Cyrillic
-    segs = [s.strip() for s in clean.split(',')
-            if s.strip() and not re.search(r'[а-яёА-ЯЁ]', s)]
-    return ', '.join(segs[:3])[:120]
+    pos = _PREFIX_RE.sub('', pos)
+    segs = []
+    for raw in pos.split(','):
+        s = _TAIL_RE.sub('', raw).strip(' .;')
+        if not s or re.search(r'[а-яёА-ЯЁ]', s):
+            continue
+        # skip segments that became empty/junk after tail removal
+        if len(s) < 3:
+            continue
+        segs.append(s)
+        if len(segs) >= max_segs:
+            break
+    return ', '.join(segs)[:max_chars].strip(' ,')
 
 
 def build_prompt_and_report(style, room, setup, catalog):
@@ -668,35 +694,78 @@ def build_prompt_and_report(style, room, setup, catalog):
     neg_parts   = [NEG]
     selections  = []  # (cat_id, n, variant, name_ru, phrase)
 
+    # Collect selected items first; build the scene prompt under a token
+    # budget afterwards (FLUX.1-schnell T5 truncates silently past ~256
+    # tokens — empirically prompts beyond ~1.4k chars lose their tail, and
+    # the tail is materials+lighting, so a full room quietly loses items).
+    chosen = []  # (cat_id, n, variant, name_ru, full_phrase)
     for cat_id, px in CATS:
         cat_setup = setup.get(cat_id, {})
         for n in range(1, 10):
             slot_key = f'{px}_{n}'
-            variant  = cat_setup.get(slot_key) or None  # None = unselected
+            variant  = cat_setup.get(slot_key) or None
             if not variant:
                 selections.append((cat_id, n, None, '', ''))
                 continue
-            item     = get_item(catalog, style, room, cat_id, n, variant)
-            name_ru  = item.get('name_ru', '')
-            phrase   = item_phrase(item)
-            selections.append((cat_id, n, variant, name_ru, phrase))
-            if phrase:
-                scene_parts.append(phrase)
-            item_neg = item.get('negative') or ''
-            if item_neg:
-                item_neg = re.sub(r'^[Nn]egative\s*[Pp]rompt\s*\)?\s*:?\s*', '', item_neg)
-                item_neg = re.sub(r'^[Nn]egative\s*:?\s*', '', item_neg)
-                clean_terms = [t.strip() for t in item_neg.split(',')
-                               if t.strip() and not re.search(r'[а-яёА-ЯЁ]', t)]
-                if clean_terms:
-                    neg_parts.append(', '.join(clean_terms))
+            item    = get_item(catalog, style, room, cat_id, n, variant)
+            name_ru = item.get('name_ru', '')
+            phrase  = item_phrase(item)
+            chosen.append((cat_id, n, variant, name_ru, phrase, item))
 
-    scene_parts += [
-        'professional interior photography', 'natural daylight',
-        'wide angle lens', 'high quality', 'architectural digest',
-        'photo realistic', '8k',
-    ]
+    TAIL = ['professional interior photography', 'natural daylight',
+            'wide angle lens', 'architectural digest', '8k']
+    # Proven-safe budget: marker survived at 1411 chars, lost by 2146.
+    # Cap the whole prompt at 1200 chars for margin.
+    BUDGET = 1200
+    fixed = ', '.join([STYLE_DNA[style], ROOM_DNA[room]] + TAIL)
+    avail = BUDGET - len(fixed) - 4
+
+    def assemble(phrases):
+        body = ', '.join(p for p in phrases if p)
+        return body, len(body)
+
+    item_phrases = [c[4] for c in chosen]
+    body, blen = assemble(item_phrases)
+    degraded = False
+    dropped = []
+    if blen > avail:
+        # step 1: shrink every item to its head noun (1 segment)
+        degraded = True
+        item_phrases = [item_phrase(c[5], max_segs=1, max_chars=42) for c in chosen]
+        body, blen = assemble(item_phrases)
+    if blen > avail:
+        # step 2: drop items from the end (materials first — least scene
+        # impact) until within budget; record what was dropped
+        keep = list(zip(chosen, item_phrases))
+        while keep and assemble([p for _, p in keep])[1] > avail:
+            c, _ = keep.pop()
+            dropped.append((c[0], c[1], c[2], c[3]))
+        item_phrases = [p for _, p in keep]
+        chosen_kept = {(c[0], c[1]) for c, _ in keep}
+        body, blen = assemble(item_phrases)
+    else:
+        chosen_kept = {(c[0], c[1]) for c in chosen}
+
+    for cat_id, n, variant, name_ru, phrase, item in chosen:
+        selections.append((cat_id, n, variant, name_ru, phrase))
+        item_neg = item.get('negative') or ''
+        if item_neg:
+            item_neg = re.sub(r'^[Nn]egative\s*[Pp]rompt\s*\)?\s*:?\s*', '', item_neg)
+            item_neg = re.sub(r'^[Nn]egative\s*:?\s*', '', item_neg)
+            clean_terms = [t.strip() for t in item_neg.split(',')
+                           if t.strip() and not re.search(r'[а-яёА-ЯЁ]', t)]
+            if clean_terms:
+                neg_parts.append(', '.join(clean_terms))
+
+    scene_parts = [STYLE_DNA[style], ROOM_DNA[room]]
+    scene_parts += [p for p in item_phrases if p]
+    scene_parts += TAIL
     prompt = ', '.join(p for p in scene_parts if p)
+    build_prompt_and_report.last_budget = {
+        'chars': len(prompt), 'items_selected': len(chosen),
+        'items_kept': len(chosen) - len(dropped),
+        'degraded': degraded, 'dropped': dropped,
+    }
     # Deduplicate neg terms
     seen, neg_dedup = set(), []
     for part in neg_parts:
@@ -719,6 +788,24 @@ def build_report(style, room, setup, selections, prompt, neg, seed, elapsed_sec,
     lines.append(f'  Стиль:   {STYLE_RU[style]}')
     lines.append(f'  Комната: {ROOM_RU[room]}')
     lines.append('')
+
+    # ── Бюджет промта (предупреждение об обрезке) ──────────────
+    bud = getattr(build_prompt_and_report, 'last_budget', None)
+    if bud:
+        if bud['dropped']:
+            lines += ['─' * W, '  ⚠ ВНИМАНИЕ: ПЕРЕПОЛНЕНИЕ ПРОМТА', '─' * W]
+            lines.append(f'  Выбрано элементов: {bud["items_selected"]}')
+            lines.append(f'  Учтено в генерации: {bud["items_kept"]}')
+            lines.append(f'  Не поместилось:    {len(bud["dropped"])}')
+            lines.append('  (модель FLUX ограничена ~256 токенами;')
+            lines.append('   лишние элементы отброшены — выбери меньше')
+            lines.append('   или сгенерируй по частям)')
+            lines.append('')
+        elif bud['degraded']:
+            lines += ['─' * W, '  ℹ Промт сжат под лимит модели', '─' * W]
+            lines.append(f'  Все {bud["items_selected"]} элементов учтены,')
+            lines.append('  но описания укорочены (много выбрано).')
+            lines.append('')
 
     # ── Выборы пользователя (3 категории × 9 слотов) ──────────
     for cat_id, px in CATS:
