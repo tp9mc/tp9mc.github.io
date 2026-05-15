@@ -1,0 +1,143 @@
+{
+  "_doc": "v3 canonical slot taxonomy. Style-agnostic FUNCTION per slot; style only changes material treatment. idx 0-8. Each slot: en subject + functional layer/zone + ru label hint.",
+  "living": {
+    "furniture": [
+      {"en": "primary sofa",                       "layer": "anchor",  "ru": "Диван"},
+      {"en": "accent armchair",                     "layer": "support", "ru": "Кресло"},
+      {"en": "coffee table",                        "layer": "support", "ru": "Журнальный стол"},
+      {"en": "side end table",                      "layer": "flex",    "ru": "Приставной столик"},
+      {"en": "media TV console unit",               "layer": "anchor",  "ru": "ТВ-зона"},
+      {"en": "open display bookshelf",              "layer": "storage", "ru": "Стеллаж"},
+      {"en": "closed sideboard credenza",           "layer": "storage", "ru": "Комод/буфет"},
+      {"en": "console table",                       "layer": "flex",    "ru": "Консоль"},
+      {"en": "pouf ottoman",                        "layer": "flex",    "ru": "Пуф"}
+    ],
+    "lighting": [
+      {"en": "ceiling chandelier flush ambient light", "layer": "ambient", "ru": "Люстра"},
+      {"en": "zonal pendant light over seating",       "layer": "ambient", "ru": "Подвес"},
+      {"en": "reading floor lamp",                     "layer": "task",    "ru": "Торшер"},
+      {"en": "table lamp",                             "layer": "task",    "ru": "Настольная"},
+      {"en": "wall sconce",                            "layer": "accent",  "ru": "Бра"},
+      {"en": "recessed ceiling spotlights",            "layer": "ambient", "ru": "Споты"},
+      {"en": "LED cove strip architectural light",     "layer": "accent",  "ru": "LED-карниз"},
+      {"en": "picture art accent light",               "layer": "accent",  "ru": "Подсветка картин"},
+      {"en": "smart dimmer control panel",             "layer": "control", "ru": "Диммер"}
+    ],
+    "materials": [
+      {"en": "flooring surface swatch",                "layer": "envelope", "ru": "Пол"},
+      {"en": "wall finish swatch",                     "layer": "envelope", "ru": "Стены"},
+      {"en": "accent wall finish panel",               "layer": "envelope", "ru": "Акцентная стена"},
+      {"en": "ceiling finish section",                 "layer": "envelope", "ru": "Потолок"},
+      {"en": "area rug",                               "layer": "textile",  "ru": "Ковёр"},
+      {"en": "window curtain drapery panel",           "layer": "textile",  "ru": "Шторы"},
+      {"en": "sofa upholstery fabric swatch",          "layer": "textile",  "ru": "Обивка"},
+      {"en": "decorative cushions and throw set",      "layer": "textile",  "ru": "Подушки/плед"},
+      {"en": "metal hardware finish sample",           "layer": "accent",   "ru": "Фурнитура"}
+    ]
+  },
+  "bedroom": {
+    "furniture": [
+      {"en": "bed frame",                  "layer": "anchor",  "ru": "Кровать"},
+      {"en": "upholstered headboard",      "layer": "anchor",  "ru": "Изголовье"},
+      {"en": "bedside nightstand",         "layer": "support", "ru": "Прикроватная тумба"},
+      {"en": "chest of drawers dresser",   "layer": "storage", "ru": "Комод"},
+      {"en": "wardrobe closet",            "layer": "storage", "ru": "Шкаф"},
+      {"en": "foot of bed bench",          "layer": "flex",    "ru": "Банкетка"},
+      {"en": "vanity dressing table",      "layer": "support", "ru": "Туалетный столик"},
+      {"en": "reading armchair",           "layer": "flex",    "ru": "Кресло для чтения"},
+      {"en": "full length floor mirror",   "layer": "flex",    "ru": "Зеркало"}
+    ],
+    "lighting": [
+      {"en": "ceiling ambient flush light",       "layer": "ambient", "ru": "Потолочный"},
+      {"en": "bedside hanging pendant light",     "layer": "ambient", "ru": "Подвес"},
+      {"en": "bedside table lamp",                "layer": "task",    "ru": "Прикроватная"},
+      {"en": "reading wall sconce",               "layer": "task",    "ru": "Бра для чтения"},
+      {"en": "recessed ceiling spotlights",       "layer": "ambient", "ru": "Споты"},
+      {"en": "LED headboard accent light",        "layer": "accent",  "ru": "LED-изголовье"},
+      {"en": "wardrobe internal light",           "layer": "task",    "ru": "Свет в шкафу"},
+      {"en": "reading nook floor lamp",           "layer": "task",    "ru": "Торшер"},
+      {"en": "low night path light",              "layer": "accent",  "ru": "Ночник"}
+    ],
+    "materials": [
+      {"en": "flooring surface swatch",            "layer": "envelope", "ru": "Пол"},
+      {"en": "wall finish swatch",                 "layer": "envelope", "ru": "Стены"},
+      {"en": "accent wall behind headboard",       "layer": "envelope", "ru": "Акцентная стена"},
+      {"en": "ceiling finish section",             "layer": "envelope", "ru": "Потолок"},
+      {"en": "bedding linen textile set",          "layer": "textile",  "ru": "Постельный текстиль"},
+      {"en": "bedside area rug",                   "layer": "textile",  "ru": "Ковёр"},
+      {"en": "blackout curtain drapery",           "layer": "textile",  "ru": "Шторы blackout"},
+      {"en": "headboard upholstery fabric swatch", "layer": "textile",  "ru": "Обивка"},
+      {"en": "metal hardware finish sample",       "layer": "accent",   "ru": "Фурнитура"}
+    ]
+  },
+  "bathroom": {
+    "furniture": [
+      {"en": "vanity sink cabinet",         "layer": "vanity",  "ru": "Тумба"},
+      {"en": "sink basin",                  "layer": "vanity",  "ru": "Раковина"},
+      {"en": "freestanding bathtub",        "layer": "wet",     "ru": "Ванна"},
+      {"en": "walk-in shower enclosure",    "layer": "wet",     "ru": "Душевая"},
+      {"en": "toilet",                      "layer": "wc",      "ru": "Унитаз"},
+      {"en": "tall storage cabinet",        "layer": "storage", "ru": "Пенал"},
+      {"en": "mirror cabinet",              "layer": "storage", "ru": "Зеркало-шкаф"},
+      {"en": "shower bench stool",          "layer": "flex",    "ru": "Банкетка"},
+      {"en": "towel ladder rack",           "layer": "support", "ru": "Полотенцедержатель"}
+    ],
+    "lighting": [
+      {"en": "waterproof ceiling ambient light",     "layer": "ambient", "ru": "Потолочный"},
+      {"en": "mirror vanity light",                  "layer": "task",    "ru": "Свет зеркала"},
+      {"en": "wet-rated recessed spotlights",        "layer": "ambient", "ru": "Споты"},
+      {"en": "shower niche accent light",            "layer": "accent",  "ru": "Свет ниши"},
+      {"en": "side wall sconce by mirror",           "layer": "task",    "ru": "Бра"},
+      {"en": "backlit illuminated mirror",           "layer": "accent",  "ru": "Подсветка зеркала"},
+      {"en": "LED cove accent strip",                "layer": "accent",  "ru": "LED-карниз"},
+      {"en": "floor night light",                    "layer": "accent",  "ru": "Ночник"},
+      {"en": "waterproof dimmer control",            "layer": "control", "ru": "Диммер"}
+    ],
+    "materials": [
+      {"en": "floor tile swatch",                    "layer": "envelope", "ru": "Плитка пола"},
+      {"en": "wall tile swatch",                     "layer": "envelope", "ru": "Плитка стен"},
+      {"en": "shower wall finish",                   "layer": "envelope", "ru": "Отделка душа"},
+      {"en": "ceiling finish section",               "layer": "envelope", "ru": "Потолок"},
+      {"en": "countertop stone slab",                "layer": "envelope", "ru": "Столешница"},
+      {"en": "faucet fixture finish",                "layer": "accent",   "ru": "Смеситель-финиш"},
+      {"en": "bath towels textile",                  "layer": "textile",  "ru": "Полотенца"},
+      {"en": "bath mat rug",                         "layer": "textile",  "ru": "Коврик"},
+      {"en": "shower glass partition",               "layer": "envelope", "ru": "Стекло душа"}
+    ]
+  },
+  "kitchen": {
+    "furniture": [
+      {"en": "base cabinets",            "layer": "non-consumables", "ru": "Нижние шкафы"},
+      {"en": "wall cabinets",            "layer": "consumables",     "ru": "Верхние шкафы"},
+      {"en": "kitchen island",           "layer": "preparation",     "ru": "Остров"},
+      {"en": "tall pantry column unit",  "layer": "consumables",     "ru": "Пенал"},
+      {"en": "bar stools",               "layer": "dining",          "ru": "Барные стулья"},
+      {"en": "dining table",             "layer": "dining",          "ru": "Обеденный стол"},
+      {"en": "dining chairs",            "layer": "dining",          "ru": "Стулья"},
+      {"en": "sink with faucet",         "layer": "cleaning",        "ru": "Мойка+смеситель"},
+      {"en": "open display shelving",    "layer": "display",         "ru": "Открытые полки"}
+    ],
+    "lighting": [
+      {"en": "ceiling ambient light",                "layer": "ambient", "ru": "Общий"},
+      {"en": "pendant light over island",            "layer": "task",    "ru": "Подвес над островом"},
+      {"en": "under-cabinet task light strip",       "layer": "task",    "ru": "Подсветка рабочей зоны"},
+      {"en": "recessed ceiling spotlights",          "layer": "ambient", "ru": "Споты"},
+      {"en": "adjustable track lighting system",     "layer": "task",    "ru": "Трек"},
+      {"en": "toe-kick plinth accent light",         "layer": "accent",  "ru": "Подсветка цоколя"},
+      {"en": "in-cabinet display light",             "layer": "accent",  "ru": "Свет в шкафах"},
+      {"en": "dining pendant over table",            "layer": "task",    "ru": "Обеденный подвес"},
+      {"en": "smart dimmer control panel",           "layer": "control", "ru": "Диммер"}
+    ],
+    "materials": [
+      {"en": "flooring surface swatch",              "layer": "envelope", "ru": "Пол"},
+      {"en": "countertop slab swatch",               "layer": "envelope", "ru": "Столешница"},
+      {"en": "backsplash tile swatch",               "layer": "envelope", "ru": "Фартук"},
+      {"en": "cabinet front finish panel",           "layer": "envelope", "ru": "Фасады"},
+      {"en": "wall finish swatch",                   "layer": "envelope", "ru": "Стены"},
+      {"en": "cabinet handle hardware",              "layer": "accent",   "ru": "Ручки"},
+      {"en": "sink material sample",                 "layer": "envelope", "ru": "Материал мойки"},
+      {"en": "window treatment blind",               "layer": "textile",  "ru": "Шторы"},
+      {"en": "kitchen towels runner textile",        "layer": "textile",  "ru": "Текстиль"}
+    ]
+  }
+}
