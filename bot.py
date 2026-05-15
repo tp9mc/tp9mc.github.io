@@ -3310,7 +3310,12 @@ NEG = ('people, person, human figure, ugly, deformed, noisy, blurry, low resolut
 
 def app_keyboard(editor=False, username=''):
     if editor:
+        # Always carry the LIVE tunnel so edit-mode generation works from
+        # the main button too (tunnel URL changes every bot restart;
+        # without this the saved proxy goes stale → "Load failed").
         url = f'https://tp9mc.github.io?t={GH_PUBLISH_TOKEN}&u={username}'
+        if _tunnel_url:
+            url += f'&proxy={_tunnel_url}'
     else:
         url = 'https://tp9mc.github.io'
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -3741,12 +3746,11 @@ def main():
     @bot.message_handler(commands=['app'])
     def on_app(message):
         log_event(message.chat.id, uname(message), 'app')
-        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add(telebot.types.KeyboardButton(
-            text='🏠 Открыть конструктор',
-            web_app=telebot.types.WebAppInfo(url=APP_URL),
-        ))
-        bot.send_message(message.chat.id, '👇 Нажми чтобы открыть:', reply_markup=markup)
+        is_editor = message.chat.id in EDITOR_CHAT_IDS
+        bot.send_message(
+            message.chat.id, '👇 Нажми чтобы открыть:',
+            reply_markup=app_keyboard(editor=is_editor,
+                                      username=uname(message)))
 
     @bot.message_handler(commands=['start', 'restart'])
     def on_start(message):
