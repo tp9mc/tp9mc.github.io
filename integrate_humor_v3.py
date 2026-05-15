@@ -37,7 +37,24 @@ def slot_ru(room, cat, idx):
 # ---- shared label structures (ru identical across styles: v3 design) ----
 labels = {s: {r: {c: [slot_ru(r, c, i) for i in range(9)] for c in C}
               for r in RM} for s in S}
-opts = {s: {r: {c: [[slot_ru(r, c, i)] * 3 for i in range(9)] for c in C}
+# Per-variant distinguishing captions (material/form for v3, concrete gag
+# for humor) so the 3 thumbnails are tellable apart. Fallback to the slot
+# ru if a cell is somehow missing.
+_VL_PATH = REPO / 'variant_labels.json'
+VL = json.loads(_VL_PATH.read_text(encoding='utf-8')) if _VL_PATH.exists() else {}
+
+
+def variant_triple(s, r, c, i):
+    try:
+        t = VL[s][r][c][i]
+        if len(t) == 3 and all((x or '').strip() for x in t):
+            return [x.strip() for x in t]
+    except (KeyError, IndexError, TypeError):
+        pass
+    return [slot_ru(r, c, i)] * 3
+
+
+opts = {s: {r: {c: [variant_triple(s, r, c, i) for i in range(9)] for c in C}
             for r in RM} for s in S}
 
 # ============================ index.html ============================
@@ -58,9 +75,11 @@ def sub1(pattern, repl, s, what):
         raise SystemExit(f'integrate: pattern for {what} matched {n}x (expected 1)')
     return s2
 
-html = sub1(r'var ROOM_LABELS = \{.*?\n\};\n(?=var ROOM_OPTS)',
+# NOTE: no \n before \}; — blocks may be single-line (compact) or
+# multi-line; the lookahead on the next block is the real anchor.
+html = sub1(r'var ROOM_LABELS = \{.*?\};\n(?=var ROOM_OPTS)',
             new_room_labels + '\n', html, 'ROOM_LABELS')
-html = sub1(r'var ROOM_OPTS = \{.*?\n\};\n(?=\nvar STYLE_FNAME)',
+html = sub1(r'var ROOM_OPTS = \{.*?\};\n(?=\nvar STYLE_FNAME)',
             new_room_opts + '\n', html, 'ROOM_OPTS')
 
 # CATS array (anchored before ROOM_LABELS)
@@ -70,7 +89,7 @@ new_cats = ('var CATS = [\n'
             "  { id:'materials', px:'m' },\n"
             "  { id:'humor',     px:'h' },\n"
             '];')
-html = sub1(r'var CATS = \[.*?\n\];\n(?=var ROOM_LABELS)',
+html = sub1(r'var CATS = \[.*?\];\n(?=var ROOM_LABELS)',
             new_cats + '\n', html, 'CATS')
 
 # cat-tabs: add humor button (idempotent)
