@@ -177,5 +177,19 @@ if Path(CAT).exists() or True:
     Path(CAT).write_text(out, encoding='utf-8')
 shutil.copy(CAT, str(REPO / 'catalog_v3.json'))
 
+# ---- prompts.json (edit-modal prefill source) ----
+# The Mini App edit modal prefills the prompt from prompts.json keyed by
+# the frontend eid: opt-{style}-{room}-{cat}-{idx}-{variant}. v3 keys
+# already match; humor keys are opt-{style}-humor-{room}-... so remap the
+# humor segment order. Stale prompts.json => edit modal shows the wrong
+# (old v2) prompt for a slot.
+pj = dict(json.loads((REPO / 'prompts_v3.json').read_text(encoding='utf-8')))
+for k, v in PH.items():                       # opt-{s}-humor-{room}-{idx}-{var}
+    p = k.split('-')
+    if len(p) == 6 and p[2] == 'humor':
+        pj[f'opt-{p[1]}-{p[3]}-humor-{p[4]}-{p[5]}'] = v
+(REPO / 'prompts.json').write_text(
+    json.dumps(pj, ensure_ascii=False, indent=2), encoding='utf-8')
+
 print(f'index.html + bot.py patched (4 cats incl. humor); '
-      f'catalog humor entries: {upd}/324')
+      f'catalog humor entries: {upd}/324; prompts.json {len(pj)} keys')
