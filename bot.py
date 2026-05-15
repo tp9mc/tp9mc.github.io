@@ -1129,7 +1129,21 @@ def main():
     set_menu_button(None)
 
     print('Bot started, polling…')
-    bot.infinity_polling(timeout=30, long_polling_timeout=20, interval=5, skip_pending=True)
+    # Resilient polling: infinity_polling can still raise on certain network
+    # errors (RemoteDisconnected, ConnectionError). Wrap in a recovery loop so
+    # a transient blip never kills the process.
+    while True:
+        try:
+            bot.infinity_polling(timeout=30, long_polling_timeout=20,
+                                 interval=5, skip_pending=True)
+            # clean return = intentional stop
+            break
+        except Exception as e:
+            print(f'polling crashed: {e!r} — restarting loop in 10s')
+            try:
+                time.sleep(10)
+            except Exception:
+                pass
 
 
 if __name__ == '__main__':
