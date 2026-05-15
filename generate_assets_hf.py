@@ -54,7 +54,7 @@ STYLE_DNA = {
 ROOM_DNA = {
     'living':   'living room, comfortable seating, coffee table, ambient lighting',
     'bedroom':  'bedroom, bed with pillows, bedside tables, soft warm lighting',
-    'bathroom': 'bathroom, clean white fixtures, natural stone, elegant vanity',
+    'bathroom': 'bathroom with a freestanding bathtub as the focal point, clean white fixtures, natural stone, elegant vanity, walk-in shower',
     'kitchen':  'kitchen, functional workspace, clean countertops, organized storage',
 }
 
