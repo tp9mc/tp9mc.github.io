@@ -16,6 +16,7 @@ from tools.market_sim.generate import generate_market
 from tools.parsing import crawler
 from tools.matching import matcher
 from tools.analytics.aggregate import aggregate
+from tools.analytics.hq_check import check_hq
 
 
 
@@ -57,6 +58,8 @@ def main():
     args = ap.parse_args()
 
     httpd, port = start_server()
+    hq = check_hq()  # связь с головной компанией — один запрос на запуск
+    print(f'lamoda.ru: {"online" if hq["reachable"] else hq.get("error")}')
     try:
         if args.backfill_days:
             now = datetime.now(timezone.utc).replace(minute=17, second=0, microsecond=0)

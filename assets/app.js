@@ -13,14 +13,14 @@
   const J = p => fetch(p, { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null);
 
   async function load() {
-    const [summary, pL, pH, mL, mH, sH, alerts, pi] = await Promise.all([
+    const [summary, pL, pH, mL, mH, sH, alerts, pi, hq] = await Promise.all([
       J("data/summary.json"),
       J("data/parsing/latest.json"), J("data/parsing/history.json"),
       J("data/matching/latest.json"), J("data/matching/history.json"),
       J("data/shared/history.json"), J("data/shared/alerts.json"),
-      J("data/matching/price_index.json"),
+      J("data/matching/price_index.json"), J("data/shared/hq.json"),
     ]);
-    D = { summary, pL, pH: pH || [], mL, mH: mH || [], sH: sH || [], alerts: alerts || [], pi };
+    D = { summary, pL, pH: pH || [], mL, mH: mH || [], sH: sH || [], alerts: alerts || [], pi, hq };
   }
 
   const inRange = h => {
@@ -67,6 +67,15 @@
       `<span class="pill">E2E ${fmt.sec(s.pipeline.e2e_s)} / SLA ${fmt.sec(s.pipeline.sla_s)}</span>` +
       (s.alerts_open.length ? `<span class="pill"><span class="dot ${cls}"></span>алертов: ${s.alerts_open.length}</span>`
                             : `<span class="pill"><span class="dot ok"></span>алертов нет</span>`);
+    const hq = D.hq;
+    if (hq) {
+      const t = hq.reachable
+        ? `<span class="dot ok"></span>lamoda.ru · ${hq.latency_ms} мс`
+        : (hq.error === "sandbox"
+          ? `<span class="dot warn"></span>lamoda.ru · проверка из CI`
+          : `<span class="dot crit"></span>lamoda.ru · нет связи`);
+      box.innerHTML += `<a class="pill" href="https://www.lamoda.ru/" title="Связь с головной компанией, проверяется каждый прогон">${t}</a>`;
+    }
   }
 
   /* ------------------------------------------------------------------- KPIs */
@@ -294,7 +303,9 @@
     const t = card(g, "Прайс-индекс: наибольшие отклонения", "SKU с максимальным разрывом к минимальной цене конкурента", "w12");
     if (D.pi && D.pi.rows.length) {
       const rows = D.pi.rows.slice(0, 25).map(r => `<tr>
-        <td class="mono">${r.sku}</td><td>${r.title}</td>
+        <td class="mono">${r.sku}</td>
+        <td><a href="https://www.lamoda.ru/catalogsearch/result/?q=${encodeURIComponent(r.title)}"
+               title="Открыть в каталоге lamoda.ru" target="_blank" rel="noopener">${r.title}</a></td>
         <td class="num">${fmt.rub(r.own)}</td><td class="num">${fmt.rub(r.min_comp)}</td>
         <td class="num">${r.offers}</td>
         <td class="num" style="font-weight:600">${fmt.gap(r.gap_pct)}</td></tr>`).join("");

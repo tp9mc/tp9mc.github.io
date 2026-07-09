@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Руководство пилота — Lamoda Tech: Parsing × Matching</title>
+<meta name="description" content="Полное руководство оператора: как устроена система, как читать метрики и что делать при любом событии">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+<script>const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t;</script>
+<style>
+  .wrap { max-width: 920px; }
+  .slide {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 14px; padding: 26px 30px; margin: 18px 0;
+  }
+  .slide > h2 { margin: 0 0 4px; font-size: 20px; }
+  .slide > .lead { color: var(--ink-2); margin: 0 0 14px; font-size: 14px; }
+  .slide h3 { font-size: 15px; margin: 18px 0 6px; }
+  .num { color: var(--series-1); font-variant-numeric: tabular-nums; margin-right: 8px; }
+  .toc { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 6px; }
+  .toc a { text-decoration: none; color: var(--ink-1); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); display: block; font-size: 13px; }
+  .toc a:hover { border-color: var(--series-1); }
+  pre.map {
+    background: var(--page); border: 1px solid var(--grid); border-radius: 10px;
+    padding: 14px; overflow-x: auto; font: 12px/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace;
+    color: var(--ink-2);
+  }
+  table.data td { vertical-align: top; }
+  .ok { color: var(--good); font-weight: 600; }
+  .warn2 { color: var(--warning); font-weight: 600; }
+  .crit2 { color: var(--critical); font-weight: 600; }
+  kbd, code {
+    background: var(--page); border: 1px solid var(--grid); border-radius: 5px;
+    padding: 1px 6px; font: 12px ui-monospace, Consolas, monospace; color: var(--ink-1);
+  }
+  .playbook { border-left: 3px solid var(--series-1); padding: 2px 0 2px 14px; margin: 14px 0; }
+  .playbook.sev-w { border-color: var(--warning); }
+  .playbook.sev-s { border-color: var(--serious); }
+  .playbook.sev-c { border-color: var(--critical); }
+  .playbook h4 { margin: 0 0 4px; font-size: 14px; }
+  .playbook p, .playbook ol, .playbook ul { margin: 6px 0; font-size: 13.5px; color: var(--ink-2); }
+  .playbook li { margin: 3px 0; }
+  .playbook b { color: var(--ink-1); }
+  .tip-box { background: var(--page); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--ink-2); margin: 10px 0; }
+  ol.steps { padding-left: 20px; } ol.steps li { margin: 5px 0; }
+  @media print { .slide { break-inside: avoid; border: none; padding: 10px 0; } header.top .pill, #theme { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>📖 Руководство пилота</h1>
+    <span class="sub">Lamoda Tech · Parsing × Matching</span>
+    <div class="spacer"></div>
+    <a class="pill" href="index.html">← в кабину</a>
+    <button id="theme" class="ghost" onclick="const c=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const n=c==='dark'?'light':'dark';document.documentElement.dataset.theme=n;localStorage.setItem('theme',n)">тема</button>
+  </header>
+
+  <div class="slide">
+    <h2>Для кого и зачем</h2>
+    <p class="lead">Прочитав это руководство, вы сможете управлять обоими продуктами при любом событии:
+    понимать каждую цифру кабины, реагировать на инциденты по плейбукам и менять поведение системы.</p>
+    <div class="toc">
+      <a href="#s1"><span class="num">01</span>Система на одном экране</a>
+      <a href="#s2"><span class="num">02</span>LT Parsing — как устроен</a>
+      <a href="#s3"><span class="num">03</span>LT Matching — как устроен</a>
+      <a href="#s4"><span class="num">04</span>Как читать кабину</a>
+      <a href="#s5"><span class="num">05</span>Светофор: нормы и пороги</a>
+      <a href="#s6"><span class="num">06</span>Плейбуки инцидентов</a>
+      <a href="#s7"><span class="num">07</span>Управление системой</a>
+      <a href="#s8"><span class="num">08</span>PO-боты: как общаться</a>
+      <a href="#s9"><span class="num">09</span>Ритуалы Head of Product</a>
+      <a href="#s10"><span class="num">10</span>Ограничения и путь к проду</a>
+    </div>
+  </div>
+
+  <div class="slide" id="s1">
+    <h2><span class="num">01</span>Система на одном экране</h2>
+    <p class="lead">Два продукта, соединённые в один конвейер данных. Всё крутится автоматически — ваша роль наблюдать, решать и настраивать.</p>
+<pre class="map">
+ каждые 3 часа (GitHub Actions, «прогон»)
+ ┌──────────────────────────────────────────────────────────────────┐
+ │ РЫНОК (симулятор)          LT PARSING                LT MATCHING │
+ │ 3 магазина конкурентов ──▶ HTTP-обход, извлечение ─▶ сопоставление│
+ │ цены живут, товары         офферов, телеметрия       с каталогом, │
+ │ ротируются, бывают         каждого запроса           очередь      │
+ │ сбои и капчи                     │                   валидации    │
+ │                                  ▼                       │        │
+ │                            data/parsing/*           data/matching/*
+ │                                  └────────┬──────────────┘        │
+ │                                           ▼                       │
+ │                              АНАЛИТИКА: E2E, ценовой индекс,      │
+ │                              алерты → data/summary, data/shared   │
+ └──────────────────────────────────────────────────────────────────┘
+        ▼ коммит в main               ▼ сайт                ▼ Telegram
+   история в git             кабина пилота (дашборд)   дайджесты/алерты
+                             tp9mc.github.io           Лера 🕷 и Марк 🧩
+</pre>
+    <ul>
+      <li><b>Прогон</b> — один цикл конвейера. Все метрики считаются «за прогон», история хранится по прогонам (8 в сутки).</li>
+      <li><b>Данные не редактируются руками</b>: каталоги <code>data/</code> и <code>shops/</code> пишет пайплайн. Единственный источник правды — git-история.</li>
+      <li>Три источника: <b>StyleHub</b> (HTML + sitemap), <b>МодаМаркет</b> (HTML + пагинация, самый капризный), <b>TrendAPI</b> (JSON API).</li>
+      <li><b>Связь с головной компанией</b>: каждый прогон пайплайн проверяет доступность <a href="https://www.lamoda.ru/">www.lamoda.ru</a> — статус виден плашкой в шапке кабины (спросить ботов: «что с lamoda?»); SKU в таблице прайс-индекса кликабельны и ведут в каталог lamoda.ru.</li>
+    </ul>
+  </div>
+
+  <div class="slide" id="s2">
+    <h2><span class="num">02</span>LT Parsing — как устроен и за что отвечает</h2>
+    <p class="lead">Продукт отвечает на вопрос: «видим ли мы рынок целиком, быстро и без потерь качества данных».</p>
+    <h3>Цикл работы</h3>
+    <ol class="steps">
+      <li><b>Discovery</b> — находит товары: по sitemap (StyleHub), обходом пагинации (МодаМаркет), по API-индексу (TrendAPI).</li>
+      <li><b>Fetch</b> — качает карточки с ретраями (2 повтора), меряет задержку каждого запроса.</li>
+      <li><b>Extract</b> — вытаскивает поля: название, цена, старая цена, бренд, категория, цвет, наличие.</li>
+      <li><b>Validate</b> — карточка без названия = ошибка парсинга; без цены = брак данных (учитывается в полноте полей).</li>
+      <li><b>Diff</b> — сравнивает с прошлым прогоном: новые/исчезнувшие офферы, изменения цен.</li>
+    </ol>
+    <h3>Пять групп метрик (вкладка «LT Parsing»)</h3>
+    <table class="data">
+      <tr><th>Группа</th><th>Ключевой вопрос</th><th>Главная метрика</th></tr>
+      <tr><td>Coverage</td><td>Видим ли весь рынок?</td><td>офферы за прогон; источники 3/3</td></tr>
+      <tr><td>Reliability</td><td>Стабильно ли качаем?</td><td>success rate ≥ 97%</td></tr>
+      <tr><td>Freshness</td><td>Насколько данные свежие?</td><td>все источники обкачаны ≤ 6 ч назад</td></tr>
+      <tr><td>Quality</td><td>Полные ли данные?</td><td>полнота цены ≥ 95%</td></tr>
+      <tr><td>Сигналы рынка</td><td>Что происходит у конкурентов?</td><td>изменения цен, новинки, OOS</td></tr>
+    </table>
+    <div class="tip-box">💡 Порядок диагностики всегда одинаковый: сначала «Источники — последний прогон» (таблица внизу вкладки) — там видно, <i>какой</i> источник и <i>чем</i> болеет (HTTP-ошибки, парс-ошибки, капчи, ретраи).</div>
+  </div>
+
+  <div class="slide" id="s3">
+    <h2><span class="num">03</span>LT Matching — как устроен и за что отвечает</h2>
+    <p class="lead">Продукт отвечает на вопрос: «про какую долю нашего каталога мы знаем цены конкурентов — и можно ли этим цифрам верить».</p>
+    <h3>Воронка каждого оффера</h3>
+    <ol class="steps">
+      <li><b>Блокинг</b> — кандидаты из каталога той же категории (и бренда, если распарсен) — чтобы не сравнивать всё со всем.</li>
+      <li><b>Скоринг</b> — взвешенная сумма сигналов: слова названия с учётом редкости (34%), числовые артикулы (16%), бренд (16%), триграммы (12%), близость цены (12%), цвет (10%).</li>
+      <li><b>Маршрутизация</b>: score ≥ 0.74 и отрыв от второго кандидата ≥ 0.04 → <b>авто-мэтч</b>; score 0.50–0.74 или неоднозначность → <b>очередь валидации</b>; ниже → нет мэтча.</li>
+      <li><b>Валидация</b> — «валидаторы» разбирают до 40 карточек за прогон, начиная с самых уверенных. Подтверждение живёт 7 дней, потом карточка пере-валидируется.</li>
+      <li><b>Ценовой индекс</b> — по всем мэтчам: у каких SKU есть цена конкурента, где мы дороже/дешевле.</li>
+    </ol>
+    <h3>Как считается качество</h3>
+    <p>Precision/recall — не экспертная оценка, а точное сравнение с голдсетом (истинные пары «оффер → SKU»).
+    <b>Precision</b> — доля верных среди авто-мэтчей (цена ошибки: неверная цена конкурента у SKU → неверные ценовые решения).
+    <b>Recall</b> — доля найденных среди всех реально сопоставимых (цена ошибки: слепые зоны индекса).</p>
+    <div class="tip-box">💡 Между precision и recall есть руль — порог авто-мэтча (см. раздел 07). Выше порог → точнее, но больше ручной работы и меньше покрытие. Ниже → наоборот.</div>
+  </div>
+
+  <div class="slide" id="s4">
+    <h2><span class="num">04</span>Как читать кабину</h2>
+    <p class="lead">Маршрут чтения — сверху вниз: статус → KPI → вкладка проблемного продукта.</p>
+    <h3>Шапка</h3>
+    <ul>
+      <li><b>«прогон N мин назад»</b> — главный индикатор жизни. Прогоны идут каждые 3 часа; если прошло больше 6 часов — пайплайн встал (плейбук №7). Точка: зелёная — алертов нет, жёлтая/красная — есть.</li>
+      <li><b>E2E / SLA</b> — длительность конвейера против лимита 5 минут.</li>
+    </ul>
+    <h3>Шесть KPI (слева направо — от бизнеса к технике)</h3>
+    <table class="data">
+      <tr><th>KPI</th><th>Что означает</th><th>Чей</th></tr>
+      <tr><td>Покрытие ценового индекса</td><td><b>North Star.</b> Доля нашего каталога, где знаем цену хотя бы одного конкурента</td><td>оба продукта</td></tr>
+      <tr><td>Ценовая конкурентоспособность</td><td>Где наша цена ≤ минимума конкурентов. Это метрика <i>рынка и прайсинга</i>, не качества системы: если она падает при стабильном покрытии — конкуренты снизили цены, сигнал коммерции</td><td>бизнес</td></tr>
+      <tr><td>Покрытие рынка</td><td>Сколько реально существующего ассортимента конкурентов мы увидели</td><td>Parsing</td></tr>
+      <tr><td>Success rate обкачки</td><td>Доля запросов без ошибок/капчи</td><td>Parsing</td></tr>
+      <tr><td>Precision авто-мэтчей</td><td>Можно ли верить авто-сопоставлениям</td><td>Matching</td></tr>
+      <tr><td>Recall мэтчинга</td><td>Не теряем ли сопоставимые офферы</td><td>Matching</td></tr>
+    </table>
+    <h3>Приёмы</h3>
+    <ul>
+      <li>Стрелка под KPI — сравнение с прошлым прогоном; спарклайн — форма тренда. Резкий излом важнее абсолюта.</li>
+      <li>Фильтр <b>7д/14д/всё</b> (справа от вкладок) действует на все графики. Наведение — точные значения; кнопка «таблица» — те же данные числами.</li>
+      <li>Провалы на графиках раз в неделю — ротация ассортимента магазинов (понедельник), это норма рынка, не сбой.</li>
+      <li>Вкладка <b>Инциденты</b> — журнал всех алертов; вкладка <b>Пересечение</b> — сквозные метрики конвейера.</li>
+    </ul>
+  </div>
+
+  <div class="slide" id="s5">
+    <h2><span class="num">05</span>Светофор: нормы и пороги</h2>
+    <p class="lead">При каких значениях жить спокойно, когда напрячься, когда действовать немедленно. Эти же правила зашиты в алерты.</p>
+    <table class="data">
+      <tr><th>Метрика</th><th class="num">🟢 Норма</th><th class="num">🟡 Внимание</th><th class="num">🔴 Действовать</th></tr>
+      <tr><td>Источники активны</td><td class="num ok">3/3</td><td class="num warn2">2/3 (maintenance)</td><td class="num crit2">2/3 два прогона подряд, 1/3</td></tr>
+      <tr><td>Success rate обкачки</td><td class="num ok">≥ 97%</td><td class="num warn2">90–97%</td><td class="num crit2">&lt; 90%</td></tr>
+      <tr><td>Свежесть в SLA (6 ч)</td><td class="num ok">100%</td><td class="num warn2">67% (один отстал)</td><td class="num crit2">≤ 33% или &gt; 12 ч</td></tr>
+      <tr><td>Полнота цены</td><td class="num ok">≥ 95%</td><td class="num warn2">90–95%</td><td class="num crit2">&lt; 90%</td></tr>
+      <tr><td>Капчи за прогон</td><td class="num ok">&lt; 10</td><td class="num warn2">10–30</td><td class="num crit2">&gt; 30 или растут прогон к прогону</td></tr>
+      <tr><td>Precision (авто)</td><td class="num ok">≥ 95%</td><td class="num warn2">90–95%</td><td class="num crit2">&lt; 90%</td></tr>
+      <tr><td>Recall</td><td class="num ok">≥ 80%</td><td class="num warn2">70–80%</td><td class="num crit2">&lt; 70%</td></tr>
+      <tr><td>Очередь валидации</td><td class="num ok">&lt; 150</td><td class="num warn2">150–300</td><td class="num crit2">&gt; 300 или растёт 5+ прогонов</td></tr>
+      <tr><td>Покрытие индекса</td><td class="num ok">стабильно ±2 п.п.</td><td class="num warn2">−5 п.п. к среднему за 8 прогонов</td><td class="num crit2">−10 п.п. и продолжает падать</td></tr>
+      <tr><td>E2E длительность</td><td class="num ok">&lt; 1 мин</td><td class="num warn2">1–5 мин</td><td class="num crit2">&gt; 5 мин (SLA)</td></tr>
+      <tr><td>Возраст последнего прогона</td><td class="num ok">&lt; 3.5 ч</td><td class="num warn2">3.5–6 ч</td><td class="num crit2">&gt; 6 ч — конвейер встал</td></tr>
+    </table>
+    <div class="tip-box">💡 Один жёлтый сигнал — наблюдать до следующего прогона (боты сами напишут при serious/critical). Два связанных жёлтых (например, success rate ↓ и полнота ↓ у одного источника) — считать красным.</div>
+  </div>
+
+  <div class="slide" id="s6">
+    <h2><span class="num">06</span>Плейбуки инцидентов</h2>
+    <p class="lead">Симптом → диагноз → действия. Диагностика всегда начинается с вкладки продукта и вопроса боту.</p>
+
+    <div class="playbook sev-s">
+      <h4>1. Источник недоступен (maintenance / сбой)</h4>
+      <p><b>Симптом:</b> «Источники активны 2/3», алерт от Леры; провал на «Офферы по источникам».</p>
+      <ol><li>Таблица источников: статус <i>maintenance</i> (магазин лежит — не наша проблема) или <i>сбой</i> (0 офферов при живом сайте — проблема краулера).</li>
+      <li>Maintenance: ничего не делать 1–2 прогона — обкачка восстановится сама, свежесть догонит. Матчинг в это время живёт на снапшоте, покрытие индекса просядет на долю этого источника — это ожидаемо.</li>
+      <li>Сбой 2+ прогонов подряд: смотреть лог прогона в <a href="https://github.com/tp9mc/tp9mc.github.io/actions/workflows/pipeline.yml">Actions → pipeline</a> — вероятно, магазин сменил разметку → нужна правка адаптера (<code>tools/parsing/crawler.py</code>).</li></ol>
+    </div>
+
+    <div class="playbook sev-w">
+      <h4>2. Растут капчи / подозрение на блокировку</h4>
+      <p><b>Симптом:</b> алерт «риск блокировки», рост «Капчи» в таблице источников (обычно МодаМаркет).</p>
+      <ol><li>Единичные капчи (&lt;10) — фон, система их учитывает в success rate и добирает карточки в следующем прогоне.</li>
+      <li>Рост тренда: снизить агрессивность — уменьшить <code>WORKERS</code> (параллелизм) в <code>tools/parsing/crawler.py</code>; в проде здесь же включаются прокси-пулы и троттлинг.</li>
+      <li>Помнить: капчи бьют не только по объёму, но и по свежести конкретных товаров.</li></ol>
+    </div>
+
+    <div class="playbook sev-c">
+      <h4>3. Precision упал ниже 95%</h4>
+      <p><b>Симптом:</b> алерт от Марка; изгиб вниз на «Качество против голдсета».</p>
+      <ol><li>Сначала спросить Марка: <code>какое качество?</code> — false match rate покажет масштаб.</li>
+      <li>Проверить полноту полей у Parsing: чаще всего precision падает <i>из-за входных данных</i> (пропал бренд/цена у источника) — тогда лечить парсинг, не матчер.</li>
+      <li>Если вход в норме — поднять порог: <code>AUTO_T</code> 0.74 → 0.78 в <code>tools/matching/matcher.py</code>. Это разменяет recall на precision; очередь валидации вырастет — при необходимости поднять <code>REVIEW_CAPACITY</code>.</li>
+      <li>Красная граница 90% — авто-мэтчам верить нельзя, ценовые решения ставить на паузу до починки.</li></ol>
+    </div>
+
+    <div class="playbook sev-w">
+      <h4>4. Очередь валидации растёт и не разгребается</h4>
+      <p><b>Симптом:</b> «Очередь ручной валидации» растёт 5+ прогонов; ETA разбора &gt; 3 прогонов.</p>
+      <ol><li>Причина обычно одна из двух: всплеск новых товаров (ротация ассортимента — рассосётся само) или упавшая уверенность скоринга (смотреть «Распределение уверенности»: горб сместился влево — деградация данных).</li>
+      <li>Быстрое лекарство: поднять <code>REVIEW_CAPACITY</code> (40 → 60–80) — в проде это «нанять валидаторов».</li>
+      <li>Системное: если горб уверенности прижат к порогу 0.70–0.74 — улучшать нормализацию/сигналы скоринга, а не мощность.</li></ol>
+    </div>
+
+    <div class="playbook sev-s">
+      <h4>5. Покрытие ценового индекса упало</h4>
+      <p><b>Симптом:</b> алерт «покрытие упало», KPI №1 ↓ более чем на 5 п.п.</p>
+      <ol><li>Это всегда следствие. Идти по конвейеру против течения: источники 3/3? → офферы в норме? → auto-match rate в норме? → очередь не разбухла?</li>
+      <li>Первый сломанный этап и есть причина — применить его плейбук (№1–4).</li>
+      <li>Если всё зелёное, а покрытие ниже — конкуренты сняли с продажи пересекающийся ассортимент (виден рост «Исчезли» у Parsing). Это рынок: сигнал коммерции, не инженерам.</li></ol>
+    </div>
+
+    <div class="playbook sev-c">
+      <h4>6. Дашборд «прогон N часов назад» — конвейер встал</h4>
+      <p><b>Симптом:</b> возраст прогона &gt; 6 ч; боты замолчали.</p>
+      <ol><li>Открыть <a href="https://github.com/tp9mc/tp9mc.github.io/actions/workflows/pipeline.yml">Actions → pipeline</a>: если последний ран красный — открыть лог, упавший шаг виден сразу.</li>
+      <li>Перезапустить вручную: кнопка <b>Run workflow</b> (ветка main). Один успешный ран догоняет всё — история строится от снапшотов.</li>
+      <li>Если раны вообще не появляются: GitHub отключает расписания после 60 дней без коммитов человека — зайти в Actions и нажать «Enable». Наш пайплайн коммитит сам, так что это редкость.</li></ol>
+    </div>
+
+    <div class="playbook sev-w">
+      <h4>7. Сайт не обновляется (данные на дашборде старее последнего рана)</h4>
+      <ol><li>Проверить, что в <code>main</code> есть свежий коммит «pipeline: прогон …» — если нет, это плейбук №6.</li>
+      <li>Коммит есть, сайт старый: в Actions найти «pages build and deployment» — красный ран перезапустить. Жёсткое обновление страницы (Ctrl+Shift+R) — кэш браузера тоже бывает виноват.</li></ol>
+    </div>
+
+    <div class="playbook sev-w">
+      <h4>8. Боты молчат или не отвечают</h4>
+      <ol><li>Дайджесты приходят <b>раз в день</b>, алерты — только при serious/critical: тишина при зелёной кабине — норма.</li>
+      <li>Не отвечают на вопросы: подождать до 15 минут (боты читают чат по крону), проверить <a href="https://github.com/tp9mc/tp9mc.github.io/actions/workflows/po-bots.yml">Actions → po-bots</a> — ран зелёный?</li>
+      <li>Ран зелёный, ответа нет: бот не понял адресата — обратиться по имени («Лера, …» / «Марк, …») или командой <code>/status@Lera_PO_Parsing_bot</code>.</li>
+      <li>Ран падает: проверить секреты <code>PARSING_BOT_TOKEN</code> / <code>MATCHING_BOT_TOKEN</code> в Settings → Secrets; после /revoke токена в BotFather секрет надо обновить.</li>
+      <li>Боты видят только команды: privacy mode включён — в BotFather <code>/setprivacy</code> → Disable и пересоздать их присутствие в группе (удалить/добавить).</li></ol>
+    </div>
+  </div>
+
+  <div class="slide" id="s7">
+    <h2><span class="num">07</span>Управление системой</h2>
+    <h3>Запустить прогон вручную</h3>
+    <p><a href="https://github.com/tp9mc/tp9mc.github.io/actions/workflows/pipeline.yml">Actions → pipeline</a> → <b>Run workflow</b> → ветка main. Через 2–3 минуты данные в кабине обновятся. Аналогично <a href="https://github.com/tp9mc/tp9mc.github.io/actions/workflows/po-bots.yml">po-bots</a> — форсировать чтение чата.</p>
+    <h3>Ручки настройки (что и где крутить)</h3>
+    <table class="data">
+      <tr><th>Ручка</th><th>Где</th><th>Эффект</th></tr>
+      <tr><td><code>AUTO_T</code> (0.74)</td><td>tools/matching/matcher.py</td><td>↑ точнее и меньше авто-мэтчей; ↓ наоборот</td></tr>
+      <tr><td><code>MARGIN</code> (0.04)</td><td>tools/matching/matcher.py</td><td>защита от неоднозначных пар; ↑ строже</td></tr>
+      <tr><td><code>REVIEW_CAPACITY</code> (40)</td><td>tools/matching/matcher.py</td><td>скорость разбора очереди («нанять валидаторов»)</td></tr>
+      <tr><td><code>CONFIRM_TTL_DAYS</code> (7)</td><td>tools/matching/matcher.py</td><td>частота пере-валидации подтверждённых мэтчей</td></tr>
+      <tr><td><code>FRESHNESS_SLA_H</code> (6)</td><td>tools/parsing/crawler.py</td><td>норматив свежести источников</td></tr>
+      <tr><td><code>WORKERS</code> (12), <code>RETRIES</code> (2)</td><td>tools/parsing/crawler.py</td><td>агрессивность обкачки</td></tr>
+      <tr><td>Расписание прогонов</td><td>.github/workflows/pipeline.yml (cron)</td><td>частота цикла (сейчас каждые 3 ч)</td></tr>
+      <tr><td>Пороги алертов</td><td>tools/analytics/aggregate.py</td><td>когда боты бьют тревогу</td></tr>
+    </table>
+    <p>Любое изменение — обычный коммит в <code>main</code>: следующий прогон работает уже по-новому. Проверить локально перед пушем: <code>python -m tools.run_pipeline</code>.</p>
+    <h3>Добавить новый источник (эскиз)</h3>
+    <ol class="steps">
+      <li>Написать адаптер в <code>tools/parsing/crawler.py</code> (discovery + извлечение полей) и зарегистрировать в <code>ADAPTERS</code>.</li>
+      <li>Для симуляции — добавить магазин в <code>SHOPS</code> (tools/market_sim/generate.py); для реального сайта этот шаг пропускается.</li>
+      <li>Метрики, мэтчинг, дашборд и боты подхватят источник автоматически.</li>
+    </ol>
+  </div>
+
+  <div class="slide" id="s8">
+    <h2><span class="num">08</span>PO-боты: как общаться</h2>
+    <p class="lead">Лера 🕷 отвечает за Parsing, Марк 🧩 — за Matching и ценовой индекс. Они читают чат раз в 15 минут — ответ не мгновенный, это нормально.</p>
+    <h3>Что присылают сами</h3>
+    <ul>
+      <li><b>Дайджест</b> — раз в день после прогона: цифры, тренды, риски по своему продукту.</li>
+      <li><b>Алерты</b> — сразу после прогона, только serious/critical. Тишина = всё зелёное.</li>
+    </ul>
+    <h3>Как спрашивать</h3>
+    <table class="data">
+      <tr><th>Вопрос</th><th>Кому</th><th>Что вернёт</th></tr>
+      <tr><td><code>статус</code> / <code>/status</code> / <code>дайджест</code></td><td>обоим</td><td>полный дайджест своего продукта</td></tr>
+      <tr><td><code>риски</code> / <code>/risks</code></td><td>обоим</td><td>открытые алерты по продукту</td></tr>
+      <tr><td><code>источники</code>, <code>свежесть</code>, <code>покрытие</code>, <code>качество данных</code></td><td>Лере</td><td>срезы по обкачке</td></tr>
+      <tr><td><code>очередь</code>, <code>качество</code>, <code>прайс-индекс</code>, <code>цены конкурентов</code></td><td>Марку</td><td>срезы по мэтчингу и ценам</td></tr>
+      <tr><td><code>/manual</code> / <code>инструкция</code></td><td>обоим</td><td>шпаргалка + ссылка на это руководство</td></tr>
+    </table>
+    <p>Адресация: по имени («Лера, что с источниками?»), по ключевым словам темы или командой с упоминанием (<code>/status@Mark_PO_Matching_bot</code>). На вопрос без адресата и темы боты не отвечают, чтобы не спамить хором.</p>
+  </div>
+
+  <div class="slide" id="s9">
+    <h2><span class="num">09</span>Ритуалы Head of Product</h2>
+    <h3>Ежедневно — 2 минуты</h3>
+    <ol class="steps">
+      <li>Дайджесты в Telegram: есть ⚠️? Если нет — день свободен от операционки.</li>
+      <li>Кабина: шесть KPI зелёные/стабильные? Возраст прогона &lt; 3 ч?</li>
+    </ol>
+    <h3>Еженедельно — 15 минут</h3>
+    <ol class="steps">
+      <li>Диапазон «14д»: тренды North Star (покрытие индекса) и конкурентоспособности — растём или плывём?</li>
+      <li>Вкладка «Инциденты»: повторяющиеся коды — кандидаты на системную починку, а не ручные реакции.</li>
+      <li>«Прайс-индекс: наибольшие отклонения» — топ разрывов передать в прайсинг/коммерцию.</li>
+      <li>Очередь валидации: средний уровень растёт неделю к неделе → планировать мощность или улучшение скоринга.</li>
+    </ol>
+    <h3>Решения, которые остаются за человеком</h3>
+    <ul>
+      <li>Баланс precision/recall (порог) — это продуктовое решение о цене ошибки, не инженерное.</li>
+      <li>Что делать с ценовыми разрывами — репрайсинг, акции, игнор.</li>
+      <li>Приоритет источников: какой рынок добавить следующим.</li>
+    </ul>
+  </div>
+
+  <div class="slide" id="s10">
+    <h2><span class="num">10</span>Ограничения и путь к продакшену</h2>
+    <ul>
+      <li><b>Рынок симулирован</b> — три магазина живут на этом же сайте. Всё остальное настоящее: HTTP-обход, извлечение, скоринг, очереди, метрики. Благодаря симуляции precision/recall точные (есть голдсет) — в проде их место занимает размеченная выборка.</li>
+      <li><b>Валидаторы симулированы</b> (точность 98.5%) — в проде это команда разметки или LLM-ассист с выборочным контролем.</li>
+      <li><b>Задержки на локальном стенде</b> малы (миллисекунды) — абсолютные значения «стр/мин» сравнивать только с собой.</li>
+      <li><b>Замена симуляции на реальный рынок</b> = написать адаптеры реальных площадок (раздел 07) и убрать шаг генерации из пайплайна. Ни дашборд, ни матчер, ни боты менять не нужно.</li>
+    </ul>
+    <p class="lead" style="margin-top:14px">Исходники и документация: <a href="https://github.com/tp9mc/tp9mc.github.io">репозиторий</a> · <a href="https://github.com/tp9mc/tp9mc.github.io/blob/main/docs/ARCHITECTURE.md">ARCHITECTURE.md</a> · <a href="https://github.com/tp9mc/tp9mc.github.io/blob/main/docs/METRICS.md">METRICS.md</a></p>
+  </div>
+
+  <footer>«Кабина пилота» Lamoda Tech · руководство обновляется вместе с системой · <a href="index.html">вернуться в кабину</a></footer>
+</div>
+</body>
+</html>

@@ -46,7 +46,8 @@ def process(product, state):
             cfg = PRODUCTS[product]
             send(product, chat["id"],
                  f"{cfg['emoji']} Привет! Я {cfg['persona']}, {cfg['role']}. "
-                 f"Дайджесты и алерты по продукту буду присылать сюда сама(м). /help — что умею.")
+                 f"Дайджесты и алерты по продукту буду присылать сюда сама(м). "
+                 f"/help — что умею, /manual — руководство по управлению продуктами.")
             replied += 1
             continue
         if cmd_mine or is_addressed(product, text, my, reply_to):
