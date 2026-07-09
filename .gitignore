@@ -1,9 +1,4 @@
-.DS_Store
 __pycache__/
 *.pyc
-assets/**/*.txt
-bot_secrets.py
-vertex_key.json
-_probe_preview.html
 .DS_Store
-**/.DS_Store
+node_modules/

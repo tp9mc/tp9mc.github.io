@@ -1,0 +1,28 @@
+{
+ "ts": "2026-07-09T19:17:00Z",
+ "pipeline": {
+  "e2e_s": 3.45,
+  "sla_s": 300,
+  "sla_ok": true
+ },
+ "nsm": {
+  "pi_coverage": 0.7956,
+  "pi_competitiveness": 0.3743,
+  "market_coverage": 0.9897
+ },
+ "parsing": {
+  "offers": 1246,
+  "sources": "3/3",
+  "success_rate": 0.987,
+  "fresh_share": 1.0,
+  "uptime": 0.9176
+ },
+ "matching": {
+  "auto_match_rate": 0.8507,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "queue": 31
+ },
+ "alerts_open": []
+}
