@@ -1,0 +1,48 @@
+name: bot-test
+
+# Ручной тест связи PO-ботов: запускается кнопкой Run workflow.
+# Каждый бот шлёт тестовое сообщение в групповой чат + полная диагностика в лог.
+on:
+  workflow_dispatch:
+    inputs:
+      chat_id:
+        description: "chat_id группы (опционально — если боты ещё не запомнили чат)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PARSING_BOT_TOKEN: ${{ secrets.PARSING_BOT_TOKEN }}
+      MATCHING_BOT_TOKEN: ${{ secrets.MATCHING_BOT_TOKEN }}
+      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+      TEST_CHAT_ID: ${{ inputs.chat_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r tools/requirements.txt
+
+      - name: Send test messages
+        run: python -m tools.po_bots.send_test
+
+      - name: Commit bot state
+        run: |
+          git config user.name "lt-po-bots"
+          git config user.email "po-bots@users.noreply.github.com"
+          git add data/bots
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "po-bots: chat_id из теста связи"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin main && break
+            sleep $((i * 3))
+          done
