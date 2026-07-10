@@ -908,215 +908,207 @@ main "$@"
 MACSCRUB_ENGINE_EOF
 chmod +x "$TMP/bin/macscrub"
 
-# 2) Интерфейс --------------------------------------------------------------
-cat > "$TMP/MacScrub.applescript" <<'MACSCRUB_GUI_EOF'
--- MacScrub GUI — нативный интерфейс на AppleScript (без зависимостей).
--- Компилируется в MacScrub.app и вызывает движок Contents/Resources/bin/macscrub.
+# 2) Интерфейс (JXA) --------------------------------------------------------
+cat > "$TMP/MacScrub.js" <<'MACSCRUB_GUI_EOF'
+'use strict';
+// MacScrub GUI — нативный интерфейс на JXA (JavaScript for Automation).
+// Компилируется: osacompile -l JavaScript -o MacScrub.app MacScrub.js
+// Вызывает движок Contents/Resources/bin/macscrub. Работает офлайн.
 
-property pTitle : "MacScrub — очистка macOS"
+ObjC.import('Foundation');
 
-on binPath()
-	set appPath to POSIX path of (path to me)
-	return appPath & "Contents/Resources/bin/macscrub"
-end binPath
+function run() {
+  var app = Application.currentApplication();
+  app.includeStandardAdditions = true;
 
--- Выполнить движок с аргументами, вернуть stdout+stderr.
-on runEngine(args)
-	set cmd to quoted form of binPath() & " " & args & " 2>&1"
-	try
-		return do shell script cmd
-	on error errMsg
-		return "Ошибка: " & errMsg
-	end try
-end runEngine
+  var TITLE = 'MacScrub — очистка macOS';
+  var bundlePath = ObjC.unwrap($.NSBundle.mainBundle.bundlePath);
+  var BIN = bundlePath + '/Contents/Resources/bin/macscrub';
 
--- Выбор периода очистки.
-on chooseWindow()
-	set opts to {"Этот день", "Эта неделя", "Этот месяц", "Всё время"}
-	set sel to choose from list opts with prompt "За какой период чистить следы?" default items {"Этот день"} without multiple selections allowed
-	if sel is false then error number -128
-	set s to item 1 of sel
-	if s is "Этот день" then
-		return "this-day"
-	else if s is "Эта неделя" then
-		return "this-week"
-	else if s is "Этот месяц" then
-		return "this-month"
-	else
-		return "all"
-	end if
-end chooseWindow
+  function q(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'"; }
 
--- Выбор категорий. Возвращает строку id через запятую или "" (значит набор по умолчанию).
-on chooseCategories()
-	set raw to runEngine("categories")
-	set catLines to paragraphs of raw
-	set displayList to {}
-	set idList to {}
-	repeat with ln in catLines
-		set lns to (ln as text)
-		if lns is not "" and lns does not start with "ID" and lns does not start with "──" then
-			-- формат: id  риск  sudo  Описание
-			set AppleScript's text item delimiters to " "
-			set firstWord to text item 1 of lns
-			set AppleScript's text item delimiters to ""
-			if firstWord is not "" then
-				set end of idList to firstWord
-				set end of displayList to lns
-			end if
-		end if
-	end repeat
-	set sel to choose from list displayList with prompt "Выберите категории очистки (Cmd для нескольких). Отмена = безопасный набор по умолчанию." with multiple selections allowed
-	if sel is false then return ""
-	set ids to {}
-	repeat with chosen in sel
-		set chosenText to (chosen as text)
-		set AppleScript's text item delimiters to " "
-		set cid to text item 1 of chosenText
-		set AppleScript's text item delimiters to ""
-		set end of ids to cid
-	end repeat
-	set AppleScript's text item delimiters to ","
-	set res to ids as text
-	set AppleScript's text item delimiters to ""
-	return res
-end chooseCategories
+  function sh(cmd) {
+    try { return app.doShellScript(cmd); }
+    catch (e) { return 'Ошибка: ' + (e.message || e); }
+  }
 
-on openLatestReport()
-	set repDir to paragraph -1 of runEngine("report dir")
-	try
-		-- открыть самый свежий .txt-отчёт в TextEdit; иначе показать папку
-		do shell script "f=$(ls -t " & quoted form of repDir & "/report_*.txt 2>/dev/null | head -1); " & ¬
-			"if [ -n \"$f\" ]; then open -e \"$f\"; else open " & quoted form of repDir & "; fi"
-	end try
-end openLatestReport
+  function engine(args) { return sh(q(BIN) + ' ' + args + ' 2>&1'); }
 
--- Анализ (dry-run)
-on doScan()
-	set win to chooseWindow()
-	set cats to chooseCategories()
-	set extra to " --window " & win
-	if cats is not "" then set extra to extra & " --categories " & quoted form of cats
-	set out to runEngine("scan" & extra)
-	set summary to my tailLines(out, 6)
-	display dialog "АНАЛИЗ завершён (ничего не удалено)." & return & return & summary buttons {"Открыть отчёт", "ОК"} default button "ОК" with title pTitle
-	if button returned of result is "Открыть отчёт" then my openLatestReport()
-end doScan
+  function tail(text, n) {
+    var lines = String(text).split('\n');
+    if (lines.length <= n) return text;
+    return lines.slice(lines.length - n).join('\n');
+  }
 
--- Очистка (реальное удаление)
-on doClean()
-	set win to chooseWindow()
-	set cats to chooseCategories()
-	set methodSel to choose from list {"В Корзину (безопасно)", "Удалить безвозвратно"} with prompt "Способ удаления:" default items {"В Корзину (безопасно)"} without multiple selections allowed
-	if methodSel is false then error number -128
-	set delFlag to ""
-	if (item 1 of methodSel) is "Удалить безвозвратно" then set delFlag to " --delete"
+  function info(text, buttons) {
+    buttons = buttons || ['OK'];
+    return app.displayDialog(text, {
+      buttons: buttons,
+      defaultButton: buttons[buttons.length - 1],
+      withTitle: TITLE
+    });
+  }
 
-	set confirm to display dialog "Будет выполнено РЕАЛЬНОЕ удаление." & return & "Период: " & win & return & "Отмена возможна только сейчас." buttons {"Отмена", "Очистить"} default button "Отмена" with icon caution with title pTitle
-	if button returned of confirm is "Отмена" then return
+  // Выбор периода. Бросает при отмене.
+  function chooseWindow() {
+    var map = {
+      'Этот день': 'this-day',
+      'Эта неделя': 'this-week',
+      'Этот месяц': 'this-month',
+      'Всё время': 'all'
+    };
+    var sel = app.chooseFromList(Object.keys(map), {
+      withPrompt: 'За какой период чистить следы?',
+      defaultItems: ['Этот день'],
+      multipleSelectionsAllowed: false
+    });
+    if (sel === false) throw new Error('cancel');
+    return map[sel[0]];
+  }
 
-	set extra to " --apply --yes --window " & win & delFlag
-	if cats is not "" then set extra to extra & " --categories " & quoted form of cats
-	set out to runEngine("clean" & extra)
-	set summary to my tailLines(out, 6)
-	display dialog "ОЧИСТКА завершена." & return & return & summary buttons {"Открыть отчёт", "ОК"} default button "ОК" with title pTitle
-	if button returned of result is "Открыть отчёт" then my openLatestReport()
-end doClean
+  // Выбор категорий. Возвращает строку id через запятую или '' (набор по умолчанию).
+  function chooseCategories() {
+    var raw = engine('categories --json');
+    var cats;
+    try { cats = JSON.parse(raw); } catch (e) { return ''; }
+    var display = [];
+    var byLabel = {};
+    for (var i = 0; i < cats.length; i++) {
+      var c = cats[i];
+      var label = c.name + '  [' + c.risk + (c.sudo ? ', sudo' : '') + ']';
+      display.push(label);
+      byLabel[label] = c.id;
+    }
+    var sel = app.chooseFromList(display, {
+      withPrompt: 'Выберите категории (Cmd — несколько). Отмена = безопасный набор по умолчанию.',
+      multipleSelectionsAllowed: true
+    });
+    if (sel === false) return '';
+    var ids = [];
+    for (var j = 0; j < sel.length; j++) {
+      if (byLabel[sel[j]]) ids.push(byLabel[sel[j]]);
+    }
+    return ids.join(',');
+  }
 
--- Управление отчётами
-on doReports()
-	set out to runEngine("report list")
-	set act to display dialog "Отчёты:" & return & return & out buttons {"Удалить все", "Открыть папку", "Закрыть"} default button "Закрыть" with title pTitle
-	if button returned of act is "Удалить все" then
-		set c to display dialog "Удалить ВСЕ отчёты?" buttons {"Отмена", "Удалить"} default button "Отмена" with icon caution
-		if button returned of c is "Удалить" then
-			runEngine("report clear")
-			display dialog "Отчёты удалены." buttons {"ОК"} default button "ОК" with title pTitle
-		end if
-	else if button returned of act is "Открыть папку" then
-		set rep to runEngine("report dir")
-		do shell script "open " & quoted form of (paragraph -1 of rep)
-	end if
-end doReports
+  function openLatestReport() {
+    var dir = tail(engine('report dir'), 1).trim();
+    sh('f=$(ls -t ' + q(dir) + '/report_*.txt 2>/dev/null | head -1); ' +
+       'if [ -n "$f" ]; then open -e "$f"; else open ' + q(dir) + '; fi');
+  }
 
--- Расписание
-on doSchedule()
-	set st to runEngine("schedule status")
-	set act to choose from list {"Установить ежедневно", "Установить еженедельно", "Удалить расписание", "Статус"} with prompt ("Текущий статус:" & return & st) without multiple selections allowed
-	if act is false then return
-	set a to item 1 of act
-	if a is "Статус" then
-		display dialog st buttons {"ОК"} default button "ОК" with title pTitle
-		return
-	else if a is "Удалить расписание" then
-		set out to runEngine("schedule uninstall")
-		display dialog out buttons {"ОК"} default button "ОК" with title pTitle
-		return
-	end if
+  function doScan() {
+    var win = chooseWindow();
+    var cats = chooseCategories();
+    var extra = ' --window ' + win + (cats ? ' --categories ' + q(cats) : '');
+    var out = engine('scan' + extra);
+    var r = info('АНАЛИЗ завершён (ничего не удалено).\n\n' + tail(out, 6),
+                 ['Открыть отчёт', 'OK']);
+    if (r.buttonReturned === 'Открыть отчёт') openLatestReport();
+  }
 
-	set tm to text returned of (display dialog "Время запуска (ЧЧ:ММ):" default answer "03:00" with title pTitle)
-	set win to chooseWindow()
-	set freq to "daily"
-	set extraDay to ""
-	if a is "Установить еженедельно" then
-		set freq to "weekly"
-		set wd to text returned of (display dialog "День недели (1=Пн … 7=Вс):" default answer "1" with title pTitle)
-		set extraDay to " --weekday " & wd
-	end if
-	set out to runEngine("schedule install --freq " & freq & " --at " & tm & " --window " & win & extraDay)
-	display dialog out buttons {"ОК"} default button "ОК" with title pTitle
-end doSchedule
+  function doClean() {
+    var win = chooseWindow();
+    var cats = chooseCategories();
+    var methodSel = app.chooseFromList(['В Корзину (безопасно)', 'Удалить безвозвратно'], {
+      withPrompt: 'Способ удаления:',
+      defaultItems: ['В Корзину (безопасно)'],
+      multipleSelectionsAllowed: false
+    });
+    if (methodSel === false) return;
+    var delFlag = (methodSel[0] === 'Удалить безвозвратно') ? ' --delete' : '';
 
--- Рекомендации (локальный анализ, без сети)
-on doAdvise()
-	set win to chooseWindow()
-	set cats to chooseCategories()
-	set extra to " --window " & win
-	if cats is not "" then set extra to extra & " --categories " & quoted form of cats
-	set out to runEngine("advise" & extra)
-	-- показываем блок рекомендаций (хвост вывода)
-	set summary to my tailLines(out, 18)
-	display dialog summary buttons {"Открыть отчёт", "ОК"} default button "ОК" with title pTitle
-	if button returned of result is "Открыть отчёт" then my openLatestReport()
-end doAdvise
+    try {
+      app.displayDialog('Будет выполнено РЕАЛЬНОЕ удаление.\nПериод: ' + win +
+                        '\nОтмена возможна только сейчас.',
+                        { buttons: ['Отмена', 'Очистить'], defaultButton: 'Отмена',
+                          withIcon: 'caution', withTitle: TITLE });
+    } catch (e) { return; } // нажали Отмена
 
-on tailLines(txt, n)
-	set ps to paragraphs of txt
-	set c to count of ps
-	if c ≤ n then return txt
-	set startI to c - n + 1
-	set AppleScript's text item delimiters to return
-	set res to (items startI thru c of ps) as text
-	set AppleScript's text item delimiters to ""
-	return res
-end tailLines
+    var extra = ' --apply --yes --window ' + win + delFlag + (cats ? ' --categories ' + q(cats) : '');
+    var out = engine('clean' + extra);
+    var r = info('ОЧИСТКА завершена.\n\n' + tail(out, 6), ['Открыть отчёт', 'OK']);
+    if (r.buttonReturned === 'Открыть отчёт') openLatestReport();
+  }
 
-on run
-	repeat
-		set choice to choose from list ¬
-			{"Анализ (посмотреть, сколько мусора)", "Очистка (удалить)", "Рекомендации", "Отчёты", "Расписание", "Выход"} ¬
-			with prompt "MacScrub — что делаем?" with title pTitle without multiple selections allowed
-		if choice is false then exit repeat
-		set c to item 1 of choice
-		try
-			if c starts with "Анализ" then
-				doScan()
-			else if c starts with "Очистка" then
-				doClean()
-			else if c is "Рекомендации" then
-				doAdvise()
-			else if c is "Отчёты" then
-				doReports()
-			else if c is "Расписание" then
-				doSchedule()
-			else
-				exit repeat
-			end if
-		on error errMsg number errNum
-			if errNum is not -128 then display dialog "Ошибка: " & errMsg buttons {"ОК"} default button "ОК"
-		end try
-	end repeat
-end run
+  function doAdvise() {
+    var win = chooseWindow();
+    var cats = chooseCategories();
+    var extra = ' --window ' + win + (cats ? ' --categories ' + q(cats) : '');
+    var out = engine('advise' + extra);
+    var r = info(tail(out, 20), ['Открыть отчёт', 'OK']);
+    if (r.buttonReturned === 'Открыть отчёт') openLatestReport();
+  }
+
+  function doReports() {
+    var out = engine('report list');
+    var r = info('Отчёты:\n\n' + out, ['Удалить все', 'Открыть папку', 'Закрыть']);
+    if (r.buttonReturned === 'Удалить все') {
+      try {
+        app.displayDialog('Удалить ВСЕ отчёты?', {
+          buttons: ['Отмена', 'Удалить'], defaultButton: 'Отмена',
+          withIcon: 'caution', withTitle: TITLE
+        });
+        engine('report clear');
+        info('Отчёты удалены.');
+      } catch (e) { /* отмена */ }
+    } else if (r.buttonReturned === 'Открыть папку') {
+      var dir = tail(engine('report dir'), 1).trim();
+      sh('open ' + q(dir));
+    }
+  }
+
+  function doSchedule() {
+    var st = engine('schedule status');
+    var actSel = app.chooseFromList(
+      ['Установить ежедневно', 'Установить еженедельно', 'Удалить расписание', 'Статус'],
+      { withPrompt: 'Текущий статус:\n' + st, multipleSelectionsAllowed: false });
+    if (actSel === false) return;
+    var a = actSel[0];
+
+    if (a === 'Статус') { info(st); return; }
+    if (a === 'Удалить расписание') { info(engine('schedule uninstall')); return; }
+
+    var tmR = app.displayDialog('Время запуска (ЧЧ:ММ):', { defaultAnswer: '03:00', withTitle: TITLE });
+    var tm = tmR.textReturned;
+    var win = chooseWindow();
+    var freq = 'daily';
+    var extraDay = '';
+    if (a === 'Установить еженедельно') {
+      freq = 'weekly';
+      var wdR = app.displayDialog('День недели (1=Пн … 7=Вс):', { defaultAnswer: '1', withTitle: TITLE });
+      extraDay = ' --weekday ' + wdR.textReturned;
+    }
+    var out = engine('schedule install --freq ' + freq + ' --at ' + tm + ' --window ' + win + extraDay);
+    info(out);
+  }
+
+  // Главное меню
+  var menu = {
+    'Анализ (посмотреть, сколько мусора)': doScan,
+    'Очистка (удалить)': doClean,
+    'Рекомендации': doAdvise,
+    'Отчёты': doReports,
+    'Расписание': doSchedule,
+    'Выход': null
+  };
+
+  while (true) {
+    var choice = app.chooseFromList(Object.keys(menu), {
+      withPrompt: 'MacScrub — что делаем?',
+      multipleSelectionsAllowed: false
+    });
+    if (choice === false) break;
+    var fn = menu[choice[0]];
+    if (!fn) break;
+    try { fn(); }
+    catch (e) {
+      if (String(e.message || e).indexOf('cancel') === -1) {
+        try { info('Ошибка: ' + (e.message || e)); } catch (e2) { /* игнор */ }
+      }
+    }
+  }
+}
 MACSCRUB_GUI_EOF
 
 # 3) Иконка -----------------------------------------------------------------
@@ -1406,7 +1398,7 @@ base64 -D -i "$TMP/icon.b64" -o "$TMP/icon.png" 2>/dev/null \
 
 # 4) Сборка .app ------------------------------------------------------------
 rm -rf "$APP"
-osacompile -o "$APP" "$TMP/MacScrub.applescript"
+osacompile -l JavaScript -o "$APP" "$TMP/MacScrub.js"
 mkdir -p "$APP/Contents/Resources/bin"
 cp "$TMP/bin/macscrub" "$APP/Contents/Resources/bin/macscrub"
 chmod +x "$APP/Contents/Resources/bin/macscrub"

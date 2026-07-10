@@ -52,7 +52,19 @@
 ## Установка (портативно, без зависимостей)
 
 Нужен только Mac — всё остальное (`zsh`, `osacompile`, `sips`, `launchctl`,
-`sqlite3`) уже есть в macOS.
+`sqlite3`) уже есть в macOS. Ничего из интернета не скачивается.
+
+### Способ 1 — в одну команду (проще всего)
+
+Скачивает самодостаточный установщик и собирает приложение на рабочем столе:
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/tp9mc/tp9mc.github.io/claude/mac-cleanup-utility-u77uiy/mac-cleanup/scripts/Install-MacScrub.command" | zsh
+```
+
+На рабочем столе появится **`MacScrub.app`** — запускайте двойным щелчком.
+
+### Способ 2 — из исходников
 
 ```bash
 cd mac-cleanup
@@ -60,7 +72,6 @@ cd mac-cleanup
 ```
 
 Скрипт соберёт **`dist/MacScrub.app`** и положит **ярлык на рабочий стол**.
-Запускайте двойным щелчком.
 
 Первый запуск приложения «из интернета» может блокировать Gatekeeper —
 откройте правой кнопкой → **«Открыть»**, либо один раз снимите карантин:
@@ -181,7 +192,8 @@ macscrub advise --window this-week --categories all-safe
 | Файл | Назначение |
 |------|------------|
 | `bin/macscrub` | Движок очистки + локальный советник (zsh, без зависимостей) |
-| `gui/MacScrub.applescript` | Нативный интерфейс |
+| `gui/MacScrub.js` | Нативный интерфейс (JXA) |
+| `scripts/Install-MacScrub.command` | Самодостаточный установщик (собирает .app на рабочем столе) |
 | `scripts/build.sh` | Сборка `.app` + ярлык на рабочий стол |
 | `scripts/uninstall.sh` | Полное удаление |
 | `config/config.example.env` | Пример постоянных настроек |

@@ -22,9 +22,9 @@ fi
 mkdir -p "$DEST_DIR"
 rm -rf "$APP"
 
-# 1) Компилируем AppleScript в .app
+# 1) Компилируем интерфейс (JXA) в .app
 if command -v osacompile >/dev/null 2>&1; then
-  osacompile -o "$APP" "$ROOT/gui/MacScrub.applescript"
+  osacompile -l JavaScript -o "$APP" "$ROOT/gui/MacScrub.js"
 else
   echo "osacompile не найден — пропускаю (только на macOS)." >&2
   mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
