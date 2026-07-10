@@ -232,7 +232,9 @@ def run(asof=None):
             cheaper += 1
         index_rows.append({"sku": sku, "title": own["title"], "own": own["price"],
                            "min_comp": min_comp, "offers": len(prices),
-                           "gap_pct": round(gap * 100, 1)})
+                           "gap_pct": round(gap * 100, 1),
+                           # запрос для поиска похожих товаров в каталоге lamoda.ru
+                           "q": f'{own["subtype"]} {own["brand"]}'})
     index_rows.sort(key=lambda r: -abs(r["gap_pct"]))
     coverage = comparable / len(catalog)
 
