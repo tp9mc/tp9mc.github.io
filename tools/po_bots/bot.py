@@ -46,8 +46,10 @@ def api(token, method, **params):
         r = requests.post(API.format(token=token, method=method),
                           json=params, timeout=30)
         return r.json()
-    except requests.RequestException:
-        return {"ok": False}
+    except requests.RequestException as e:
+        return {"ok": False, "description": f"network: {type(e).__name__}"}
+    except ValueError:
+        return {"ok": False, "description": "bad JSON from API"}
 
 
 def send(product, chat_id, text):

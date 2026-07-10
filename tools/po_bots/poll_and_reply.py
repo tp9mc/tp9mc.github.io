@@ -3,30 +3,34 @@
 Запускается по крону (GitHub Actions). Каждый бот забирает свои апдейты
 через getUpdates, запоминает chat_id группы и отвечает на адресованные ему
 вопросы. Офсеты и chat_id — в data/bots/state.json (коммитится workflow).
+В лог печатается диагностика по каждому боту — по ней разбираются проблемы
+вида «боты молчат» (см. плейбук №8 руководства).
 """
 from tools.po_bots.bot import (PRODUCTS, answer, api, is_addressed, load_state,
                                save_state, send, token_for)
 
 
-def me_username(token, cache={}):
-    if token not in cache:
-        r = api(token, "getMe")
-        cache[token] = (r.get("result") or {}).get("username", "")
-    return cache[token]
-
-
-def process(product, state):
+def process(product, state, diag):
     tok = token_for(product)
     if not tok:
+        diag.append(f"{product}: токен не задан — пропуск")
         return 0
-    my = me_username(tok)
+    me = api(tok, "getMe")
+    if not me.get("ok"):
+        diag.append(f"{product}: getMe ОШИБКА — {me.get('description', 'нет ответа')} "
+                    f"(проверь секрет {PRODUCTS[product]['env']})")
+        return 0
+    my = (me.get("result") or {}).get("username", "")
     offset = state["offsets"].get(product)
     r = api(tok, "getUpdates", timeout=0, allowed_updates=["message"],
             **({"offset": offset} if offset else {}))
     if not r.get("ok"):
+        diag.append(f"{product} (@{my}): getUpdates ОШИБКА — {r.get('description')}")
         return 0
+    updates = r.get("result", [])
+    diag.append(f"{product} (@{my}): апдейтов {len(updates)}")
     replied = 0
-    for upd in r.get("result", []):
+    for upd in updates:
         state["offsets"][product] = upd["update_id"] + 1
         msg = upd.get("message") or {}
         chat = msg.get("chat") or {}
@@ -58,8 +62,11 @@ def process(product, state):
 
 def main():
     state = load_state()
-    total = sum(process(p, state) for p in PRODUCTS)
+    diag = []
+    total = sum(process(p, state, diag) for p in PRODUCTS)
     save_state(state)
+    for line in diag:
+        print(line)
     print(f"ответов отправлено: {total}, chat_id={state.get('chat_id')}")
 
 
