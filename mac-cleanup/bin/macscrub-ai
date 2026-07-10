@@ -1,0 +1,133 @@
+#!/bin/zsh
+# macscrub-ai — опциональный ИИ-советник для MacScrub на базе Fable 5.
+#
+# Берёт результат `macscrub scan --json`, отправляет в Claude API (модель
+# Fable 5, идентификатор задаётся через MACSCRUB_AI_MODEL) и печатает на
+# русском рекомендации: что безопасно чистить, оценку освобождаемого места.
+#
+# Полностью опционален. Базовая очистка (bin/macscrub) работает без него.
+#
+# Требуется: переменная окружения ANTHROPIC_API_KEY и доступ в интернет.
+# Использование:
+#   macscrub-ai [<опции macscrub scan>]
+#   macscrub scan --json | macscrub-ai --stdin
+
+emulate -L zsh
+set -u
+
+# Каталог настроек
+MS_SUPPORT_DIR="${MACSCRUB_HOME:-$HOME/Library/Application Support/MacScrub}"
+
+# Подхват значений из локальных файлов настроек, если не заданы в окружении.
+_read_setting() { # $1=имя ключа в config.env
+  local cfg="$MS_SUPPORT_DIR/config.env"
+  [[ -f "$cfg" ]] || return 1
+  local k v
+  while IFS='=' read -r k v; do
+    k="${k## }"; k="${k%% }"
+    [[ "$k" == "$1" ]] && { v="${v%%#*}"; v="${v## }"; v="${v%% }"; print -r -- "$v"; return 0; }
+  done < "$cfg"
+  return 1
+}
+
+# Идентификатор модели: окружение -> config.env -> файл ai_model.
+# Задайте его равным модели Fable 5 (точную строку см. в документации/настройке).
+MODEL="${MACSCRUB_AI_MODEL:-}"
+[[ -z "$MODEL" ]] && MODEL="$(_read_setting MACSCRUB_AI_MODEL 2>/dev/null)"
+[[ -z "$MODEL" && -s "$MS_SUPPORT_DIR/ai_model" ]] && MODEL="$(cat "$MS_SUPPORT_DIR/ai_model")"
+
+# Ключ API: окружение -> файл ai_key.
+[[ -z "${ANTHROPIC_API_KEY:-}" && -s "$MS_SUPPORT_DIR/ai_key" ]] && export ANTHROPIC_API_KEY="$(cat "$MS_SUPPORT_DIR/ai_key")"
+
+readonly API_URL="${ANTHROPIC_BASE_URL:-https://api.anthropic.com}/v1/messages"
+readonly API_VERSION="2023-06-01"
+
+err() { print -r -- "✗ $*" >&2; }
+die() { err "$*"; exit 1; }
+
+here="${0:A:h}"
+macscrub_bin="$here/macscrub"
+
+# --- получить JSON-скан ---
+scan_json=""
+if [[ "${1:-}" == "--stdin" ]]; then
+  scan_json="$(cat)"
+else
+  [[ -x "$macscrub_bin" ]] || die "не найден macscrub рядом: $macscrub_bin"
+  scan_json="$("$macscrub_bin" scan --json "$@" 2>/dev/null)"
+fi
+[[ -n "$scan_json" ]] || die "пустой результат сканирования"
+
+# --- проверки ---
+command -v curl >/dev/null 2>&1 || die "нужен curl"
+[[ -n "${ANTHROPIC_API_KEY:-}" ]] || die "не задан ANTHROPIC_API_KEY (экспортируйте ключ Claude API)"
+[[ -n "$MODEL" ]] || die "не задан MACSCRUB_AI_MODEL (идентификатор модели Fable 5)"
+
+# --- собрать запрос ---
+system_prompt='Ты — ассистент внутри утилиты очистки macOS (аналог CleanMyMac). Тебе дают JSON с результатом анализа (без удаления): сколько места и элементов найдено по категориям. Ответь ТОЛЬКО на русском языке, кратко и по делу:
+1) Сколько всего места можно освободить и стоит ли (в 1-2 предложениях).
+2) Какие категории безопасно чистить сразу (риск low), какие — с осторожностью (med/high, например история браузера и следы использования).
+3) Одно короткое предупреждение о том, что стоит закрыть браузеры перед чисткой их истории и что удаление логов/истории необратимо стирает следы.
+Не выдумывай категории, которых нет в данных. Пиши живым понятным языком, без Markdown-заголовков.'
+
+# Экранируем JSON скана как строку для встраивания через python3/plutil-независимо.
+# Используем here-doc + jq если есть, иначе ручная сборка через python3.
+build_payload() {
+  if command -v jq >/dev/null 2>&1; then
+    jq -n --arg model "$MODEL" --arg sys "$system_prompt" --arg scan "$scan_json" '{
+      model: $model, max_tokens: 1024,
+      system: $sys,
+      messages: [ { role: "user", content: ("Вот результат анализа очистки (JSON):\n" + $scan) } ]
+    }'
+  elif command -v python3 >/dev/null 2>&1; then
+    SYS="$system_prompt" SCAN="$scan_json" MODEL="$MODEL" python3 - <<'PY'
+import json, os
+print(json.dumps({
+  "model": os.environ["MODEL"],
+  "max_tokens": 1024,
+  "system": os.environ["SYS"],
+  "messages": [{"role": "user",
+    "content": "Вот результат анализа очистки (JSON):\n" + os.environ["SCAN"]}]
+}, ensure_ascii=False))
+PY
+  else
+    die "нужен jq или python3 для формирования запроса"
+  fi
+}
+
+payload="$(build_payload)" || die "не удалось сформировать запрос"
+
+resp="$(curl -sS "$API_URL" \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: $API_VERSION" \
+  -H "content-type: application/json" \
+  -d "$payload" 2>&1)" || die "ошибка сети: $resp"
+
+# --- извлечь текст ---
+extract() {
+  if command -v jq >/dev/null 2>&1; then
+    print -r -- "$resp" | jq -r 'if .type=="error" then "ОШИБКА API: "+.error.message else (.content[]? | select(.type=="text") | .text) end' 2>/dev/null
+  elif command -v python3 >/dev/null 2>&1; then
+    RESP="$resp" python3 - <<'PY'
+import json, os
+try:
+    d = json.loads(os.environ["RESP"])
+except Exception:
+    print(os.environ["RESP"]); raise SystemExit
+if d.get("type") == "error":
+    print("ОШИБКА API:", d.get("error", {}).get("message", "?"))
+else:
+    for b in d.get("content", []):
+        if b.get("type") == "text":
+            print(b["text"])
+PY
+  else
+    print -r -- "$resp"
+  fi
+}
+
+print -r -- "──────────────────────────────────────────────"
+print -r -- " Совет Fable 5 по очистке"
+print -r -- "──────────────────────────────────────────────"
+extract
+print -r -- "──────────────────────────────────────────────"

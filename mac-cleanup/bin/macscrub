@@ -1,0 +1,810 @@
+#!/bin/zsh
+# MacScrub — портативная утилита очистки macOS (аналог CleanMyMac / OnyX).
+# Чистый zsh + штатные бинарники macOS (find, rm, du, sqlite3, qlmanage,
+# tmutil, launchctl). Никаких внешних зависимостей — работает на любом Mac.
+#
+# Безопасность:
+#   * По умолчанию РЕЖИМ АНАЛИЗА (dry-run). Реальное удаление только с --apply.
+#   * Каждый путь проходит проверку белого списка префиксов и чёрного списка
+#     критичных каталогов. Пустые/корневые пути отвергаются.
+#   * По умолчанию файлы отправляются в Корзину, а не удаляются безвозвратно.
+#
+# Использование: macscrub <команда> [опции]   (см. `macscrub help`).
+
+emulate -L zsh
+setopt no_nomatch pipe_fail
+set -u
+
+readonly MS_VERSION="1.0.0"
+readonly MS_NAME="MacScrub"
+# Путь к самому скрипту (на верхнем уровне $0 = путь; внутри функций — имя функции).
+readonly MS_SELF="${0:A}"
+
+# ---------------------------------------------------------------------------
+# Пути и состояние
+# ---------------------------------------------------------------------------
+: ${HOME:?HOME не задан}
+MS_SUPPORT_DIR="${MACSCRUB_HOME:-$HOME/Library/Application Support/MacScrub}"
+MS_REPORT_DIR="${MACSCRUB_REPORT_DIR:-$MS_SUPPORT_DIR/reports}"
+MS_LAUNCH_LABEL="com.macscrub.schedule"
+MS_LAUNCH_PLIST="$HOME/Library/LaunchAgents/${MS_LAUNCH_LABEL}.plist"
+
+# Опции по умолчанию
+OPT_WINDOW="all"           # this-day | this-week | this-month | all
+OPT_APPLY=0                # 0 = dry-run, 1 = реально удалять
+OPT_TRASH=1                # 1 = в Корзину, 0 = rm безвозвратно
+OPT_JSON=0                 # 1 = машиночитаемый вывод
+OPT_YES=0                  # 1 = не спрашивать подтверждение
+OPT_INCLUDE_SYSTEM=0       # 1 = трогать системные пути (нужен root)
+OPT_CATEGORIES=""          # список id через запятую; пусто = безопасный набор
+OPT_EXCLUDES=()            # шаблоны исключений
+
+# Аккумуляторы отчёта
+typeset -gA CAT_BYTES CAT_COUNT
+typeset -ga REPORT_ROWS
+REPORT_ERRORS=()
+TOTAL_BYTES=0
+TOTAL_COUNT=0
+
+# ---------------------------------------------------------------------------
+# Вывод
+# ---------------------------------------------------------------------------
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  C_RESET=$'\e[0m'; C_DIM=$'\e[2m'; C_B=$'\e[1m'
+  C_RED=$'\e[31m'; C_GRN=$'\e[32m'; C_YEL=$'\e[33m'; C_BLU=$'\e[34m'; C_CYA=$'\e[36m'
+else
+  C_RESET=""; C_DIM=""; C_B=""; C_RED=""; C_GRN=""; C_YEL=""; C_BLU=""; C_CYA=""
+fi
+
+log()   { print -r -- "$@" >&2; }
+info()  { print -r -- "${C_CYA}•${C_RESET} $*" >&2; }
+warn()  { print -r -- "${C_YEL}⚠${C_RESET}  $*" >&2; }
+err()   { print -r -- "${C_RED}✗${C_RESET} $*" >&2; }
+ok()    { print -r -- "${C_GRN}✓${C_RESET} $*" >&2; }
+die()   { err "$*"; exit 1; }
+
+human() { # байты -> человекочитаемо
+  local b=$1
+  if   (( b >= 1073741824 )); then printf '%.2f ГБ' "$(( b / 1073741824.0 ))"
+  elif (( b >= 1048576 ));    then printf '%.2f МБ' "$(( b / 1048576.0 ))"
+  elif (( b >= 1024 ));       then printf '%.1f КБ' "$(( b / 1024.0 ))"
+  else printf '%d Б' "$b"; fi
+}
+
+# ---------------------------------------------------------------------------
+# Определения категорий
+#   Формат: id|Название|risk(low/med/high)|sudo(0/1)|handler|arg
+#   handler: files  — arg это список каталогов/файлов (через ';')
+#            trash   — очистка Корзины
+#            qlthumb — миниатюры QuickLook
+#            sqlite  — история браузера, arg = "engine:db1;db2"
+#            histfile— файлы истории shell (усечение, не удаление)
+# ---------------------------------------------------------------------------
+ms_categories() {
+  # --- Мусор и кэш ---
+  print -r -- "user-caches|Кэш приложений пользователя|low|0|files|$HOME/Library/Caches"
+  print -r -- "user-logs|Логи приложений пользователя|low|0|files|$HOME/Library/Logs"
+  print -r -- "diagnostic-reports|Отчёты диагностики (крэш-логи)|low|0|files|$HOME/Library/Logs/DiagnosticReports"
+  print -r -- "saved-state|Сохранённые состояния приложений|low|0|files|$HOME/Library/Saved Application State"
+  print -r -- "trash|Корзина|low|0|trash|"
+  print -r -- "temp-folders|Временные файлы (/var/folders)|med|0|tmpfolders|"
+  print -r -- "xcode-derived|Xcode DerivedData / кэши|low|0|files|$HOME/Library/Developer/Xcode/DerivedData;$HOME/Library/Developer/CoreSimulator/Caches"
+  print -r -- "dev-caches|Кэши сборщиков (npm/yarn/pip/gradle/CocoaPods)|low|0|files|$HOME/.npm/_cacache;$HOME/Library/Caches/Yarn;$HOME/Library/Caches/pip;$HOME/.gradle/caches;$HOME/Library/Caches/CocoaPods"
+  print -r -- "homebrew-cache|Кэш Homebrew|low|0|files|$HOME/Library/Caches/Homebrew"
+  print -r -- "mail-downloads|Вложения Mail (загрузки)|med|0|files|$HOME/Library/Containers/com.apple.mail/Data/Library/Mail Downloads"
+  print -r -- "font-caches|Кэш шрифтов пользователя|low|0|files|$HOME/Library/Caches/com.apple.FontRegistry"
+
+  # --- Следы использования (приватность) ---
+  print -r -- "quicklook-thumbnails|Миниатюры QuickLook|low|0|qlthumb|"
+  print -r -- "finder-dsstore|.DS_Store и следы Finder|low|0|dsstore|"
+  print -r -- "recent-items|Списки «Недавние» (Finder/приложения)|med|0|files|$HOME/Library/Application Support/com.apple.sharedfilelist"
+  print -r -- "shell-history|История команд терминала|med|0|histfile|$HOME/.zsh_history;$HOME/.bash_history;$HOME/.sh_history;$HOME/.python_history;$HOME/.node_repl_history;$HOME/.lesshst;$HOME/.psql_history"
+  print -r -- "safari-history|История/данные Safari|high|0|sqlite|safari:$HOME/Library/Safari/History.db"
+  print -r -- "chrome-history|История Google Chrome|high|0|sqlite|chrome:$HOME/Library/Application Support/Google/Chrome"
+  print -r -- "edge-history|История Microsoft Edge|high|0|sqlite|chrome:$HOME/Library/Application Support/Microsoft Edge"
+  print -r -- "brave-history|История Brave|high|0|sqlite|chrome:$HOME/Library/Application Support/BraveSoftware/Brave-Browser"
+  print -r -- "firefox-history|История Firefox|high|0|sqlite|firefox:$HOME/Library/Application Support/Firefox/Profiles"
+  print -r -- "safari-cache|Кэш Safari|low|0|files|$HOME/Library/Caches/com.apple.Safari;$HOME/Library/Containers/com.apple.Safari/Data/Library/Caches"
+  print -r -- "chrome-cache|Кэш Chrome|low|0|files|$HOME/Library/Caches/Google/Chrome;$HOME/Library/Application Support/Google/Chrome/Default/Cache"
+
+  # --- Системные (нужен root, только с --include-system) ---
+  print -r -- "system-caches|Системный кэш (/Library/Caches)|high|1|files|/Library/Caches"
+  print -r -- "system-logs|Системные логи (/private/var/log)|high|1|files|/private/var/log"
+  print -r -- "unified-log|Единый журнал системы (log erase)|high|1|unifiedlog|"
+  print -r -- "system-diagnostics|Системные крэш-логи|high|1|files|/Library/Logs/DiagnosticReports"
+}
+
+# «Безопасный по умолчанию» набор (если категории не заданы явно)
+readonly MS_DEFAULT_SET="user-caches,user-logs,diagnostic-reports,saved-state,trash,temp-folders,xcode-derived,dev-caches,homebrew-cache,quicklook-thumbnails,finder-dsstore,font-caches"
+
+# ---------------------------------------------------------------------------
+# Проверки безопасности пути
+# ---------------------------------------------------------------------------
+_protected_exact=(
+  "/" "$HOME" "$HOME/" "$HOME/Library" "$HOME/Documents" "$HOME/Desktop"
+  "$HOME/Downloads" "$HOME/Pictures" "$HOME/Movies" "$HOME/Music"
+  "/System" "/usr" "/bin" "/sbin" "/etc" "/var" "/private" "/Applications"
+  "/Library" "/Users" "/opt" "/private/var" "/private/etc"
+)
+
+_allowed_prefixes=(
+  "$HOME/Library/Caches" "$HOME/Library/Logs" "$HOME/Library/Saved Application State"
+  "$HOME/Library/Application Support" "$HOME/Library/Developer" "$HOME/Library/Containers"
+  "$HOME/Library/Safari" "$HOME/.Trash" "$HOME/.npm" "$HOME/.gradle" "$HOME/.cache"
+  "/private/var/folders" "/Library/Caches" "/private/var/log" "/Library/Logs"
+)
+
+_is_protected() {
+  local p="$1" x
+  for x in $_protected_exact; do [[ "$p" == "$x" ]] && return 0; done
+  return 1
+}
+
+# Разрешён ли путь к удалению? 0 = да, 1 = нет.
+_path_allowed() {
+  local p="$1" pre
+  [[ -z "$p" ]] && return 1
+  [[ "$p" != /* ]] && return 1              # только абсолютные пути
+  [[ "$p" == *".."* ]] && return 1           # без обхода вверх
+  (( ${#p} < 6 )) && return 1                # слишком короткий => подозрительно
+  _is_protected "$p" && return 1
+  for pre in $_allowed_prefixes; do
+    [[ "$p" == "$pre" || "$p" == "$pre"/* ]] && return 0
+  done
+  return 1
+}
+
+_excluded() {
+  local p="$1" pat
+  for pat in $OPT_EXCLUDES; do
+    [[ "$p" == *"$pat"* ]] && return 0
+  done
+  return 1
+}
+
+# ---------------------------------------------------------------------------
+# Временное окно -> порог для find -newermt
+# ---------------------------------------------------------------------------
+_window_threshold() { # печатает "YYYY-MM-DD HH:MM:SS" или пусто для all
+  case "$OPT_WINDOW" in
+    all) print -r -- "" ;;
+    this-day)   date -v0H -v0M -v0S "+%Y-%m-%d %H:%M:%S" ;;
+    this-week)
+      local dow=$(date +%u)          # 1=Пн .. 7=Вс
+      date -v-$((dow-1))d -v0H -v0M -v0S "+%Y-%m-%d %H:%M:%S" ;;
+    this-month) date -v1d -v0H -v0M -v0S "+%Y-%m-%d %H:%M:%S" ;;
+    *) print -r -- "" ;;
+  esac
+}
+
+_window_epoch() { # unix-секунды начала окна, или пусто
+  local ts
+  ts=$(_window_threshold) || return 1
+  [[ -z "$ts" ]] && { print -r -- ""; return 0; }
+  date -j -f "%Y-%m-%d %H:%M:%S" "$ts" "+%s"
+}
+
+# ---------------------------------------------------------------------------
+# Удаление
+# ---------------------------------------------------------------------------
+_size_of() { # байты одного пути (файл или каталог)
+  local p="$1"
+  [[ -e "$p" || -L "$p" ]] || { print -r -- 0; return; }
+  local kb
+  kb=$(du -sk "$p" 2>/dev/null | awk '{print $1}')
+  [[ -z "$kb" ]] && kb=0
+  print -r -- $(( kb * 1024 ))
+}
+
+_trash_dir() { print -r -- "$HOME/.Trash"; }
+
+# Отправить один путь в Корзину (по возможности) или удалить.
+_remove_one() {
+  local p="$1"
+  if (( OPT_TRASH )); then
+    local base dest ts
+    base="${p:t}"
+    ts=$(date "+%Y%m%d-%H%M%S")
+    dest="$(_trash_dir)/${base}.macscrub-${ts}"
+    /bin/mv -f "$p" "$dest" 2>/dev/null && return 0
+    # если mv не удался (напр. другой том) — удаляем
+  fi
+  /bin/rm -rf "$p" 2>/dev/null
+}
+
+# Обработать список путей: посчитать размер, (при --apply) удалить.
+# $1 = категория, остальные = пути.
+_process_paths() {
+  local cat="$1"; shift
+  local threshold p sz item_reported
+  threshold=$(_window_threshold)
+
+  for p in "$@"; do
+    [[ -z "$p" ]] && continue
+    if ! _path_allowed "$p"; then
+      warn "пропуск (защищённый путь): $p"
+      continue
+    fi
+    [[ -e "$p" || -L "$p" ]] || continue
+    _excluded "$p" && continue
+
+    if [[ -z "$threshold" ]]; then
+      # окно = all: удаляем содержимое каталога целиком (сам каталог оставляем)
+      _collect_and_remove "$cat" "$p" ""
+    else
+      _collect_and_remove "$cat" "$p" "$threshold"
+    fi
+  done
+}
+
+# Собрать элементы внутри пути с учётом окна и удалить.
+_collect_and_remove() {
+  local cat="$1" root="$2" threshold="$3"
+  local -a items
+  if [[ -d "$root" && ! -L "$root" ]]; then
+    # содержимое каталога первого уровня
+    if [[ -n "$threshold" ]]; then
+      items=("${(@f)$(/usr/bin/find "$root" -mindepth 1 -maxdepth 1 -newermt "$threshold" 2>/dev/null)}")
+    else
+      items=("${(@f)$(/usr/bin/find "$root" -mindepth 1 -maxdepth 1 2>/dev/null)}")
+    fi
+  else
+    # одиночный файл/симлинк
+    if [[ -n "$threshold" ]]; then
+      /usr/bin/find "$root" -maxdepth 0 -newermt "$threshold" 2>/dev/null | read -r _ && items=("$root") || items=()
+    else
+      items=("$root")
+    fi
+  fi
+
+  local it sz
+  for it in $items; do
+    [[ -z "$it" ]] && continue
+    _excluded "$it" && continue
+    if ! _path_allowed "$it"; then continue; fi
+    sz=$(_size_of "$it")
+    _record "$cat" "$it" "$sz"
+    if (( OPT_APPLY )); then
+      if ! _remove_one "$it"; then
+        REPORT_ERRORS+=("не удалось удалить: $it")
+      fi
+    fi
+  done
+}
+
+_record() {
+  local cat="$1" path="$2" sz="$3"
+  CAT_BYTES[$cat]=$(( ${CAT_BYTES[$cat]:-0} + sz ))
+  CAT_COUNT[$cat]=$(( ${CAT_COUNT[$cat]:-0} + 1 ))
+  TOTAL_BYTES=$(( TOTAL_BYTES + sz ))
+  TOTAL_COUNT=$(( TOTAL_COUNT + 1 ))
+  (( OPT_JSON )) || print -r -- "    ${C_DIM}${sz}Б${C_RESET}  $path" >&2
+}
+
+# ---------------------------------------------------------------------------
+# Специальные обработчики
+# ---------------------------------------------------------------------------
+_handle_trash() {
+  local cat="$1" t="$(_trash_dir)"
+  [[ -d "$t" ]] || return 0
+  _process_paths "$cat" "$t"
+}
+
+_handle_tmpfolders() {
+  local cat="$1"
+  # Пользовательские временные каталоги C (кэш) и T (temp)
+  local base
+  base=$(getconf DARWIN_USER_CACHE_DIR 2>/dev/null)
+  [[ -n "$base" && -d "$base" ]] && _process_paths "$cat" "$base"
+  base=$(getconf DARWIN_USER_TEMP_DIR 2>/dev/null)
+  [[ -n "$base" && -d "$base" ]] && _process_paths "$cat" "$base"
+}
+
+_handle_qlthumb() {
+  local cat="$1"
+  local dir
+  dir=$(getconf DARWIN_USER_CACHE_DIR 2>/dev/null)/com.apple.QuickLook.thumbnailcache
+  if [[ -d "$dir" ]]; then
+    _process_paths "$cat" "$dir"
+  fi
+  if (( OPT_APPLY )); then
+    command -v qlmanage >/dev/null 2>&1 && qlmanage -r cache >/dev/null 2>&1
+  fi
+}
+
+_handle_dsstore() {
+  local cat="$1" threshold sz f
+  threshold=$(_window_threshold)
+  # Ищем .DS_Store в домашнем каталоге пользователя (не системные)
+  local -a args
+  args=("$HOME" -type f -name ".DS_Store")
+  [[ -n "$threshold" ]] && args+=(-newermt "$threshold")
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    # .DS_Store безопасны к удалению везде в $HOME
+    [[ "$f" == "$HOME"/* ]] || continue
+    _excluded "$f" && continue
+    sz=$(_size_of "$f")
+    _record "$cat" "$f" "$sz"
+    (( OPT_APPLY )) && { _remove_one "$f" || REPORT_ERRORS+=("не удалить: $f"); }
+  done < <(/usr/bin/find "${args[@]}" 2>/dev/null)
+}
+
+_handle_histfile() {
+  local cat="$1" spec="$2" f
+  local -a files
+  files=("${(@s.;.)spec}")
+  for f in $files; do
+    [[ -f "$f" ]] || continue
+    _excluded "$f" && continue
+    local sz; sz=$(_size_of "$f")
+    _record "$cat" "$f" "$sz"
+    if (( OPT_APPLY )); then
+      # усекаем, а не удаляем — чтобы shell продолжал работать
+      : > "$f" 2>/dev/null || REPORT_ERRORS+=("не удалить историю: $f")
+    fi
+  done
+}
+
+_handle_unifiedlog() {
+  local cat="$1"
+  (( OPT_INCLUDE_SYSTEM )) || { warn "$cat: нужен --include-system (root)"; return 0; }
+  _record "$cat" "unified system log" 0
+  if (( OPT_APPLY )); then
+    if (( EUID == 0 )); then
+      log erase --all 2>/dev/null || REPORT_ERRORS+=("log erase не выполнен")
+    else
+      REPORT_ERRORS+=("$cat: требуется запуск через sudo")
+    fi
+  fi
+}
+
+# История браузеров с учётом временного окна через sqlite3.
+_handle_sqlite() {
+  local cat="$1" spec="$2"
+  local engine="${spec%%:*}" path="${spec#*:}"
+  command -v sqlite3 >/dev/null 2>&1 || { warn "$cat: нет sqlite3"; return 0; }
+
+  local epoch; epoch=$(_window_epoch)
+  # Порог в формате конкретного движка
+  case "$engine" in
+    chrome)  # микросекунды с 1601-01-01
+      _sqlite_chrome "$cat" "$path" "$epoch" ;;
+    firefox) # микросекунды с 1970-01-01
+      _sqlite_firefox "$cat" "$path" "$epoch" ;;
+    safari)  # секунды с 2001-01-01 (CFAbsoluteTime)
+      _sqlite_safari "$cat" "$path" "$epoch" ;;
+  esac
+}
+
+# Безопасно ли трогать БД (браузер закрыт)?
+_browser_running() { pgrep -qi "$1"; }
+
+_run_sql() { # $1=db $2=sql ; уважает dry-run
+  local db="$1" sql="$2"
+  [[ -f "$db" ]] || return 1
+  if (( OPT_APPLY )); then
+    sqlite3 "$db" "$sql" 2>/dev/null || return 2
+  fi
+  return 0
+}
+
+_sqlite_chrome() {
+  local cat="$1" base="$2" epoch="$3" prof db
+  [[ -d "$base" ]] || return 0
+  if _browser_running "Chrome" || _browser_running "Edge" || _browser_running "Brave"; then
+    warn "$cat: браузер запущен — пропуск (закройте его)"; return 0
+  fi
+  # Профили: Default, Profile 1, ...
+  for prof in "$base"/Default "$base"/Profile*; do
+    db="$prof/History"
+    [[ -f "$db" ]] || continue
+    local sz; sz=$(_size_of "$db"); _record "$cat" "$db" "$sz"
+    if [[ -n "$epoch" ]]; then
+      local thr=$(( (epoch + 11644473600) * 1000000 ))
+      _run_sql "$db" "DELETE FROM urls WHERE last_visit_time>=$thr; DELETE FROM visits WHERE visit_time>=$thr; VACUUM;"
+    else
+      _run_sql "$db" "DELETE FROM urls; DELETE FROM visits; VACUUM;"
+    fi
+  done
+}
+
+_sqlite_firefox() {
+  local cat="$1" base="$2" epoch="$3" prof db
+  [[ -d "$base" ]] || return 0
+  if _browser_running "firefox"; then warn "$cat: Firefox запущен — пропуск"; return 0; fi
+  for prof in "$base"/*.default* "$base"/*; do
+    db="$prof/places.sqlite"
+    [[ -f "$db" ]] || continue
+    local sz; sz=$(_size_of "$db"); _record "$cat" "$db" "$sz"
+    if [[ -n "$epoch" ]]; then
+      local thr=$(( epoch * 1000000 ))
+      _run_sql "$db" "DELETE FROM moz_historyvisits WHERE visit_date>=$thr; DELETE FROM moz_places WHERE last_visit_date>=$thr AND id NOT IN (SELECT place_id FROM moz_bookmarks WHERE fk IS NOT NULL); VACUUM;"
+    else
+      _run_sql "$db" "DELETE FROM moz_historyvisits; VACUUM;"
+    fi
+  done
+}
+
+_sqlite_safari() {
+  local cat="$1" db="$2" epoch="$3"
+  [[ -f "$db" ]] || return 0
+  if _browser_running "Safari"; then warn "$cat: Safari запущен — пропуск"; return 0; fi
+  local sz; sz=$(_size_of "$db"); _record "$cat" "$db" "$sz"
+  if [[ -n "$epoch" ]]; then
+    local thr=$(( epoch - 978307200 ))
+    _run_sql "$db" "DELETE FROM history_visits WHERE visit_time>=$thr; DELETE FROM history_items WHERE id NOT IN (SELECT history_item FROM history_visits); VACUUM;"
+  else
+    _run_sql "$db" "DELETE FROM history_visits; DELETE FROM history_items; VACUUM;"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Диспетчер категории
+# ---------------------------------------------------------------------------
+_run_category() {
+  local line="$1"
+  local id name risk sudo handler arg
+  IFS='|' read -r id name risk sudo handler arg <<< "$line"
+
+  if [[ "$sudo" == "1" ]] && (( ! OPT_INCLUDE_SYSTEM )); then
+    return 0   # системные категории пропускаем без --include-system
+  fi
+
+  (( OPT_JSON )) || info "${C_B}${name}${C_RESET} ${C_DIM}[$id, риск:$risk]${C_RESET}"
+
+  case "$handler" in
+    files)     _process_paths "$id" "${(@s.;.)arg}" ;;
+    trash)     _handle_trash "$id" ;;
+    tmpfolders)_handle_tmpfolders "$id" ;;
+    qlthumb)   _handle_qlthumb "$id" ;;
+    dsstore)   _handle_dsstore "$id" ;;
+    histfile)  _handle_histfile "$id" "$arg" ;;
+    unifiedlog)_handle_unifiedlog "$id" ;;
+    sqlite)    _handle_sqlite "$id" "$arg" ;;
+    *)         warn "неизвестный обработчик: $handler" ;;
+  esac
+}
+
+# Список категорий к выполнению (с учётом --categories)
+_selected_categories() {
+  local want
+  if [[ -n "$OPT_CATEGORIES" ]]; then
+    want="$OPT_CATEGORIES"
+  else
+    want="$MS_DEFAULT_SET"
+  fi
+  local -A want_set
+  local c
+  for c in "${(@s.,.)want}"; do want_set[$c]=1; done
+
+  ms_categories | while IFS= read -r line; do
+    local id="${line%%|*}"
+    if [[ "$want" == "all-safe" ]]; then
+      # все несистемные
+      local sudo; sudo=$(print -r -- "$line" | cut -d'|' -f4)
+      [[ "$sudo" == "0" ]] && print -r -- "$line"
+    elif [[ "$want" == "all" ]]; then
+      print -r -- "$line"
+    elif [[ -n "${want_set[$id]:-}" ]]; then
+      print -r -- "$line"
+    fi
+  done
+}
+
+# ---------------------------------------------------------------------------
+# Отчёт
+# ---------------------------------------------------------------------------
+_write_report() {
+  mkdir -p "$MS_REPORT_DIR" 2>/dev/null || return 1
+  local ts=$(date "+%Y-%m-%d_%H-%M-%S")
+  local mode; (( OPT_APPLY )) && mode="apply" || mode="dry-run"
+  local base="$MS_REPORT_DIR/report_${ts}_${mode}"
+  local txt="${base}.txt" json="${base}.json"
+
+  {
+    print -r -- "MacScrub v$MS_VERSION — отчёт об очистке"
+    print -r -- "Дата:            $(date '+%Y-%m-%d %H:%M:%S %Z')"
+    print -r -- "Режим:           $( (( OPT_APPLY )) && echo 'РЕАЛЬНОЕ УДАЛЕНИЕ' || echo 'анализ (dry-run)')"
+    print -r -- "Способ:          $( (( OPT_TRASH )) && echo 'в Корзину' || echo 'безвозвратно')"
+    print -r -- "Период:          $OPT_WINDOW"
+    print -r -- "Системные:       $( (( OPT_INCLUDE_SYSTEM )) && echo 'да' || echo 'нет')"
+    print -r -- "----------------------------------------------------------------"
+    local id
+    for id in ${(k)CAT_BYTES}; do
+      printf '  %-24s %8s элем.  %s\n' "$id" "${CAT_COUNT[$id]}" "$(human ${CAT_BYTES[$id]})"
+    done
+    print -r -- "----------------------------------------------------------------"
+    printf '  %-24s %8s элем.  %s\n' "ИТОГО" "$TOTAL_COUNT" "$(human $TOTAL_BYTES)"
+    if (( ${#REPORT_ERRORS} )); then
+      print -r -- ""
+      print -r -- "Ошибки:"
+      local e; for e in $REPORT_ERRORS; do print -r -- "  - $e"; done
+    fi
+  } > "$txt"
+
+  # JSON
+  {
+    print -r -- "{"
+    printf '  "tool": "MacScrub", "version": "%s",\n' "$MS_VERSION"
+    printf '  "date": "%s",\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')"
+    printf '  "mode": "%s", "method": "%s", "window": "%s", "include_system": %s,\n' \
+      "$mode" "$( (( OPT_TRASH )) && echo trash || echo delete)" "$OPT_WINDOW" \
+      "$( (( OPT_INCLUDE_SYSTEM )) && echo true || echo false)"
+    printf '  "total_bytes": %s, "total_items": %s,\n' "$TOTAL_BYTES" "$TOTAL_COUNT"
+    print -r -- '  "categories": {'
+    local first=1
+    for id in ${(k)CAT_BYTES}; do
+      (( first )) || print -r -- ","
+      first=0
+      printf '    "%s": {"items": %s, "bytes": %s}' "$id" "${CAT_COUNT[$id]}" "${CAT_BYTES[$id]}"
+    done
+    print -r -- ""
+    print -r -- "  },"
+    printf '  "errors": %s\n' "$( (( ${#REPORT_ERRORS} )) && echo "${#REPORT_ERRORS}" || echo 0)"
+    print -r -- "}"
+  } > "$json"
+
+  print -r -- "$txt"
+}
+
+# ---------------------------------------------------------------------------
+# Команды
+# ---------------------------------------------------------------------------
+cmd_clean() {
+  local threshold; threshold=$(_window_threshold)
+
+  if (( OPT_APPLY )) && (( ! OPT_YES )); then
+    print -r -- "" >&2
+    warn "Будет выполнено РЕАЛЬНОЕ удаление (период: $OPT_WINDOW, способ: $( (( OPT_TRASH )) && echo Корзина || echo безвозвратно))."
+    print -n -- "Продолжить? [y/N] " >&2
+    local ans; read -r ans
+    [[ "$ans" == [yY]* ]] || { info "Отменено."; return 1; }
+  fi
+
+  (( OPT_JSON )) || {
+    info "Режим: $( (( OPT_APPLY )) && echo "${C_RED}РЕАЛЬНОЕ УДАЛЕНИЕ${C_RESET}" || echo "${C_GRN}анализ (dry-run)${C_RESET}")"
+    info "Период: $OPT_WINDOW"
+  }
+
+  local line
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    _run_category "$line"
+  done < <(_selected_categories)
+
+  local report
+  report=$(_write_report)
+
+  if (( OPT_JSON )); then
+    # финальный JSON в stdout = содержимое json-отчёта
+    cat "${report%.txt}.json"
+  else
+    print -r -- "" >&2
+    ok "Итог: $(human $TOTAL_BYTES) в $TOTAL_COUNT элементах"
+    (( OPT_APPLY )) || warn "Это был АНАЛИЗ. Для реальной очистки добавьте --apply"
+    info "Отчёт: $report"
+  fi
+}
+
+cmd_scan() { OPT_APPLY=0; cmd_clean; }
+
+cmd_categories() {
+  if (( OPT_JSON )); then
+    print -r -- "["
+    local first=1 line
+    while IFS='|' read -r id name risk sudo handler arg; do
+      (( first )) || print -r -- ","
+      first=0
+      printf '  {"id":"%s","name":"%s","risk":"%s","sudo":%s}' \
+        "$id" "$name" "$risk" "$( [[ $sudo == 1 ]] && echo true || echo false)"
+    done < <(ms_categories)
+    print -r -- ""
+    print -r -- "]"
+  else
+    printf '%-22s %-6s %-5s %s\n' "ID" "риск" "sudo" "Описание"
+    printf '%-22s %-6s %-5s %s\n' "──" "────" "────" "────────"
+    while IFS='|' read -r id name risk sudo handler arg; do
+      printf '%-22s %-6s %-5s %s\n' "$id" "$risk" "$( [[ $sudo == 1 ]] && echo да || echo нет)" "$name"
+    done < <(ms_categories)
+  fi
+}
+
+cmd_report() {
+  local sub="${1:-list}"
+  mkdir -p "$MS_REPORT_DIR" 2>/dev/null
+  case "$sub" in
+    list)
+      local f found=0
+      for f in "$MS_REPORT_DIR"/report_*.txt(N.om); do
+        found=1
+        printf '  %s  (%s)\n' "${f:t}" "$(human $(_size_of "$f"))"
+      done
+      (( found )) || info "Отчётов нет ($MS_REPORT_DIR)"
+      ;;
+    show)
+      local latest
+      latest=(${MS_REPORT_DIR}/report_*.txt(N.om))
+      [[ ${#latest} -gt 0 ]] && cat "${latest[1]}" || info "Отчётов нет"
+      ;;
+    clear|delete)
+      local n=0 f
+      for f in "$MS_REPORT_DIR"/report_*(N); do rm -f "$f" && (( n++ )); done
+      ok "Удалено отчётов: $n"
+      ;;
+    dir) print -r -- "$MS_REPORT_DIR" ;;
+    *) die "report: неизвестная подкоманда '$sub' (list|show|clear|dir)" ;;
+  esac
+}
+
+cmd_schedule() {
+  local sub="${1:-status}"; shift 2>/dev/null || true
+  case "$sub" in
+    install)
+      # Параметры расписания берём из уже разобранных опций + частота
+      local freq="${MS_FREQ:-daily}" hour="${MS_HOUR:-3}" minute="${MS_MIN:-0}" weekday="${MS_WEEKDAY:-1}"
+      local self="${MACSCRUB_BIN:-$MS_SELF}"
+      self="${self:A}"
+      mkdir -p "${MS_LAUNCH_PLIST:h}"
+
+      # Собираем аргументы запуска
+      local -a run_args
+      run_args=("$self" "clean" "--apply" "--yes" "--window" "$OPT_WINDOW")
+      (( OPT_TRASH )) || run_args+=("--delete")
+      [[ -n "$OPT_CATEGORIES" ]] && run_args+=("--categories" "$OPT_CATEGORIES")
+
+      local cal
+      if [[ "$freq" == "weekly" ]]; then
+        cal="    <key>Weekday</key><integer>${weekday}</integer>
+    <key>Hour</key><integer>${hour}</integer>
+    <key>Minute</key><integer>${minute}</integer>"
+      else
+        cal="    <key>Hour</key><integer>${hour}</integer>
+    <key>Minute</key><integer>${minute}</integer>"
+      fi
+
+      {
+        print -r -- '<?xml version="1.0" encoding="UTF-8"?>'
+        print -r -- '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
+        print -r -- '<plist version="1.0"><dict>'
+        print -r -- "  <key>Label</key><string>${MS_LAUNCH_LABEL}</string>"
+        print -r -- "  <key>ProgramArguments</key><array>"
+        local a; for a in $run_args; do print -r -- "    <string>${a}</string>"; done
+        print -r -- "  </array>"
+        print -r -- "  <key>StartCalendarInterval</key><dict>"
+        print -r -- "$cal"
+        print -r -- "  </dict>"
+        print -r -- "  <key>StandardOutPath</key><string>${MS_SUPPORT_DIR}/schedule.log</string>"
+        print -r -- "  <key>StandardErrorPath</key><string>${MS_SUPPORT_DIR}/schedule.err.log</string>"
+        print -r -- "  <key>RunAtLoad</key><false/>"
+        print -r -- "</dict></plist>"
+      } > "$MS_LAUNCH_PLIST"
+
+      launchctl unload "$MS_LAUNCH_PLIST" 2>/dev/null
+      if launchctl load "$MS_LAUNCH_PLIST" 2>/dev/null; then
+        ok "Расписание установлено: $freq в $(printf '%02d:%02d' $hour $minute)"
+        info "plist: $MS_LAUNCH_PLIST"
+      else
+        die "не удалось загрузить launchd-агент"
+      fi
+      ;;
+    uninstall)
+      launchctl unload "$MS_LAUNCH_PLIST" 2>/dev/null
+      rm -f "$MS_LAUNCH_PLIST" && ok "Расписание удалено" || info "Расписание не было установлено"
+      ;;
+    status)
+      if [[ -f "$MS_LAUNCH_PLIST" ]]; then
+        ok "Расписание установлено: $MS_LAUNCH_PLIST"
+        launchctl list 2>/dev/null | grep -q "$MS_LAUNCH_LABEL" && info "агент загружен" || warn "агент не загружен"
+      else
+        info "Расписание не установлено"
+      fi
+      ;;
+    *) die "schedule: неизвестная подкоманда '$sub' (install|uninstall|status)" ;;
+  esac
+}
+
+cmd_help() {
+  cat <<EOF
+${C_B}${MS_NAME}${C_RESET} v${MS_VERSION} — портативная очистка macOS
+
+${C_B}КОМАНДЫ${C_RESET}
+  scan                 анализ без удаления (сколько можно освободить)
+  clean                очистка (по умолчанию тоже анализ; удаление с --apply)
+  categories           список категорий очистки
+  report list|show|clear|dir
+                       управление отчётами
+  schedule install|uninstall|status
+                       запуск по расписанию (launchd)
+  help                 эта справка
+
+${C_B}ОПЦИИ${C_RESET}
+  --window <w>         период: this-day | this-week | this-month | all (по умолч. all)
+  --categories <ids>   список id через запятую, либо all-safe / all
+  --apply              РЕАЛЬНО удалять (иначе dry-run)
+  --delete             удалять безвозвратно (иначе — в Корзину)
+  --include-system     трогать системные пути (нужен sudo)
+  --exclude <текст>    исключить пути, содержащие текст (можно повторять)
+  --json               машиночитаемый вывод
+  --yes                не спрашивать подтверждение
+  --report-dir <путь>  каталог отчётов
+
+${C_B}РАСПИСАНИЕ (доп. опции для schedule install)${C_RESET}
+  --freq daily|weekly  частота (по умолч. daily)
+  --at HH:MM           время запуска (по умолч. 03:00)
+  --weekday <1-7>      день недели для weekly (1=Пн)
+
+${C_B}ПРИМЕРЫ${C_RESET}
+  macscrub scan
+  macscrub clean --window this-week --apply
+  macscrub clean --categories user-caches,trash --apply --delete
+  macscrub clean --window this-month --include-system --apply     # через sudo
+  macscrub schedule install --freq daily --at 03:00 --window this-day
+  macscrub report show
+
+${C_DIM}Безопасность: пути вне белого списка не удаляются; по умолчанию — в Корзину.${C_RESET}
+EOF
+}
+
+# ---------------------------------------------------------------------------
+# Разбор аргументов
+# ---------------------------------------------------------------------------
+MS_FREQ="daily"; MS_HOUR=3; MS_MIN=0; MS_WEEKDAY=1
+
+parse_common() {
+  while (( $# )); do
+    case "$1" in
+      --window)        OPT_WINDOW="$2"; shift 2 ;;
+      --categories)    OPT_CATEGORIES="$2"; shift 2 ;;
+      --apply)         OPT_APPLY=1; shift ;;
+      --dry-run)       OPT_APPLY=0; shift ;;
+      --delete)        OPT_TRASH=0; shift ;;
+      --trash)         OPT_TRASH=1; shift ;;
+      --include-system)OPT_INCLUDE_SYSTEM=1; shift ;;
+      --json)          OPT_JSON=1; shift ;;
+      --yes|-y)        OPT_YES=1; shift ;;
+      --exclude)       OPT_EXCLUDES+=("$2"); shift 2 ;;
+      --report-dir)    MS_REPORT_DIR="$2"; shift 2 ;;
+      --freq)          MS_FREQ="$2"; shift 2 ;;
+      --at)            MS_HOUR="${2%%:*}"; MS_MIN="${2##*:}"; MS_HOUR=$((10#$MS_HOUR)); MS_MIN=$((10#$MS_MIN)); shift 2 ;;
+      --weekday)       MS_WEEKDAY="$2"; shift 2 ;;
+      *)               warn "неизвестная опция: $1"; shift ;;
+    esac
+  done
+  case "$OPT_WINDOW" in this-day|this-week|this-month|all) ;; *) die "неверный --window: $OPT_WINDOW";; esac
+}
+
+# Загрузка постоянных настроек из config.env (KEY=value). CLI-опции важнее.
+_load_config() {
+  local cfg="${MACSCRUB_CONFIG:-$MS_SUPPORT_DIR/config.env}"
+  [[ -f "$cfg" ]] || return 0
+  local line key val
+  while IFS='=' read -r key val; do
+    key="${key## }"; key="${key%% }"
+    [[ -z "$key" || "$key" == \#* ]] && continue
+    val="${val%%#*}"; val="${val## }"; val="${val%% }"
+    case "$key" in
+      WINDOW)         [[ -n "$val" ]] && OPT_WINDOW="$val" ;;
+      CATEGORIES)     [[ -n "$val" ]] && OPT_CATEGORIES="$val" ;;
+      METHOD)         [[ "$val" == delete ]] && OPT_TRASH=0; [[ "$val" == trash ]] && OPT_TRASH=1 ;;
+      INCLUDE_SYSTEM) [[ "$val" == 1 || "$val" == true ]] && OPT_INCLUDE_SYSTEM=1 ;;
+    esac
+  done < "$cfg"
+}
+
+main() {
+  _load_config
+  local cmd="${1:-help}"; shift 2>/dev/null || true
+  case "$cmd" in
+    scan)       parse_common "$@"; cmd_scan ;;
+    clean)      parse_common "$@"; cmd_clean ;;
+    categories) parse_common "$@"; cmd_categories ;;
+    report)     local sub="${1:-list}"; shift 2>/dev/null || true; parse_common "$@"; cmd_report "$sub" ;;
+    schedule)   local sub="${1:-status}"; shift 2>/dev/null || true; parse_common "$@"; cmd_schedule "$sub" ;;
+    version|--version|-v) print -r -- "$MS_NAME $MS_VERSION" ;;
+    help|--help|-h) cmd_help ;;
+    *) err "неизвестная команда: $cmd"; cmd_help; exit 1 ;;
+  esac
+}
+
+main "$@"
