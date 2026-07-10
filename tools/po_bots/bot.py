@@ -42,9 +42,11 @@ def save_state(state):
 
 
 def api(token, method, **params):
+    # HTTP-таймаут должен переживать long polling (params["timeout"])
+    http_timeout = (params.get("timeout") or 0) + 20
     try:
         r = requests.post(API.format(token=token, method=method),
-                          json=params, timeout=30)
+                          json=params, timeout=http_timeout)
         return r.json()
     except requests.RequestException as e:
         return {"ok": False, "description": f"network: {type(e).__name__}"}
@@ -280,6 +282,33 @@ def answer(product, text):
             return digest_matching(d)
 
     return (f"Принял, посмотрю. Если нужен срез данных — {HELP[product]}")
+
+
+def handle_update(product, my_username, upd, state):
+    """Обработка одного апдейта Telegram. Возвращает 1, если ответили."""
+    msg = upd.get("message") or {}
+    chat = msg.get("chat") or {}
+    text = msg.get("text") or ""
+    if not text or (msg.get("from") or {}).get("is_bot"):
+        return 0
+    if chat.get("type") in ("group", "supergroup"):
+        state["chat_id"] = chat["id"]  # запоминаем «наш» чат
+    elif chat.get("type") == "private":
+        send(product, chat["id"], answer(product, text))  # в личке отвечаем всегда
+        return 1
+    reply_to = ((msg.get("reply_to_message") or {}).get("from") or {}).get("username")
+    cmd_mine = text.startswith("/") and (("@" + my_username) in text or "@" not in text)
+    if cmd_mine and text.startswith("/start"):
+        cfg = PRODUCTS[product]
+        send(product, chat["id"],
+             f"{cfg['emoji']} Привет! Я {cfg['persona']}, {cfg['role']}. "
+             f"Дайджесты и алерты по продукту буду присылать сюда сама(м). "
+             f"/help — что умею, /manual — руководство по управлению продуктами.")
+        return 1
+    if cmd_mine or is_addressed(product, text, my_username, reply_to):
+        send(product, chat["id"], answer(product, text))
+        return 1
+    return 0
 
 
 def is_addressed(product, text, my_username, reply_to_username=None):

@@ -1,16 +1,17 @@
 name: po-bots
 
-# Опрос Telegram: PO-боты отвечают на вопросы в групповом чате.
+# Разовый опрос Telegram (ручной запасной вариант).
+# Постоянные ответы в реальном времени несёт realtime-bots.yml — держать
+# два опроса одновременно нельзя: Telegram отдаёт getUpdates только одному
+# потребителю (второй получит 409 Conflict).
 on:
-  schedule:
-    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: po-bots
+  group: realtime-bots   # не пересекаемся с вахтой
   cancel-in-progress: false
 
 jobs:
@@ -20,35 +21,20 @@ jobs:
       PARSING_BOT_TOKEN: ${{ secrets.PARSING_BOT_TOKEN }}
       MATCHING_BOT_TOKEN: ${{ secrets.MATCHING_BOT_TOKEN }}
     steps:
-      - name: Check tokens
-        id: gate
-        run: |
-          if [ -n "$PARSING_BOT_TOKEN" ] || [ -n "$MATCHING_BOT_TOKEN" ]; then
-            echo "go=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "go=false" >> "$GITHUB_OUTPUT"
-            echo "токены не настроены — пропуск"
-          fi
-
       - uses: actions/checkout@v4
-        if: steps.gate.outputs.go == 'true'
         with:
           ref: main
 
       - uses: actions/setup-python@v5
-        if: steps.gate.outputs.go == 'true'
         with:
           python-version: "3.12"
 
-      - if: steps.gate.outputs.go == 'true'
-        run: pip install -r tools/requirements.txt
+      - run: pip install -r tools/requirements.txt
 
       - name: Poll & reply
-        if: steps.gate.outputs.go == 'true'
         run: python -m tools.po_bots.poll_and_reply
 
       - name: Commit bot state
-        if: steps.gate.outputs.go == 'true'
         run: |
           git config user.name "lt-po-bots"
           git config user.email "po-bots@users.noreply.github.com"
