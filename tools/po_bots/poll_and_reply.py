@@ -1,13 +1,12 @@
-"""Опрос Telegram и ответы PO-ботов на сообщения в групповом чате.
+"""Разовый опрос Telegram (ручной запасной вариант к realtime-вахте).
 
-Запускается по крону (GitHub Actions). Каждый бот забирает свои апдейты
-через getUpdates, запоминает chat_id группы и отвечает на адресованные ему
-вопросы. Офсеты и chat_id — в data/bots/state.json (коммитится workflow).
-В лог печатается диагностика по каждому боту — по ней разбираются проблемы
-вида «боты молчат» (см. плейбук №8 руководства).
+Забирает накопившиеся апдейты обоих ботов, отвечает на адресованные
+сообщения и сохраняет офсеты/chat_id в data/bots/state.json.
+Не запускать параллельно с realtime-bots: getUpdates отдаётся только
+одному потребителю (второй получает 409 Conflict).
 """
-from tools.po_bots.bot import (PRODUCTS, answer, api, is_addressed, load_state,
-                               save_state, send, token_for)
+from tools.po_bots.bot import (PRODUCTS, api, handle_update, load_state,
+                               save_state, token_for)
 
 
 def process(product, state, diag):
@@ -32,31 +31,7 @@ def process(product, state, diag):
     replied = 0
     for upd in updates:
         state["offsets"][product] = upd["update_id"] + 1
-        msg = upd.get("message") or {}
-        chat = msg.get("chat") or {}
-        text = msg.get("text") or ""
-        if not text or (msg.get("from") or {}).get("is_bot"):
-            continue
-        if chat.get("type") in ("group", "supergroup"):
-            state["chat_id"] = chat["id"]  # запоминаем «наш» чат
-        elif chat.get("type") == "private":
-            # в личке отвечаем всегда
-            send(product, chat["id"], answer(product, text))
-            replied += 1
-            continue
-        reply_to = ((msg.get("reply_to_message") or {}).get("from") or {}).get("username")
-        cmd_mine = text.startswith("/") and (("@" + my) in text or "@" not in text)
-        if cmd_mine and text.startswith("/start"):
-            cfg = PRODUCTS[product]
-            send(product, chat["id"],
-                 f"{cfg['emoji']} Привет! Я {cfg['persona']}, {cfg['role']}. "
-                 f"Дайджесты и алерты по продукту буду присылать сюда сама(м). "
-                 f"/help — что умею, /manual — руководство по управлению продуктами.")
-            replied += 1
-            continue
-        if cmd_mine or is_addressed(product, text, my, reply_to):
-            send(product, chat["id"], answer(product, text))
-            replied += 1
+        replied += handle_update(product, my, upd, state)
     return replied
 
 

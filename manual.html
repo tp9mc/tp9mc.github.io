@@ -255,10 +255,11 @@
     <div class="playbook sev-w">
       <h4>8. Боты молчат или не отвечают</h4>
       <ol><li>Дайджесты приходят <b>раз в день</b>, алерты — только при serious/critical: тишина при зелёной кабине — норма.</li>
-      <li>Не отвечают на вопросы: подождать до 15 минут (боты читают чат по крону), проверить <a href="https://github.com/tp9mc/tp9mc.github.io/actions/workflows/po-bots.yml">Actions → po-bots</a> — ран зелёный?</li>
-      <li>Ран зелёный, ответа нет: бот не понял адресата — обратиться по имени («Лера, …» / «Марк, …») или командой <code>/status@Lera_PO_Parsing_bot</code>.</li>
+      <li>Не отвечают на вопросы: проверить <a href="https://github.com/tp9mc/tp9mc.github.io/actions/workflows/realtime-bots.yml">Actions → realtime-bots</a> — идёт ли сейчас «вахта» (ран in progress). Если нет — нажать <b>Run workflow</b>; дальше смены сменяются сами (крон дважды в час ставит следующую в очередь).</li>
+      <li>Вахта идёт, ответа нет: бот не понял адресата — обратиться по имени («Лера, …» / «Марк, …») или командой <code>/status@Lera_PO_Parsing_bot</code>. Разовый ручной опрос — <a href="https://github.com/tp9mc/tp9mc.github.io/actions/workflows/bot-test.yml">bot-test</a> (заодно печатает полную диагностику).</li>
       <li>Ран падает: проверить секреты <code>PARSING_BOT_TOKEN</code> / <code>MATCHING_BOT_TOKEN</code> в Settings → Secrets; после /revoke токена в BotFather секрет надо обновить.</li>
-      <li>Боты видят только команды: privacy mode включён — в BotFather <code>/setprivacy</code> → Disable и пересоздать их присутствие в группе (удалить/добавить).</li></ol>
+      <li>Боты видят только команды: privacy mode включён — в BotFather <code>/setprivacy</code> → Disable и пересоздать их присутствие в группе (удалить/добавить).</li>
+      <li>В логе вахты «409 Conflict» — два потребителя getUpdates одновременно: убедиться, что не идут параллельно realtime-bots и po-bots/bot-test.</li></ol>
     </div>
   </div>
 
@@ -289,7 +290,7 @@
 
   <div class="slide" id="s8">
     <h2><span class="num">08</span>PO-боты: как общаться</h2>
-    <p class="lead">Лера 🕷 отвечает за Parsing, Марк 🧩 — за Matching и ценовой индекс. Они читают чат раз в 15 минут — ответ не мгновенный, это нормально.</p>
+    <p class="lead">Лера 🕷 отвечает за Parsing, Марк 🧩 — за Matching и ценовой индекс. Боты несут непрерывную вахту (realtime-воркер) и отвечают за секунды.</p>
     <h3>Что присылают сами</h3>
     <ul>
       <li><b>Дайджест</b> — раз в день после прогона: цифры, тренды, риски по своему продукту.</li>

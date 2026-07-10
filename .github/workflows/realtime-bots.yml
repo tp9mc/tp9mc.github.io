@@ -1,0 +1,79 @@
+name: realtime-bots
+
+# Непрерывная вахта PO-ботов: long polling Telegram, ответы за секунды.
+# Одна смена ≈ 5.5 часов; крон дважды в час ставит следующую смену в очередь
+# concurrency-группы — она стартует сразу после завершения текущей.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7,37 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: realtime-bots
+  cancel-in-progress: false
+
+jobs:
+  shift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      PARSING_BOT_TOKEN: ${{ secrets.PARSING_BOT_TOKEN }}
+      MATCHING_BOT_TOKEN: ${{ secrets.MATCHING_BOT_TOKEN }}
+      OFFSETS_FILE: /tmp/bot-offsets.json
+    steps:
+      - name: Check tokens
+        id: gate
+        run: |
+          if [ -n "$PARSING_BOT_TOKEN" ] || [ -n "$MATCHING_BOT_TOKEN" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=false" >> "$GITHUB_OUTPUT"; echo "токены не настроены — пропуск"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.go == 'true'
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.go == 'true'
+        with:
+          python-version: "3.12"
+
+      - if: steps.gate.outputs.go == 'true'
+        run: pip install -r tools/requirements.txt
+
+      - name: Restore offsets from previous shift
+        if: steps.gate.outputs.go == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/bot-offsets.json
+          key: bot-offsets-${{ github.run_id }}
+          restore-keys: bot-offsets-
+
+      - name: Stand watch (long polling)
+        if: steps.gate.outputs.go == 'true'
+        run: python -m tools.po_bots.realtime --minutes 335
+
+      - name: Save offsets for next shift
+        if: always() && steps.gate.outputs.go == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/bot-offsets.json
+          key: bot-offsets-${{ github.run_id }}
+
+      - name: Commit bot state
+        if: always() && steps.gate.outputs.go == 'true'
+        run: |
+          git config user.name "lt-po-bots"
+          git config user.email "po-bots@users.noreply.github.com"
+          git add data/bots
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "po-bots: состояние диалога (вахта)"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin main && break
+            sleep $((i * 3))
+          done
