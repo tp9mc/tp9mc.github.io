@@ -8,11 +8,6 @@ on binPath()
 	return appPath & "Contents/Resources/bin/macscrub"
 end binPath
 
-on aiPath()
-	set appPath to POSIX path of (path to me)
-	return appPath & "Contents/Resources/bin/macscrub-ai"
-end aiPath
-
 -- Выполнить движок с аргументами, вернуть stdout+stderr.
 on runEngine(args)
 	set cmd to quoted form of binPath() & " " & args & " 2>&1"
@@ -160,41 +155,18 @@ on doSchedule()
 	display dialog out buttons {"ОК"} default button "ОК" with title pTitle
 end doSchedule
 
--- ИИ-совет (Fable 5)
-on doAI()
-	-- ключ из файла или запрос
-	set keyFile to (POSIX path of (path to home folder)) & "Library/Application Support/MacScrub/ai_key"
-	set haveKey to false
-	try
-		do shell script "test -s " & quoted form of keyFile
-		set haveKey to true
-	end try
-	if not haveKey then
-		set k to text returned of (display dialog "Введите ключ Claude API (ANTHROPIC_API_KEY). Он сохранится локально (chmod 600)." default answer "" with hidden answer with title pTitle)
-		if k is "" then return
-		do shell script "mkdir -p ~/'Library/Application Support/MacScrub' && printf '%s' " & quoted form of k & " > " & quoted form of keyFile & " && chmod 600 " & quoted form of keyFile
-	end if
-	-- модель (сохраняется один раз)
-	set modelFile to (POSIX path of (path to home folder)) & "Library/Application Support/MacScrub/ai_model"
-	set haveModel to false
-	try
-		do shell script "test -s " & quoted form of modelFile
-		set haveModel to true
-	end try
-	if not haveModel then
-		set m to text returned of (display dialog "Идентификатор модели Fable 5 (MACSCRUB_AI_MODEL):" default answer "" with title pTitle)
-		if m is "" then return
-		do shell script "printf '%s' " & quoted form of m & " > " & quoted form of modelFile
-	end if
+-- Рекомендации (локальный анализ, без сети)
+on doAdvise()
 	set win to chooseWindow()
-	set cmd to "export ANTHROPIC_API_KEY=$(cat " & quoted form of keyFile & "); export MACSCRUB_AI_MODEL=$(cat " & quoted form of modelFile & "); " & quoted form of aiPath() & " --window " & win & " 2>&1"
-	try
-		set out to do shell script cmd
-	on error e
-		set out to "Ошибка: " & e
-	end try
-	display dialog out buttons {"ОК"} default button "ОК" with title pTitle
-end doAI
+	set cats to chooseCategories()
+	set extra to " --window " & win
+	if cats is not "" then set extra to extra & " --categories " & quoted form of cats
+	set out to runEngine("advise" & extra)
+	-- показываем блок рекомендаций (хвост вывода)
+	set summary to my tailLines(out, 18)
+	display dialog summary buttons {"Открыть отчёт", "ОК"} default button "ОК" with title pTitle
+	if button returned of result is "Открыть отчёт" then my openLatestReport()
+end doAdvise
 
 on tailLines(txt, n)
 	set ps to paragraphs of txt
@@ -210,7 +182,7 @@ end tailLines
 on run
 	repeat
 		set choice to choose from list ¬
-			{"Анализ (посмотреть, сколько мусора)", "Очистка (удалить)", "ИИ-совет (Fable 5)", "Отчёты", "Расписание", "Выход"} ¬
+			{"Анализ (посмотреть, сколько мусора)", "Очистка (удалить)", "Рекомендации", "Отчёты", "Расписание", "Выход"} ¬
 			with prompt "MacScrub — что делаем?" with title pTitle without multiple selections allowed
 		if choice is false then exit repeat
 		set c to item 1 of choice
@@ -219,8 +191,8 @@ on run
 				doScan()
 			else if c starts with "Очистка" then
 				doClean()
-			else if c starts with "ИИ-совет" then
-				doAI()
+			else if c is "Рекомендации" then
+				doAdvise()
 			else if c is "Отчёты" then
 				doReports()
 			else if c is "Расписание" then

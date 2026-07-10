@@ -33,10 +33,9 @@ fi
 RES="$APP/Contents/Resources"
 mkdir -p "$RES/bin"
 
-# 2) Встраиваем движок и ИИ-советник
+# 2) Встраиваем движок
 cp "$ROOT/bin/macscrub" "$RES/bin/macscrub"
-cp "$ROOT/bin/macscrub-ai" "$RES/bin/macscrub-ai"
-chmod +x "$RES/bin/macscrub" "$RES/bin/macscrub-ai"
+chmod +x "$RES/bin/macscrub"
 
 # 3) Иконка (PNG -> .icns) при наличии инструментов
 if [[ -f "$ROOT/assets/icon.png" ]] && command -v sips >/dev/null 2>&1 && command -v iconutil >/dev/null 2>&1; then
