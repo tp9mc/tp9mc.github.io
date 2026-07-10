@@ -302,13 +302,18 @@
 
     const t = card(g, "Прайс-индекс: наибольшие отклонения", "SKU с максимальным разрывом к минимальной цене конкурента", "w12");
     if (D.pi && D.pi.rows.length) {
-      const rows = D.pi.rows.slice(0, 25).map(r => `<tr>
+      const rows = D.pi.rows.slice(0, 25).map(r => {
+        // SKU демо-каталога нет на реальном сайте — ищем похожие: тип + бренд
+        const q = r.q || r.title.split(",")[0].split(" ").filter(w => !/^\d+$/.test(w)).slice(0, -1).join(" ");
+        return `<tr>
         <td class="mono">${r.sku}</td>
-        <td><a href="https://www.lamoda.ru/catalogsearch/result/?q=${encodeURIComponent(r.title)}"
-               title="Открыть в каталоге lamoda.ru" target="_blank" rel="noopener">${r.title}</a></td>
+        <td><a href="https://www.lamoda.ru/catalogsearch/result/?q=${encodeURIComponent(q)}"
+               title="Похожие товары в каталоге lamoda.ru (SKU — демо-каталог): ${q}"
+               target="_blank" rel="noopener">${r.title}</a></td>
         <td class="num">${fmt.rub(r.own)}</td><td class="num">${fmt.rub(r.min_comp)}</td>
         <td class="num">${r.offers}</td>
-        <td class="num" style="font-weight:600">${fmt.gap(r.gap_pct)}</td></tr>`).join("");
+        <td class="num" style="font-weight:600">${fmt.gap(r.gap_pct)}</td></tr>`;
+      }).join("");
       t.body.innerHTML = `<div class="scroll-x"><table class="data"><thead><tr>
         <th>SKU</th><th>Товар</th><th class="num">Наша цена</th>
         <th class="num">Мин. у конкурентов</th><th class="num">Офферов</th>
