@@ -36,17 +36,21 @@ def _save_offsets(offsets):
             json.dump(offsets, f)
 
 
+COLD_START_WINDOW_S = 600  # холодный старт: отвечаем на всё моложе 10 минут
+
+
 def _cold_start_offset(tok, product):
-    """Смена без наследства: пропускаем всё, кроме самого свежего (< 90 c)."""
-    r = api(tok, "getUpdates", offset=-1, timeout=0)
+    """Смена без наследства офсетов: обрабатываем недавнее, пропускаем старьё."""
+    r = api(tok, "getUpdates", timeout=0)
     results = r.get("result") or []
     if not results:
         return None
-    last = results[-1]
-    msg = last.get("message") or {}
-    if time.time() - msg.get("date", 0) < 90:
-        return last["update_id"]  # свежее сообщение — обработаем его
-    return last["update_id"] + 1
+    cutoff = time.time() - COLD_START_WINDOW_S
+    for upd in results:
+        msg = upd.get("message") or {}
+        if msg.get("date", 0) >= cutoff:
+            return upd["update_id"]  # с первого свежего — и всё после него
+    return results[-1]["update_id"] + 1  # всё старое — пропускаем целиком
 
 
 def shift(product, deadline, state, offsets):
