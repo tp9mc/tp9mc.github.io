@@ -1,1 +1,6 @@
-{"error": "maintenance"}
+{
+ "shop": "TrendAPI",
+ "asof": "2026-07-13T19:53:05Z",
+ "pages": 7,
+ "page_url": "products_{n}.json"
+}
