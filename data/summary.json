@@ -1,28 +1,43 @@
 {
- "ts": "2026-07-14T08:30:29Z",
+ "ts": "2026-07-14T10:57:51Z",
  "pipeline": {
-  "e2e_s": 2.38,
+  "e2e_s": 2.64,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.7956,
-  "pi_competitiveness": 0.3869,
-  "market_coverage": 0.9928
+  "pi_coverage": 0.7044,
+  "pi_competitiveness": 0.4479,
+  "market_coverage": 0.7139
  },
  "parsing": {
-  "offers": 1246,
-  "sources": "3/3",
-  "success_rate": 0.9915,
+  "offers": 896,
+  "sources": "2/3",
+  "success_rate": 0.9871,
   "fresh_share": 1.0,
-  "uptime": 0.9304
+  "uptime": 0.9224
  },
  "matching": {
-  "auto_match_rate": 0.8652,
-  "precision": 0.9991,
+  "auto_match_rate": 0.8862,
+  "precision": 1.0,
   "recall": 1.0,
-  "f1": 0.9995,
-  "queue": 35
+  "f1": 1.0,
+  "queue": 4
  },
- "alerts_open": []
+ "alerts_open": [
+  {
+   "ts": "2026-07-14T10:57:51Z",
+   "severity": "warning",
+   "product": "parsing",
+   "code": "antibot",
+   "text": "moda-market: 10 страниц с капчой — риск блокировки"
+  },
+  {
+   "ts": "2026-07-14T10:57:51Z",
+   "severity": "serious",
+   "product": "parsing",
+   "code": "source_outage",
+   "text": "Источник trend-api недоступен (maintenance) — данные не обновлены"
+  }
+ ]
 }
