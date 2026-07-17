@@ -1,50 +1,28 @@
 {
- "ts": "2026-07-17T03:42:07Z",
+ "ts": "2026-07-17T08:30:50Z",
  "pipeline": {
-  "e2e_s": 1.42,
+  "e2e_s": 2.7,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.5822,
-  "pi_competitiveness": 0.355,
-  "market_coverage": 0.5849
+  "pi_coverage": 0.7922,
+  "pi_competitiveness": 0.3843,
+  "market_coverage": 0.988
  },
  "parsing": {
-  "offers": 734,
-  "sources": "2/3",
-  "success_rate": 0.9699,
+  "offers": 1240,
+  "sources": "3/3",
+  "success_rate": 0.9882,
   "fresh_share": 1.0,
-  "uptime": 0.9185
+  "uptime": 0.9191
  },
  "matching": {
-  "auto_match_rate": 0.8093,
-  "precision": 0.9983,
+  "auto_match_rate": 0.8613,
+  "precision": 0.9991,
   "recall": 1.0,
-  "f1": 0.9992,
-  "queue": 46
+  "f1": 0.9995,
+  "queue": 33
  },
- "alerts_open": [
-  {
-   "ts": "2026-07-17T03:42:07Z",
-   "severity": "serious",
-   "product": "parsing",
-   "code": "source_outage",
-   "text": "Источник style-hub недоступен (maintenance) — данные не обновлены"
-  },
-  {
-   "ts": "2026-07-17T03:42:07Z",
-   "severity": "warning",
-   "product": "parsing",
-   "code": "success_rate",
-   "text": "Success rate обкачки 97.0% — ниже цели 97%"
-  },
-  {
-   "ts": "2026-07-17T03:42:07Z",
-   "severity": "serious",
-   "product": "shared",
-   "code": "pi_coverage_drop",
-   "text": "Покрытие ценового индекса упало до 58.2%"
-  }
- ]
+ "alerts_open": []
 }
