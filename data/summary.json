@@ -1,43 +1,28 @@
 {
- "ts": "2026-07-19T13:56:44Z",
+ "ts": "2026-07-19T16:13:54Z",
  "pipeline": {
-  "e2e_s": 1.29,
+  "e2e_s": 2.7,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.5844,
-  "pi_competitiveness": 0.3821,
-  "market_coverage": 0.588
+  "pi_coverage": 0.79,
+  "pi_competitiveness": 0.3966,
+  "market_coverage": 0.9538
  },
  "parsing": {
-  "offers": 738,
-  "sources": "2/3",
-  "success_rate": 0.9792,
+  "offers": 1197,
+  "sources": "3/3",
+  "success_rate": 0.9883,
   "fresh_share": 1.0,
-  "uptime": 0.9211
+  "uptime": 0.9216
  },
  "matching": {
-  "auto_match_rate": 0.8252,
-  "precision": 0.9984,
-  "recall": 0.9984,
-  "f1": 0.9984,
-  "queue": 15
+  "auto_match_rate": 0.8989,
+  "precision": 1.0,
+  "recall": 0.9991,
+  "f1": 0.9995,
+  "queue": 17
  },
- "alerts_open": [
-  {
-   "ts": "2026-07-19T13:56:44Z",
-   "severity": "serious",
-   "product": "parsing",
-   "code": "source_outage",
-   "text": "Источник style-hub недоступен (maintenance) — данные не обновлены"
-  },
-  {
-   "ts": "2026-07-19T13:56:44Z",
-   "severity": "serious",
-   "product": "shared",
-   "code": "pi_coverage_drop",
-   "text": "Покрытие ценового индекса упало до 58.4%"
-  }
- ]
+ "alerts_open": []
 }

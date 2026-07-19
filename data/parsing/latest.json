@@ -1,113 +1,113 @@
 {
- "run_id": "20260719-135644",
- "ts": "2026-07-19T13:56:44Z",
- "duration_s": 1.15,
+ "run_id": "20260719-161354",
+ "ts": "2026-07-19T16:13:54Z",
+ "duration_s": 2.55,
  "sources": {
   "style-hub": {
-   "ok": false,
-   "outage": true,
-   "offers": 0,
-   "discovered": 0,
-   "requests": 2,
+   "ok": true,
+   "outage": false,
+   "offers": 506,
+   "discovered": 506,
+   "requests": 507,
    "http_errors": 0,
    "parse_errors": 0,
-   "field_errors": 0,
+   "field_errors": 6,
    "blocked": 0,
    "retries": 0,
    "success_rate": 1.0,
-   "avg_latency_ms": 3.48,
-   "p95_latency_ms": 5.18,
-   "duration_s": 0.01,
-   "pages_per_min": 17098.5,
+   "avg_latency_ms": 21.68,
+   "p95_latency_ms": 14.76,
+   "duration_s": 1.25,
+   "pages_per_min": 24274.2,
    "field_completeness": {
-    "title": 0.0,
-    "price": 0.0,
-    "brand": 0.0,
-    "category": 0.0,
-    "color": 0.0,
-    "in_stock": 0.0
+    "title": 1.0,
+    "price": 0.9881,
+    "brand": 0.8834,
+    "category": 1.0,
+    "color": 0.751,
+    "in_stock": 1.0
    },
-   "last_success": "2026-07-19T10:46:06Z"
+   "last_success": "2026-07-19T16:13:54Z"
   },
   "moda-market": {
    "ok": true,
    "outage": false,
-   "offers": 392,
+   "offers": 391,
    "discovered": 401,
    "requests": 422,
-   "http_errors": 4,
+   "http_errors": 5,
    "parse_errors": 0,
-   "field_errors": 11,
+   "field_errors": 15,
    "blocked": 5,
    "retries": 0,
-   "success_rate": 0.9787,
-   "avg_latency_ms": 23.58,
-   "p95_latency_ms": 18.42,
-   "duration_s": 1.13,
-   "pages_per_min": 22483.3,
+   "success_rate": 0.9763,
+   "avg_latency_ms": 24.07,
+   "p95_latency_ms": 14.97,
+   "duration_s": 1.28,
+   "pages_per_min": 19792.2,
    "field_completeness": {
     "title": 1.0,
-    "price": 0.9719,
-    "brand": 0.7934,
+    "price": 0.9616,
+    "brand": 0.7954,
     "category": 1.0,
     "color": 0.0,
     "in_stock": 1.0
    },
-   "last_success": "2026-07-19T13:56:44Z"
+   "last_success": "2026-07-19T16:13:54Z"
   },
   "trend-api": {
    "ok": true,
    "outage": false,
-   "offers": 346,
-   "discovered": 346,
+   "offers": 300,
+   "discovered": 300,
    "requests": 8,
    "http_errors": 0,
-   "parse_errors": 0,
+   "parse_errors": 1,
    "field_errors": 0,
    "blocked": 0,
    "retries": 0,
-   "success_rate": 1.0,
-   "avg_latency_ms": 1.42,
-   "p95_latency_ms": 1.7,
+   "success_rate": 0.875,
+   "avg_latency_ms": 1.4,
+   "p95_latency_ms": 1.55,
    "duration_s": 0.01,
-   "pages_per_min": 38088.1,
+   "pages_per_min": 38791.8,
    "field_completeness": {
     "title": 1.0,
     "price": 1.0,
-    "brand": 0.8237,
+    "brand": 0.7967,
     "category": 1.0,
-    "color": 0.7803,
+    "color": 0.7467,
     "in_stock": 1.0
    },
-   "last_success": "2026-07-19T13:56:44Z"
+   "last_success": "2026-07-19T16:13:54Z"
   }
  },
  "coverage": {
-  "sources_active": 2,
+  "sources_active": 3,
   "sources_total": 3,
-  "offers_parsed": 738,
+  "offers_parsed": 1197,
   "categories_covered": 20
  },
  "quality": {
   "field_completeness": {
    "title": 1.0,
-   "price": 0.9851,
-   "brand": 0.8076,
+   "price": 0.9825,
+   "brand": 0.8329,
    "category": 1.0,
-   "color": 0.3659,
+   "color": 0.5046,
    "in_stock": 1.0
   },
-  "validation_error_rate": 0.0149
+  "validation_error_rate": 0.0175
  },
  "reliability": {
-  "crawl_success_rate": 0.9792,
-  "http_errors": 4,
+  "crawl_success_rate": 0.9883,
+  "http_errors": 5,
   "blocked": 5,
-  "run_uptime": 0.9211
+  "run_uptime": 0.9216
  },
  "freshness": {
   "age_hours": {
-   "style-hub": 3.18,
+   "style-hub": 0.0,
    "moda-market": 0.0,
    "trend-api": 0.0
   },
@@ -115,14 +115,14 @@
   "sla_hours": 6
  },
  "performance": {
-  "requests": 432,
-  "pages_per_min": 22586.1,
-  "avg_latency_ms": 23.08
+  "requests": 937,
+  "pages_per_min": 22072.9,
+  "avg_latency_ms": 22.58
  },
  "delta": {
-  "new_offers": 11,
-  "removed_offers": 514,
-  "price_changes": 110,
-  "oos_share": 0.0799
+  "new_offers": 515,
+  "removed_offers": 56,
+  "price_changes": 122,
+  "oos_share": 0.0886
  }
 }
