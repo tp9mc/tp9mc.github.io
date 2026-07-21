@@ -1,28 +1,28 @@
 {
- "ts": "2026-07-21T11:20:29Z",
+ "ts": "2026-07-21T14:27:44Z",
  "pipeline": {
-  "e2e_s": 2.38,
+  "e2e_s": 2.35,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.8022,
-  "pi_competitiveness": 0.3837,
-  "market_coverage": 0.9881
+  "pi_coverage": 0.8067,
+  "pi_competitiveness": 0.3953,
+  "market_coverage": 0.9929
  },
  "parsing": {
-  "offers": 1248,
+  "offers": 1254,
   "sources": "3/3",
-  "success_rate": 0.9882,
+  "success_rate": 0.9936,
   "fresh_share": 1.0,
-  "uptime": 0.9268
+  "uptime": 0.9273
  },
  "matching": {
-  "auto_match_rate": 0.863,
+  "auto_match_rate": 0.866,
   "precision": 1.0,
   "recall": 1.0,
   "f1": 1.0,
-  "queue": 24
+  "queue": 22
  },
  "alerts_open": []
 }
