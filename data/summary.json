@@ -1,28 +1,43 @@
 {
- "ts": "2026-07-22T16:51:43Z",
+ "ts": "2026-07-22T19:48:13Z",
  "pipeline": {
-  "e2e_s": 2.77,
+  "e2e_s": 2.78,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.8056,
-  "pi_competitiveness": 0.4152,
-  "market_coverage": 0.9905
+  "pi_coverage": 0.7067,
+  "pi_competitiveness": 0.4764,
+  "market_coverage": 0.707
  },
  "parsing": {
-  "offers": 1251,
-  "sources": "3/3",
-  "success_rate": 0.9904,
+  "offers": 893,
+  "sources": "2/3",
+  "success_rate": 0.9892,
   "fresh_share": 1.0,
-  "uptime": 0.9306
+  "uptime": 0.9253
  },
  "matching": {
-  "auto_match_rate": 0.8673,
+  "auto_match_rate": 0.8847,
   "precision": 1.0,
   "recall": 1.0,
   "f1": 1.0,
-  "queue": 22
+  "queue": 0
  },
- "alerts_open": []
+ "alerts_open": [
+  {
+   "ts": "2026-07-22T19:48:13Z",
+   "severity": "serious",
+   "product": "parsing",
+   "code": "source_outage",
+   "text": "Источник trend-api недоступен (maintenance) — данные не обновлены"
+  },
+  {
+   "ts": "2026-07-22T19:48:13Z",
+   "severity": "serious",
+   "product": "shared",
+   "code": "pi_coverage_drop",
+   "text": "Покрытие ценового индекса упало до 70.7%"
+  }
+ ]
 }
