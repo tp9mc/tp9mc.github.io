@@ -1,9 +1,9 @@
 {
  "last_success": {
-  "style-hub": "2026-07-24T08:45:48Z",
+  "style-hub": "2026-07-24T11:14:17Z",
   "moda-market": "2026-07-24T08:45:48Z",
-  "trend-api": "2026-07-24T08:45:48Z"
+  "trend-api": "2026-07-24T11:14:17Z"
  },
- "runs_total": 184,
- "runs_failed": 13
+ "runs_total": 185,
+ "runs_failed": 14
 }
