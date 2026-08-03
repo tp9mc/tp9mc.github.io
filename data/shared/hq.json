@@ -1,7 +1,7 @@
 {
- "ts": "2026-08-03T15:20:31Z",
+ "ts": "2026-08-03T20:02:00Z",
  "url": "https://www.lamoda.ru/",
  "reachable": true,
- "status": 403,
- "latency_ms": 592
+ "status": 200,
+ "latency_ms": 1006
 }
