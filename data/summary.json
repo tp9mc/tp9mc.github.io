@@ -1,36 +1,43 @@
 {
- "ts": "2026-08-08T09:57:01Z",
+ "ts": "2026-08-08T13:15:26Z",
  "pipeline": {
-  "e2e_s": 2.79,
+  "e2e_s": 2.22,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.7978,
-  "pi_competitiveness": 0.4276,
-  "market_coverage": 0.9911
+  "pi_coverage": 0.6911,
+  "pi_competitiveness": 0.4839,
+  "market_coverage": 0.7099
  },
  "parsing": {
-  "offers": 1223,
-  "sources": "3/3",
-  "success_rate": 0.988,
+  "offers": 876,
+  "sources": "2/3",
+  "success_rate": 0.989,
   "fresh_share": 1.0,
-  "uptime": 0.9437
+  "uptime": 0.9404
  },
  "matching": {
-  "auto_match_rate": 0.8577,
-  "precision": 1.0,
-  "recall": 1.0,
-  "f1": 1.0,
-  "queue": 35
+  "auto_match_rate": 0.8744,
+  "precision": 0.9987,
+  "recall": 0.9988,
+  "f1": 0.9987,
+  "queue": 8
  },
  "alerts_open": [
   {
-   "ts": "2026-08-08T09:57:01Z",
-   "severity": "warning",
+   "ts": "2026-08-08T13:15:26Z",
+   "severity": "serious",
    "product": "parsing",
-   "code": "antibot",
-   "text": "moda-market: 10 страниц с капчой — риск блокировки"
+   "code": "source_outage",
+   "text": "Источник trend-api недоступен (maintenance) — данные не обновлены"
+  },
+  {
+   "ts": "2026-08-08T13:15:26Z",
+   "severity": "serious",
+   "product": "shared",
+   "code": "pi_coverage_drop",
+   "text": "Покрытие ценового индекса упало до 69.1%"
   }
  ]
 }
