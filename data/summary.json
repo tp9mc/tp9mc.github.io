@@ -1,28 +1,43 @@
 {
- "ts": "2026-08-10T19:24:46Z",
+ "ts": "2026-08-10T22:00:57Z",
  "pipeline": {
-  "e2e_s": 2.83,
+  "e2e_s": 1.45,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.8011,
-  "pi_competitiveness": 0.4258,
-  "market_coverage": 0.985
+  "pi_coverage": 0.6889,
+  "pi_competitiveness": 0.5613,
+  "market_coverage": 0.6819
  },
  "parsing": {
-  "offers": 1251,
-  "sources": "3/3",
-  "success_rate": 0.9861,
+  "offers": 866,
+  "sources": "2/3",
+  "success_rate": 1.0,
   "fresh_share": 1.0,
-  "uptime": 0.9439
+  "uptime": 0.9408
  },
  "matching": {
-  "auto_match_rate": 0.8737,
+  "auto_match_rate": 0.8926,
   "precision": 1.0,
   "recall": 1.0,
   "f1": 1.0,
-  "queue": 40
+  "queue": 5
  },
- "alerts_open": []
+ "alerts_open": [
+  {
+   "ts": "2026-08-10T22:00:57Z",
+   "severity": "serious",
+   "product": "parsing",
+   "code": "source_outage",
+   "text": "Источник moda-market недоступен (maintenance) — данные не обновлены"
+  },
+  {
+   "ts": "2026-08-10T22:00:57Z",
+   "severity": "serious",
+   "product": "shared",
+   "code": "pi_coverage_drop",
+   "text": "Покрытие ценового индекса упало до 68.9%"
+  }
+ ]
 }
