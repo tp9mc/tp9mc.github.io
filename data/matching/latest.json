@@ -1,65 +1,65 @@
 {
- "run_id": "20260820-190412",
- "ts": "2026-08-20T19:04:12Z",
- "duration_s": 0.09,
+ "run_id": "20260820-214701",
+ "ts": "2026-08-20T21:47:01Z",
+ "duration_s": 0.18,
  "input": {
-  "offers_in": 1242,
+  "offers_in": 1237,
   "catalog_size": 900,
-  "candidates": 14069,
-  "pairs_scored": 14069
+  "candidates": 14105,
+  "pairs_scored": 14105
  },
  "funnel": {
-  "auto": 1055,
-  "review_new": 41,
+  "auto": 1049,
+  "review_new": 40,
   "no_match": 71,
-  "auto_match_rate": 0.8494,
-  "total_match_rate": 0.8986
+  "auto_match_rate": 0.848,
+  "total_match_rate": 0.8973
  },
  "quality": {
   "precision_auto": 1.0,
   "recall": 1.0,
   "f1": 1.0,
-  "false_match_rate": 0.0161,
+  "false_match_rate": 0.0153,
   "review_accuracy": 1.0,
-  "golden_set_size": 1242
+  "golden_set_size": 1237
  },
  "review": {
   "queue_size": 28,
-  "added": 41,
+  "added": 40,
   "processed": 40,
   "capacity_per_run": 40,
   "backlog_eta_runs": 1,
-  "reviewed_total": 15272
+  "reviewed_total": 15312
  },
  "confidence_hist": {
   "from": 0.5,
   "step": 0.05,
   "buckets": [
-   32,
+   33,
    22,
    14,
-   5,
-   44,
-   78,
-   241,
-   289,
-   251,
-   195
+   6,
+   43,
+   80,
+   230,
+   291,
+   253,
+   194
   ]
  },
  "consolidation": {
-  "matched_offers": 1116,
-  "own_skus_with_offers": 718,
-  "multi_offer_skus": 333
+  "matched_offers": 1110,
+  "own_skus_with_offers": 717,
+  "multi_offer_skus": 329
  },
  "price_index": {
-  "coverage": 0.79,
-  "competitiveness": 0.4037,
-  "avg_gap_pct": 4.31,
-  "comparable_skus": 711
+  "coverage": 0.7933,
+  "competitiveness": 0.3922,
+  "avg_gap_pct": 4.09,
+  "comparable_skus": 714
  },
  "performance": {
-  "pairs_per_sec": 149366,
+  "pairs_per_sec": 76796,
   "thresholds": {
    "auto": 0.74,
    "review": 0.5
