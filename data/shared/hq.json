@@ -1,7 +1,7 @@
 {
- "ts": "2026-08-22T01:53:09Z",
+ "ts": "2026-08-22T03:59:52Z",
  "url": "https://www.lamoda.ru/",
- "reachable": false,
- "error": "ConnectTimeout",
- "latency_ms": 12299
+ "reachable": true,
+ "status": 403,
+ "latency_ms": 469
 }
