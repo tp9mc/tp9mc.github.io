@@ -1,28 +1,50 @@
 {
- "ts": "2026-09-15T21:27:34Z",
+ "ts": "2026-09-16T04:56:15Z",
  "pipeline": {
-  "e2e_s": 2.23,
+  "e2e_s": 1.29,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.8167,
-  "pi_competitiveness": 0.385,
-  "market_coverage": 0.9898
+  "pi_coverage": 0.6844,
+  "pi_competitiveness": 0.5211,
+  "market_coverage": 0.6771
  },
  "parsing": {
-  "offers": 1263,
-  "sources": "3/3",
-  "success_rate": 0.9904,
-  "fresh_share": 1.0,
-  "uptime": 0.9442
+  "offers": 864,
+  "sources": "2/3",
+  "success_rate": 1.0,
+  "fresh_share": 0.6667,
+  "uptime": 0.9424
  },
  "matching": {
-  "auto_match_rate": 0.8614,
-  "precision": 0.9991,
+  "auto_match_rate": 0.8831,
+  "precision": 0.9974,
   "recall": 1.0,
-  "f1": 0.9995,
-  "queue": 35
+  "f1": 0.9987,
+  "queue": 8
  },
- "alerts_open": []
+ "alerts_open": [
+  {
+   "ts": "2026-09-16T04:56:15Z",
+   "severity": "serious",
+   "product": "parsing",
+   "code": "source_outage",
+   "text": "Источник moda-market недоступен (maintenance) — данные не обновлены"
+  },
+  {
+   "ts": "2026-09-16T04:56:15Z",
+   "severity": "warning",
+   "product": "parsing",
+   "code": "freshness",
+   "text": "Свежесть вне SLA у источников: moda-market"
+  },
+  {
+   "ts": "2026-09-16T04:56:15Z",
+   "severity": "serious",
+   "product": "shared",
+   "code": "pi_coverage_drop",
+   "text": "Покрытие ценового индекса упало до 68.4%"
+  }
+ ]
 }
