@@ -1,28 +1,57 @@
 {
- "ts": "2026-09-20T20:54:17Z",
+ "ts": "2026-09-20T23:17:12Z",
  "pipeline": {
-  "e2e_s": 3.03,
+  "e2e_s": 1.63,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.8156,
-  "pi_competitiveness": 0.4005,
-  "market_coverage": 0.9922
+  "pi_coverage": 0.5978,
+  "pi_competitiveness": 0.3885,
+  "market_coverage": 0.587
  },
  "parsing": {
-  "offers": 1266,
-  "sources": "3/3",
-  "success_rate": 0.9894,
+  "offers": 749,
+  "sources": "2/3",
+  "success_rate": 0.9545,
   "fresh_share": 1.0,
-  "uptime": 0.9391
+  "uptime": 0.9374
  },
  "matching": {
-  "auto_match_rate": 0.8626,
-  "precision": 0.9982,
+  "auto_match_rate": 0.8198,
+  "precision": 0.9984,
   "recall": 1.0,
-  "f1": 0.9991,
-  "queue": 26
+  "f1": 0.9992,
+  "queue": 12
  },
- "alerts_open": []
+ "alerts_open": [
+  {
+   "ts": "2026-09-20T23:17:12Z",
+   "severity": "serious",
+   "product": "parsing",
+   "code": "source_outage",
+   "text": "Источник style-hub недоступен (maintenance) — данные не обновлены"
+  },
+  {
+   "ts": "2026-09-20T23:17:12Z",
+   "severity": "warning",
+   "product": "parsing",
+   "code": "antibot",
+   "text": "moda-market: 11 страниц с капчой — риск блокировки"
+  },
+  {
+   "ts": "2026-09-20T23:17:12Z",
+   "severity": "warning",
+   "product": "parsing",
+   "code": "success_rate",
+   "text": "Success rate обкачки 95.5% — ниже цели 97%"
+  },
+  {
+   "ts": "2026-09-20T23:17:12Z",
+   "severity": "serious",
+   "product": "shared",
+   "code": "pi_coverage_drop",
+   "text": "Покрытие ценового индекса упало до 59.8%"
+  }
+ ]
 }
