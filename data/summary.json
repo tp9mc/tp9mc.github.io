@@ -1,43 +1,43 @@
 {
- "ts": "2026-09-19T23:12:35Z",
+ "ts": "2026-09-20T04:59:57Z",
  "pipeline": {
-  "e2e_s": 1.27,
+  "e2e_s": 1.52,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.5944,
-  "pi_competitiveness": 0.3869,
-  "market_coverage": 0.5964
+  "pi_coverage": 0.6789,
+  "pi_competitiveness": 0.5254,
+  "market_coverage": 0.6779
  },
  "parsing": {
-  "offers": 761,
+  "offers": 865,
   "sources": "2/3",
-  "success_rate": 0.9818,
+  "success_rate": 1.0,
   "fresh_share": 1.0,
-  "uptime": 0.9405
+  "uptime": 0.9388
  },
  "matching": {
-  "auto_match_rate": 0.8279,
-  "precision": 0.9984,
+  "auto_match_rate": 0.8821,
+  "precision": 0.9974,
   "recall": 1.0,
-  "f1": 0.9992,
-  "queue": 13
+  "f1": 0.9987,
+  "queue": 6
  },
  "alerts_open": [
   {
-   "ts": "2026-09-19T23:12:35Z",
+   "ts": "2026-09-20T04:59:57Z",
    "severity": "serious",
    "product": "parsing",
    "code": "source_outage",
-   "text": "Источник style-hub недоступен (maintenance) — данные не обновлены"
+   "text": "Источник moda-market недоступен (maintenance) — данные не обновлены"
   },
   {
-   "ts": "2026-09-19T23:12:35Z",
+   "ts": "2026-09-20T04:59:57Z",
    "severity": "serious",
    "product": "shared",
    "code": "pi_coverage_drop",
-   "text": "Покрытие ценового индекса упало до 59.4%"
+   "text": "Покрытие ценового индекса упало до 67.9%"
   }
  ]
 }
