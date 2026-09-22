@@ -1,28 +1,43 @@
 {
- "ts": "2026-09-21T20:00:48Z",
+ "ts": "2026-09-22T00:10:10Z",
  "pipeline": {
-  "e2e_s": 2.5,
+  "e2e_s": 2.27,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.8067,
-  "pi_competitiveness": 0.4022,
-  "market_coverage": 0.9929
+  "pi_coverage": 0.6967,
+  "pi_competitiveness": 0.4402,
+  "market_coverage": 0.7073
  },
  "parsing": {
-  "offers": 1255,
-  "sources": "3/3",
-  "success_rate": 0.9914,
+  "offers": 894,
+  "sources": "2/3",
+  "success_rate": 0.9935,
   "fresh_share": 1.0,
-  "uptime": 0.9377
+  "uptime": 0.936
  },
  "matching": {
-  "auto_match_rate": 0.8582,
-  "precision": 0.9991,
+  "auto_match_rate": 0.8736,
+  "precision": 0.9987,
   "recall": 1.0,
-  "f1": 0.9995,
-  "queue": 34
+  "f1": 0.9994,
+  "queue": 28
  },
- "alerts_open": []
+ "alerts_open": [
+  {
+   "ts": "2026-09-22T00:10:10Z",
+   "severity": "serious",
+   "product": "parsing",
+   "code": "source_outage",
+   "text": "Источник trend-api недоступен (maintenance) — данные не обновлены"
+  },
+  {
+   "ts": "2026-09-22T00:10:10Z",
+   "severity": "serious",
+   "product": "shared",
+   "code": "pi_coverage_drop",
+   "text": "Покрытие ценового индекса упало до 69.7%"
+  }
+ ]
 }
