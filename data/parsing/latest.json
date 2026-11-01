@@ -1,128 +1,128 @@
 {
- "run_id": "20261101-001107",
- "ts": "2026-11-01T00:11:07Z",
- "duration_s": 2.61,
+ "run_id": "20261101-062107",
+ "ts": "2026-11-01T06:21:07Z",
+ "duration_s": 2.92,
  "sources": {
   "style-hub": {
    "ok": true,
    "outage": false,
-   "offers": 497,
-   "discovered": 497,
-   "requests": 498,
+   "offers": 500,
+   "discovered": 500,
+   "requests": 501,
    "http_errors": 0,
    "parse_errors": 0,
-   "field_errors": 5,
+   "field_errors": 8,
    "blocked": 0,
    "retries": 0,
    "success_rate": 1.0,
-   "avg_latency_ms": 20.98,
-   "p95_latency_ms": 13.88,
-   "duration_s": 1.38,
-   "pages_per_min": 21690.2,
+   "avg_latency_ms": 23.6,
+   "p95_latency_ms": 16.37,
+   "duration_s": 1.82,
+   "pages_per_min": 16517.9,
    "field_completeness": {
     "title": 1.0,
-    "price": 0.9899,
-    "brand": 0.8692,
+    "price": 0.984,
+    "brand": 0.87,
     "category": 1.0,
-    "color": 0.7726,
+    "color": 0.772,
     "in_stock": 1.0
    },
-   "last_success": "2026-11-01T00:11:07Z"
+   "last_success": "2026-11-01T06:21:07Z"
   },
   "moda-market": {
    "ok": true,
    "outage": false,
-   "offers": 401,
+   "offers": 407,
    "discovered": 415,
    "requests": 436,
-   "http_errors": 8,
+   "http_errors": 3,
    "parse_errors": 0,
-   "field_errors": 7,
-   "blocked": 6,
+   "field_errors": 20,
+   "blocked": 5,
    "retries": 0,
-   "success_rate": 0.9679,
-   "avg_latency_ms": 22.55,
-   "p95_latency_ms": 13.33,
-   "duration_s": 1.22,
-   "pages_per_min": 21526.1,
+   "success_rate": 0.9817,
+   "avg_latency_ms": 23.29,
+   "p95_latency_ms": 14.66,
+   "duration_s": 1.09,
+   "pages_per_min": 23927.8,
    "field_completeness": {
     "title": 1.0,
-    "price": 0.9825,
-    "brand": 0.7406,
+    "price": 0.9509,
+    "brand": 0.742,
     "category": 1.0,
     "color": 0.0,
     "in_stock": 1.0
    },
-   "last_success": "2026-11-01T00:11:07Z"
+   "last_success": "2026-11-01T06:21:07Z"
   },
   "trend-api": {
-   "ok": true,
-   "outage": false,
-   "offers": 356,
-   "discovered": 356,
-   "requests": 9,
+   "ok": false,
+   "outage": true,
+   "offers": 0,
+   "discovered": 0,
+   "requests": 1,
    "http_errors": 0,
    "parse_errors": 0,
    "field_errors": 0,
    "blocked": 0,
    "retries": 0,
    "success_rate": 1.0,
-   "avg_latency_ms": 1.13,
-   "p95_latency_ms": 1.57,
-   "duration_s": 0.01,
-   "pages_per_min": 48253.9,
+   "avg_latency_ms": 1.41,
+   "p95_latency_ms": 1.41,
+   "duration_s": 0.0,
+   "pages_per_min": 41570.9,
    "field_completeness": {
-    "title": 1.0,
-    "price": 1.0,
-    "brand": 0.8399,
-    "category": 1.0,
-    "color": 0.7669,
-    "in_stock": 1.0
+    "title": 0.0,
+    "price": 0.0,
+    "brand": 0.0,
+    "category": 0.0,
+    "color": 0.0,
+    "in_stock": 0.0
    },
    "last_success": "2026-11-01T00:11:07Z"
   }
  },
  "coverage": {
-  "sources_active": 3,
+  "sources_active": 2,
   "sources_total": 3,
-  "offers_parsed": 1254,
+  "offers_parsed": 907,
   "categories_covered": 20
  },
  "quality": {
   "field_completeness": {
    "title": 1.0,
-   "price": 0.9904,
-   "brand": 0.8198,
+   "price": 0.9691,
+   "brand": 0.8126,
    "category": 1.0,
-   "color": 0.5239,
+   "color": 0.4256,
    "in_stock": 1.0
   },
-  "validation_error_rate": 0.0096
+  "validation_error_rate": 0.0309
  },
  "reliability": {
-  "crawl_success_rate": 0.9852,
-  "http_errors": 8,
-  "blocked": 6,
-  "run_uptime": 0.947
+  "crawl_success_rate": 0.9915,
+  "http_errors": 3,
+  "blocked": 5,
+  "run_uptime": 0.9456
  },
  "freshness": {
   "age_hours": {
    "style-hub": 0.0,
    "moda-market": 0.0,
-   "trend-api": 0.0
+   "trend-api": 6.17
   },
-  "fresh_share": 1.0,
+  "fresh_share": 0.6667,
   "sla_hours": 6
  },
  "performance": {
-  "requests": 943,
-  "pages_per_min": 21707.7,
-  "avg_latency_ms": 21.52
+  "requests": 938,
+  "pages_per_min": 19294.6,
+  "avg_latency_ms": 23.43
  },
  "delta": {
-  "new_offers": 402,
-  "removed_offers": 4,
-  "price_changes": 842,
-  "oos_share": 0.0941
+  "new_offers": 18,
+  "removed_offers": 365,
+  "price_changes": 152,
+  "oos_share": 0.0915
  }
 }
