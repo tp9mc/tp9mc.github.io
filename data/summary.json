@@ -1,50 +1,36 @@
 {
- "ts": "2026-11-03T19:34:58Z",
+ "ts": "2026-11-04T01:27:51Z",
  "pipeline": {
-  "e2e_s": 1.4,
+  "e2e_s": 2.43,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.6467,
-  "pi_competitiveness": 0.4966,
-  "market_coverage": 0.6352
+  "pi_coverage": 0.7978,
+  "pi_competitiveness": 0.3886,
+  "market_coverage": 0.9866
  },
  "parsing": {
-  "offers": 808,
-  "sources": "2/3",
-  "success_rate": 0.998,
-  "fresh_share": 0.6667,
+  "offers": 1255,
+  "sources": "3/3",
+  "success_rate": 0.9862,
+  "fresh_share": 1.0,
   "uptime": 0.9448
  },
  "matching": {
-  "auto_match_rate": 0.8837,
+  "auto_match_rate": 0.8606,
   "precision": 1.0,
-  "recall": 1.0,
-  "f1": 1.0,
-  "queue": 6
+  "recall": 0.9973,
+  "f1": 0.9987,
+  "queue": 71
  },
  "alerts_open": [
   {
-   "ts": "2026-11-03T19:34:58Z",
-   "severity": "serious",
-   "product": "parsing",
-   "code": "source_outage",
-   "text": "Источник moda-market недоступен (maintenance) — данные не обновлены"
-  },
-  {
-   "ts": "2026-11-03T19:34:58Z",
+   "ts": "2026-11-04T01:27:51Z",
    "severity": "warning",
    "product": "parsing",
-   "code": "freshness",
-   "text": "Свежесть вне SLA у источников: moda-market"
-  },
-  {
-   "ts": "2026-11-03T19:34:58Z",
-   "severity": "serious",
-   "product": "shared",
-   "code": "pi_coverage_drop",
-   "text": "Покрытие ценового индекса упало до 64.7%"
+   "code": "antibot",
+   "text": "moda-market: 10 страниц с капчой — риск блокировки"
   }
  ]
 }
