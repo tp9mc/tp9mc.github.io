@@ -1,36 +1,28 @@
 {
- "ts": "2026-11-11T06:41:50Z",
+ "ts": "2026-11-11T17:14:37Z",
  "pipeline": {
-  "e2e_s": 2.3,
+  "e2e_s": 3.0,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.7989,
-  "pi_competitiveness": 0.3811,
-  "market_coverage": 0.9881
+  "pi_coverage": 0.7967,
+  "pi_competitiveness": 0.3961,
+  "market_coverage": 0.9897
  },
  "parsing": {
-  "offers": 1248,
+  "offers": 1250,
   "sources": "3/3",
-  "success_rate": 0.9841,
+  "success_rate": 0.9872,
   "fresh_share": 1.0,
-  "uptime": 0.9465
+  "uptime": 0.9466
  },
  "matching": {
-  "auto_match_rate": 0.867,
+  "auto_match_rate": 0.868,
   "precision": 1.0,
   "recall": 1.0,
   "f1": 1.0,
-  "queue": 48
+  "queue": 24
  },
- "alerts_open": [
-  {
-   "ts": "2026-11-11T06:41:50Z",
-   "severity": "warning",
-   "product": "parsing",
-   "code": "antibot",
-   "text": "moda-market: 10 страниц с капчой — риск блокировки"
-  }
- ]
+ "alerts_open": []
 }
