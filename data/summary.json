@@ -1,28 +1,50 @@
 {
- "ts": "2026-11-18T01:00:08Z",
+ "ts": "2026-11-18T11:54:26Z",
  "pipeline": {
-  "e2e_s": 2.29,
+  "e2e_s": 1.62,
   "sla_s": 300,
   "sla_ok": true
  },
  "nsm": {
-  "pi_coverage": 0.7933,
-  "pi_competitiveness": 0.381,
-  "market_coverage": 0.9928
+  "pi_coverage": 0.6,
+  "pi_competitiveness": 0.3944,
+  "market_coverage": 0.6032
  },
  "parsing": {
-  "offers": 1246,
-  "sources": "3/3",
-  "success_rate": 0.9914,
-  "fresh_share": 1.0,
-  "uptime": 0.9452
+  "offers": 757,
+  "sources": "2/3",
+  "success_rate": 0.9841,
+  "fresh_share": 0.6667,
+  "uptime": 0.9439
  },
  "matching": {
-  "auto_match_rate": 0.8587,
-  "precision": 0.9991,
+  "auto_match_rate": 0.8164,
+  "precision": 0.9984,
   "recall": 1.0,
-  "f1": 0.9995,
-  "queue": 75
+  "f1": 0.9992,
+  "queue": 28
  },
- "alerts_open": []
+ "alerts_open": [
+  {
+   "ts": "2026-11-18T11:54:26Z",
+   "severity": "serious",
+   "product": "parsing",
+   "code": "source_outage",
+   "text": "Источник style-hub недоступен (maintenance) — данные не обновлены"
+  },
+  {
+   "ts": "2026-11-18T11:54:26Z",
+   "severity": "warning",
+   "product": "parsing",
+   "code": "freshness",
+   "text": "Свежесть вне SLA у источников: style-hub"
+  },
+  {
+   "ts": "2026-11-18T11:54:26Z",
+   "severity": "serious",
+   "product": "shared",
+   "code": "pi_coverage_drop",
+   "text": "Покрытие ценового индекса упало до 60.0%"
+  }
+ ]
 }
