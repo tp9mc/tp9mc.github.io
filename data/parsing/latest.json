@@ -1,59 +1,59 @@
 {
- "run_id": "20261127-014653",
- "ts": "2026-11-27T01:46:53Z",
- "duration_s": 2.3,
+ "run_id": "20261127-124248",
+ "ts": "2026-11-27T12:42:48Z",
+ "duration_s": 2.49,
  "sources": {
   "style-hub": {
    "ok": true,
    "outage": false,
-   "offers": 510,
-   "discovered": 510,
-   "requests": 511,
+   "offers": 515,
+   "discovered": 515,
+   "requests": 516,
    "http_errors": 0,
    "parse_errors": 0,
-   "field_errors": 5,
+   "field_errors": 8,
    "blocked": 0,
    "retries": 0,
    "success_rate": 1.0,
-   "avg_latency_ms": 21.52,
-   "p95_latency_ms": 14.99,
-   "duration_s": 1.19,
-   "pages_per_min": 25706.0,
+   "avg_latency_ms": 21.95,
+   "p95_latency_ms": 15.63,
+   "duration_s": 1.38,
+   "pages_per_min": 22481.1,
    "field_completeness": {
     "title": 1.0,
-    "price": 0.9902,
-    "brand": 0.8902,
+    "price": 0.9845,
+    "brand": 0.8913,
     "category": 1.0,
-    "color": 0.7686,
+    "color": 0.7709,
     "in_stock": 1.0
    },
-   "last_success": "2026-11-27T01:46:53Z"
+   "last_success": "2026-11-27T12:42:48Z"
   },
   "moda-market": {
    "ok": true,
    "outage": false,
-   "offers": 391,
+   "offers": 392,
    "discovered": 403,
    "requests": 424,
-   "http_errors": 7,
+   "http_errors": 5,
    "parse_errors": 0,
    "field_errors": 15,
-   "blocked": 5,
+   "blocked": 6,
    "retries": 0,
-   "success_rate": 0.9717,
-   "avg_latency_ms": 22.79,
-   "p95_latency_ms": 16.97,
+   "success_rate": 0.9741,
+   "avg_latency_ms": 23.35,
+   "p95_latency_ms": 15.25,
    "duration_s": 1.09,
-   "pages_per_min": 23299.6,
+   "pages_per_min": 23285.5,
    "field_completeness": {
     "title": 1.0,
-    "price": 0.9616,
-    "brand": 0.7877,
+    "price": 0.9617,
+    "brand": 0.7857,
     "category": 1.0,
     "color": 0.0,
     "in_stock": 1.0
    },
-   "last_success": "2026-11-27T01:46:53Z"
+   "last_success": "2026-11-27T12:42:48Z"
   },
   "trend-api": {
    "ok": true,
@@ -67,10 +67,10 @@
    "blocked": 0,
    "retries": 0,
    "success_rate": 1.0,
-   "avg_latency_ms": 1.54,
-   "p95_latency_ms": 1.66,
-   "duration_s": 0.02,
-   "pages_per_min": 34658.1,
+   "avg_latency_ms": 1.35,
+   "p95_latency_ms": 1.48,
+   "duration_s": 0.01,
+   "pages_per_min": 40238.7,
    "field_completeness": {
     "title": 1.0,
     "price": 1.0,
@@ -79,31 +79,31 @@
     "color": 0.7877,
     "in_stock": 1.0
    },
-   "last_success": "2026-11-27T01:46:53Z"
+   "last_success": "2026-11-27T12:42:48Z"
   }
  },
  "coverage": {
   "sources_active": 3,
   "sources_total": 3,
-  "offers_parsed": 1259,
+  "offers_parsed": 1265,
   "categories_covered": 20
  },
  "quality": {
   "field_completeness": {
    "title": 1.0,
-   "price": 0.9841,
+   "price": 0.9818,
    "brand": 0.8419,
    "category": 1.0,
-   "color": 0.5353,
+   "color": 0.5368,
    "in_stock": 1.0
   },
-  "validation_error_rate": 0.0159
+  "validation_error_rate": 0.0182
  },
  "reliability": {
-  "crawl_success_rate": 0.9873,
-  "http_errors": 7,
-  "blocked": 5,
-  "run_uptime": 0.9456
+  "crawl_success_rate": 0.9884,
+  "http_errors": 5,
+  "blocked": 6,
+  "run_uptime": 0.9457
  },
  "freshness": {
   "age_hours": {
@@ -115,14 +115,14 @@
   "sla_hours": 6
  },
  "performance": {
-  "requests": 944,
-  "pages_per_min": 24590.6,
-  "avg_latency_ms": 21.9
+  "requests": 949,
+  "pages_per_min": 22906.2,
+  "avg_latency_ms": 22.38
  },
  "delta": {
-  "new_offers": 7,
-  "removed_offers": 15,
-  "price_changes": 1200,
-  "oos_share": 0.0937
+  "new_offers": 17,
+  "removed_offers": 11,
+  "price_changes": 196,
+  "oos_share": 0.0933
  }
 }
